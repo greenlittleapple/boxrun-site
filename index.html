@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BoxRun: make and share speedrun routes in Deadlock</title>
+<meta name="description" content="A free Deadlock mod: drop checkpoints anywhere on Midtown, run them against the clock, and share the route as a short code your friends can beat.">
+<meta property="og:title" content="BoxRun: make and share speedrun routes in Deadlock">
+<meta property="og:description" content="Drop checkpoints anywhere on Midtown, run them against the clock, and share the route as a short code.">
+<meta property="og:url" content="https://boxrun.gg/">
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Display:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --night: #1b1c2c;      /* page background: Midtown after dark */
+    --panel: #26273a;      /* the in-game menu's panel slate */
+    --line: #3a3b55;
+    --ink: #ecebf5;
+    --muted: #a9a6c4;
+    --gold: #ffd23f;       /* BoxRun's button yellow */
+    --cyan: #62e4ef;       /* checkpoint pillar */
+    --lilac: #8a7cb8;      /* test-floor grid */
+    --best: #78e08f;       /* best time green */
+    --beat: #ff7d7d;       /* time to beat red */
+    --creator: #bb98ff;    /* creator names */
+    --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+    --measure: 40rem;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--ink);
+    font: 400 1.0625rem/1.6 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--gold); text-underline-offset: 0.18em; }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  .wrap { width: min(100% - 2rem, var(--measure)); margin-inline: auto; }
+
+  /* Top bar: the wordmark only, as in the in-game menu's corner */
+  .bar { padding: 1.25rem 0 0; }
+  .mark {
+    font: 800 1.6rem/1 var(--display);
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+
+  /* Hero: a finish card over the lilac test floor */
+  .hero { position: relative; padding: 2.5rem 0 3.5rem; text-align: center; overflow: hidden; }
+  .floor {
+    position: absolute; inset: auto -20% -1px -20%; height: 46%;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 58px, rgba(138,124,184,.28) 58px 60px),
+      repeating-linear-gradient(0deg, transparent 0 38px, rgba(138,124,184,.22) 38px 40px);
+    transform: perspective(420px) rotateX(58deg);
+    transform-origin: bottom;
+    mask-image: linear-gradient(to top, #000 10%, transparent 95%);
+    pointer-events: none;
+  }
+  .card {
+    position: relative;
+    display: inline-block;
+    min-width: min(100%, 23rem);
+    padding: 1.25rem 1.75rem 1.1rem;
+    background: rgba(38,39,58,.92);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 18px 50px rgba(8,8,20,.55);
+  }
+  .card-title { font: 800 1.5rem/1 var(--display); color: var(--gold); margin: 0 0 .4rem; }
+  .card-meta { margin: 0; font-size: .9rem; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: center; gap: .1rem 1rem; }
+  .card-meta span { white-space: nowrap; }
+  .card-meta .beat { color: var(--beat); font-weight: 700; }
+  .clock {
+    margin: .55rem 0 .35rem;
+    font: 800 clamp(3.6rem, 13vw, 5.4rem)/1 var(--display);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+  }
+  .clock small { font-size: .5em; color: var(--muted); }
+  .dots { display: flex; justify-content: center; gap: .55rem; margin: .1rem 0 .6rem; }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--muted); }
+  .dot.done { background: var(--best); border-color: var(--best); }
+  .dot.next { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,210,63,.22); }
+  .result { margin: 0; min-height: 1.6em; font-weight: 700; color: var(--best); }
+  .route { display: block; width: min(100%, 34rem); margin: 1.5rem auto 0; overflow: visible; }
+  .route .path { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .route .ring { fill: none; stroke: var(--cyan); stroke-width: 2.5; opacity: .9; }
+  .route .ring.passed { stroke: var(--muted); opacity: .45; }
+  .route .pillar { fill: url(#pillar); }
+  .route .tag { font: 700 13px var(--body); fill: var(--muted); }
+
+  h1 {
+    font: 800 clamp(2.4rem, 7.5vw, 3.6rem)/1.02 var(--display);
+    margin: 2.25rem auto .9rem;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .lede { margin: 0 auto 1.6rem; max-width: 34rem; color: var(--muted); font-size: 1.125rem; text-wrap: pretty; }
+  .actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+  .btn {
+    display: inline-block;
+    padding: .8rem 1.35rem;
+    border-radius: 10px;
+    font: 700 1rem/1.2 var(--body);
+    text-decoration: none;
+    border: 2px solid var(--gold);
+  }
+  .btn.primary { background: var(--gold); color: #1d1a10; }
+  .btn.primary:hover { background: #ffe07a; border-color: #ffe07a; }
+  .btn.quiet { color: var(--gold); }
+  .btn.quiet:hover { background: rgba(255,210,63,.1); }
+  .fine { margin: 1rem 0 0; font-size: .9rem; color: var(--muted); }
+  #soon { margin: 0 auto; max-width: 30rem; font-size: 1rem; }
+
+  /* Sections */
+  section { padding: 3rem 0; border-top: 1px solid var(--line); }
+  h2 { font: 800 2.1rem/1.05 var(--display); margin: 0 0 1rem; }
+  h3 { font: 700 1.125rem/1.3 var(--body); margin: 0 0 .25rem; }
+  p { margin: 0 0 1rem; }
+  .muted { color: var(--muted); }
+
+  .clip {
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    background: var(--panel);
+  }
+  [hidden] { display: none !important; }
+  .clip iframe { width: 100%; height: 100%; border: 0; border-radius: 14px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 1.6rem 3.4rem;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: -.15rem;
+    width: 2.3rem; height: 2.3rem;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    color: var(--cyan);
+    font: 800 1.25rem/1 var(--display);
+  }
+  .steps li:not(:last-child)::after {
+    content: "";
+    position: absolute; left: 1.1rem; top: 2.35rem; bottom: .2rem;
+    border-left: 2px dotted var(--lilac);
+  }
+  .steps p { margin: 0; color: var(--muted); }
+
+  .code {
+    display: flex; align-items: center; gap: .75rem;
+    margin: .9rem 0 0;
+    padding: .6rem .6rem .6rem .9rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .code code {
+    flex: 1; min-width: 0;
+    font: 400 .85rem/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .code button {
+    flex: none;
+    font: 700 .9rem/1 var(--body);
+    padding: .55rem .9rem;
+    border-radius: 8px;
+    border: 2px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+  }
+  .code button[data-done] { background: var(--gold); color: #1d1a10; }
+
+  .kinds { display: grid; gap: 1.25rem 2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .kinds p { margin: 0; color: var(--muted); }
+
+  .creator { color: var(--creator); font-weight: 700; }
+  .packs { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+  .pack {
+    display: flex; align-items: center; gap: .9rem;
+    padding: .85rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .pack img { flex: none; width: 3.5rem; height: 3.5rem; border-radius: 50%; object-fit: cover; background: var(--line); }
+  .pack-name { margin: 0; font-weight: 700; color: var(--creator); }
+  .pack-what { margin: 0; color: var(--ink); }
+  .pack a { font-size: .9rem; }
+
+  .story p { font-size: 1.125rem; }
+  .sig { color: var(--muted); }
+
+  details { border-bottom: 1px solid var(--line); padding: .9rem 0; }
+  details:first-of-type { border-top: 1px solid var(--line); }
+  summary { cursor: pointer; font-weight: 700; list-style: none; position: relative; padding-right: 2rem; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+"; position: absolute; right: .25rem; top: -.1rem;
+    font: 800 1.4rem/1 var(--display); color: var(--gold);
+  }
+  details[open] summary::after { content: "\2013"; }
+  details p { margin: .6rem 0 0; color: var(--muted); }
+
+  footer { padding: 2.5rem 0 3rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted); }
+  footer p { margin: 0 0 .4rem; }
+</style>
+</head>
+<body>
+
+<header class="wrap bar">
+  <a class="mark" href="#top" aria-label="BoxRun home">BoxRun</a>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="floor" aria-hidden="true"></div>
+    <div class="wrap">
+      <!-- A finish card like the one in the mod; it plays one run on load, then stays. -->
+      <div class="card" role="img" aria-label="A BoxRun finish card: Amber Stairs, 5 checkpoints, finished in 15.733 seconds as Abrams with default souls">
+        <p class="card-title">Amber Stairs</p>
+        <p class="card-meta"><span>5 checkpoints</span> <span><b class="beat">16.400</b> to beat</span> <span>Abrams, default souls</span></p>
+        <p class="clock" id="clock">15<small>.733</small></p>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+        <p class="result" id="result">0.667 faster than the time to beat</p>
+      </div>
+
+      <svg class="route" id="route" viewBox="0 0 540 150" aria-hidden="true">
+        <defs>
+          <linearGradient id="pillar" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#62e4ef" stop-opacity=".75"/>
+            <stop offset="1" stop-color="#62e4ef" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path class="path" id="routePath" d="M30 118 L118 96 L196 112 L284 70 L372 86 L456 46 L512 58"/>
+        <g id="rings"></g>
+        <text class="tag" x="30" y="143" text-anchor="middle">START</text>
+        <text class="tag" x="512" y="84" text-anchor="middle">END</text>
+      </svg>
+
+      <h1>Make your own speedrun routes in Deadlock</h1>
+      <p class="lede">Drop checkpoints anywhere on Midtown, run them against the clock, and share the route as a short code your friends can paste in and try to beat.</p>
+      <div class="actions">
+        <!-- Filled from SITE in the script at the bottom: the GameBanana link and the clip. -->
+        <a class="btn primary" href="https://gamebanana.com/" id="download" hidden>Download on GameBanana</a>
+        <a class="btn quiet" href="#clip" id="watch" hidden>Watch the clip</a>
+      </div>
+      <p class="fine" id="soon">Coming soon to GameBanana. Free, about 1 GB, and it's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="free" hidden>Free. About 1 GB. It's its own map, so normal matches aren't touched.</p>
+    </div>
+  </div>
+
+  <section id="clip" hidden>
+    <div class="wrap">
+      <h2>See it in a minute</h2>
+      <div class="clip" id="clipbox"></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>
+          <h3>Make a route</h3>
+          <p>Walk to each spot and shoot PLACE in the BoxRun menu. The first point is the start and the last is the finish. Test it as you go.</p>
+        </li>
+        <li>
+          <h3>Share the code</h3>
+          <p>COPY CODE turns the route into one line of text. Paste it in Discord, a group chat or a video description.</p>
+          <div class="code">
+            <code id="sample">BR1-AQEMQW1iZXIgU3RhaXJzAAZNYXJjdXMGnxiZjQGADKAEogUAAPAVX8AH-AoAoAa6FJ8DtxcMhAEABWo</code>
+            <button type="button" id="copy" aria-describedby="sample">Copy</button>
+          </div>
+        </li>
+        <li>
+          <h3>Race it</h3>
+          <p>Your friends import the code and run it. The cards at the start and finish show the time to beat, their best, and the hero and souls the time was set with.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="ideas">
+    <div class="wrap">
+      <h2>What you can make</h2>
+      <div class="kinds">
+        <div>
+          <h3>Speedruns</h3>
+          <p>A loop through the map with a time to beat.</p>
+        </div>
+        <div>
+          <h3>Box runs</h3>
+          <p>Checkpoints at the crates you want to clear. Every crate is up when you start and comes back within seconds.</p>
+        </div>
+        <div>
+          <h3>Movement challenges</h3>
+          <p>Wall jumps, dash jumps and zipline lines you want to land every time.</p>
+        </div>
+        <div>
+          <h3>Rotations</h3>
+          <p>The fastest way between two spots you keep running in real matches.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="creators">
+    <div class="wrap">
+      <h2>Routes from Deadlock creators</h2>
+      <p>The route list opens on creator routes: packs made with the people whose videos you already learn from, with their names on them in <span class="creator">purple</span>.</p>
+      <p class="muted" id="packs-empty">The first packs are on the way.</p>
+      <ul class="packs" id="packs" hidden></ul>
+    </div>
+  </section>
+
+  <section id="why" class="story">
+    <div class="wrap">
+      <h2>Why I made it</h2>
+      <p>I'm learning Deadlock, and box runs were one of the hardest parts for me because I didn't know the map. It's hard to find the best ones and learn them from videos, and I learn better by doing it in game. Some of my friends are learning too, so I made a way to make our own routes in game and share them.</p>
+      <p>It ended up more flexible than that: with a timer on every route, it works for speedruns and challenges as well.</p>
+      <p class="sig">Marcus</p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2>Questions</h2>
+      <details>
+        <summary>How do I install it?</summary>
+        <p>With a mod manager like Grimoire, install it from the GameBanana page and start Deadlock from the manager. Then open the console and type <code>map boxrun_midtown</code>. The GameBanana page also has steps for installing by hand.</p>
+      </details>
+      <details>
+        <summary>What does it change on my PC?</summary>
+        <p>BoxRun is one map file you load yourself and play on your own. There's no DLL, no injection and no replaced game file, and nothing changes in normal matches. A mod manager adds the addons lines to Deadlock's gameinfo.gi file, as it does for every mod.</p>
+      </details>
+      <details>
+        <summary>Do I need to keep anything running beside the game?</summary>
+        <p>No. Everything happens in the in-game menu.</p>
+      </details>
+      <details>
+        <summary>Where are my routes saved?</summary>
+        <p>On your PC, in the storage of the game's built-in browser, through a small BoxRun page at save.boxrun.gg. Nothing is uploaded. Saving needs the internet; offline, new routes and times last until you quit. Route codes work either way.</p>
+      </details>
+      <details>
+        <summary>Can I race my friends live?</summary>
+        <p>Not live: Deadlock doesn't let players join custom servers. You race by sharing a route code and beating each other's times.</p>
+      </details>
+      <details>
+        <summary>Are there leaderboards?</summary>
+        <p>Not yet. Each route has a time to beat and your own best. An online library of community routes, with leaderboards, is the next big thing on the list.</p>
+      </details>
+      <details>
+        <summary>Does the hero matter?</summary>
+        <p>Use any hero. Times remember the hero and whether you gave yourself max souls, so you can compare like with like.</p>
+      </details>
+      <details>
+        <summary>What happens when Midtown changes in a patch?</summary>
+        <p>BoxRun carries its own copy of Midtown, so after a big map change it needs an update to match. The update goes up on the GameBanana page.</p>
+      </details>
+      <details>
+        <summary>How do I remove it?</summary>
+        <p>Remove it in your mod manager, or delete the addon file the install notes name. To clear your saved routes first, type <code>boxrun_clear_saves</code> in the console while on the map.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Made by Marcus (greenlittleapple).</p>
+    <p>BoxRun is a fan-made mod. It isn't made by or affiliated with Valve. Deadlock is a trademark of Valve Corporation.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const points = [[30,118],[118,96],[196,112],[284,70],[372,86],[456,46],[512,58]];
+  const checkpoints = points.length - 2;          // start and end aren't checkpoints
+  const finish = 15.733;
+  const ns = "http://www.w3.org/2000/svg";
+  const rings = document.getElementById("rings");
+  const dotsBox = document.getElementById("dots");
+  const clock = document.getElementById("clock");
+  const result = document.getElementById("result");
+  const path = document.getElementById("routePath");
+
+  const ringEls = points.map(([x, y], i) => {
+    const g = document.createElementNS(ns, "g");
+    const pillar = document.createElementNS(ns, "rect");
+    pillar.setAttribute("class", "pillar");
+    pillar.setAttribute("x", x - 3); pillar.setAttribute("y", y - 44);
+    pillar.setAttribute("width", 6); pillar.setAttribute("height", 44);
+    pillar.style.opacity = 0;
+    const ring = document.createElementNS(ns, "ellipse");
+    ring.setAttribute("class", "ring");
+    ring.setAttribute("cx", x); ring.setAttribute("cy", y);
+    ring.setAttribute("rx", 11); ring.setAttribute("ry", 4.5);
+    g.append(pillar, ring);
+    rings.append(g);
+    return { pillar, ring };
+  });
+  const dots = Array.from({ length: checkpoints }, () => {
+    const d = document.createElement("span");
+    d.className = "dot";
+    dotsBox.append(d);
+    return d;
+  });
+
+  const fmt = t => {
+    const s = Math.floor(t), ms = String(Math.round((t - s) * 1000)).padStart(3, "0").slice(0, 3);
+    return s + "<small>." + ms + "</small>";
+  };
+  // reached = how many points have been passed (0 = at the start)
+  const show = (reached, t) => {
+    clock.innerHTML = fmt(t);
+    dots.forEach((d, i) => {
+      d.className = "dot" + (i < reached - 1 ? " done" : i === reached - 1 ? " next" : "");
+    });
+    ringEls.forEach((r, i) => {
+      r.ring.classList.toggle("passed", i < reached);
+      r.pillar.style.opacity = i === reached ? 1 : 0;
+    });
+  };
+
+  const len = path.getTotalLength();
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (still) { show(points.length, finish); return; }
+
+  // One run on load: the line draws point to point while the clock counts up to the finish time.
+  path.style.strokeDasharray = len;
+  path.style.strokeDashoffset = len;
+  result.style.visibility = "hidden";
+  const segs = [0];
+  for (let i = 1; i < points.length; i++) {
+    const [ax, ay] = points[i - 1], [bx, by] = points[i];
+    segs.push(segs[i - 1] + Math.hypot(bx - ax, by - ay));
+  }
+  const total = segs[segs.length - 1];
+  const duration = 2600;
+  let t0;
+  const step = now => {
+    t0 ??= now;
+    const k = Math.min((now - t0) / duration, 1);
+    const eased = 1 - Math.pow(1 - k, 1.6);
+    const dist = eased * total;
+    let reached = 0;
+    while (reached < points.length - 1 && segs[reached + 1] <= dist) reached++;
+    path.style.strokeDashoffset = len * (1 - eased);
+    show(k === 1 ? points.length : reached, eased * finish);
+    if (k < 1) requestAnimationFrame(step);
+    else result.style.visibility = "visible";
+  };
+  show(0, 0);
+  setTimeout(() => requestAnimationFrame(step), 400);
+})();
+
+// Launch links. Leave empty until they exist: the page then says "Coming soon to GameBanana" and hides the clip.
+const SITE = {
+  gamebanana: "",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
+  clipId: "",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
+};
+
+(() => {
+  if (SITE.gamebanana) {
+    const dl = document.getElementById("download");
+    dl.href = SITE.gamebanana; dl.hidden = false;
+    document.getElementById("soon").hidden = true;
+    document.getElementById("free").hidden = false;
+  }
+  if (SITE.clipId) {
+    const f = document.createElement("iframe");
+    f.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(SITE.clipId);
+    f.title = "BoxRun in a minute";
+    f.allow = "encrypted-media; picture-in-picture";
+    f.allowFullscreen = true;
+    document.getElementById("clipbox").append(f);
+    document.getElementById("clip").hidden = false;
+    document.getElementById("watch").hidden = false;
+  }
+})();
+
+// Creator packs. Add a creator only once their pack ships in the download AND they've said yes
+// to their name and avatar on this page. Avatars go in creators/ (square, about 160 px).
+const CREATORS = [
+  // { name: "Leif", avatar: "creators/leif.jpg", pack: "Leif's box routes", routes: 28,
+  //   link: "https://www.youtube.com/@leifdeadlock", linkText: "Leif on YouTube" },
+];
+
+(() => {
+  const list = document.getElementById("packs");
+  if (!CREATORS.length) return;
+  for (const c of CREATORS) {
+    const li = document.createElement("li");
+    li.className = "pack";
+    const img = document.createElement("img");
+    img.src = c.avatar; img.alt = ""; img.width = 56; img.height = 56; img.loading = "lazy";
+    const text = document.createElement("div");
+    const name = document.createElement("p");
+    name.className = "pack-name"; name.textContent = c.name;
+    const what = document.createElement("p");
+    what.className = "pack-what";
+    what.textContent = c.pack + ", " + c.routes + (c.routes === 1 ? " route" : " routes");
+    text.append(name, what);
+    if (c.link) {
+      const a = document.createElement("a");
+      a.href = c.link; a.textContent = c.linkText || c.name; a.rel = "noopener"; a.target = "_blank";
+      text.append(a);
+    }
+    li.append(img, text);
+    list.append(li);
+  }
+  list.hidden = false;
+  document.getElementById("packs-empty").hidden = true;
+})();
+
+document.getElementById("copy").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  const text = document.getElementById("sample").textContent.trim();
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Copied";
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("sample"));
+    getSelection().removeAllRanges(); getSelection().addRange(range);
+    btn.textContent = "Selected";
+  }
+  btn.dataset.done = "";
+  setTimeout(() => { btn.textContent = "Copy"; delete btn.dataset.done; }, 1800);
+});
+</script>
+</body>
+</html>
