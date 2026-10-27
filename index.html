@@ -500,7 +500,7 @@
 const SITE = {
   gamebanana: "",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
   clipId: "",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
-  cfBeacon: "",     // the Cloudflare Web Analytics token, the "token" value in its snippet's data-cf-beacon
+  cfBeacon: "3dd07682e35d4e828f72fc3503201532",  // the Cloudflare Web Analytics token, the "token" value in its snippet's data-cf-beacon
 };
 
 (() => {
@@ -617,7 +617,7 @@ const SITE = {
   // Cloudflare Web Analytics: this page only, never on save.boxrun.gg.
   if (SITE.cfBeacon) {
     const s = document.createElement("script");
-    s.defer = true;
+    s.type = "module";                           // as Cloudflare's snippet loads it
     s.src = "https://static.cloudflareinsights.com/beacon.min.js";
     s.setAttribute("data-cf-beacon", JSON.stringify({ token: SITE.cfBeacon }));
     document.body.append(s);
