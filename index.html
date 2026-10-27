@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BoxRun: make and share speedrun routes in Deadlock</title>
-<meta name="description" content="A free Deadlock mod: drop checkpoints anywhere on the map, run them against the clock, and share the route as a short code your friends can beat.">
+<meta name="description" content="A free Deadlock mod: place checkpoints anywhere on the map, run them against the clock and an animated ghost, and share the route as a short code your friends can race.">
 <meta property="og:title" content="BoxRun: make and share speedrun routes in Deadlock">
-<meta property="og:description" content="Drop checkpoints anywhere on the map, run them against the clock, and share the route as a short code.">
+<meta property="og:description" content="Place checkpoints anywhere on the map, run them against the clock and an animated ghost, and share the route as a short code.">
 <meta property="og:url" content="https://boxrun.gg/">
 <meta name="theme-color" content="#1b1c2c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -27,6 +27,9 @@
     --best: #78e08f;       /* best time green */
     --beat: #ff7d7d;       /* time to beat red */
     --creator: #bb98ff;    /* creator names */
+    --eternus: #ffd23f;    /* tier colours on the cards */
+    --oracle: #c9d3e6;
+    --initiate: #d9a273;
     --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
     --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
     --measure: 40rem;
@@ -74,7 +77,7 @@
     position: relative;
     display: inline-block;
     min-width: min(100%, 23rem);
-    padding: 1.25rem 1.75rem 1.1rem;
+    padding: 1.25rem 1.5rem 1.1rem;
     background: rgba(38,39,58,.92);
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -83,7 +86,12 @@
   .card-title { font: 800 1.5rem/1 var(--display); color: var(--gold); margin: 0 0 .4rem; }
   .card-meta { margin: 0; font-size: .9rem; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: center; gap: .1rem 1rem; }
   .card-meta span { white-space: nowrap; }
-  .card-meta .beat { color: var(--beat); font-weight: 700; }
+  .tiers { margin: .45rem 0 0; font-size: .9rem; display: flex; flex-wrap: wrap; justify-content: center; gap: .1rem .9rem; }
+  .tiers span { white-space: nowrap; font-weight: 700; }
+  .tiers b { font-weight: 400; color: var(--muted); }
+  .t-eternus { color: var(--eternus); }
+  .t-oracle { color: var(--oracle); }
+  .t-initiate { color: var(--initiate); }
   .clock {
     margin: .55rem 0 .35rem;
     font: 800 clamp(3.6rem, 13vw, 5.4rem)/1 var(--display);
@@ -91,17 +99,19 @@
     letter-spacing: .01em;
   }
   .clock small { font-size: .5em; color: var(--muted); }
-  .dots { display: flex; justify-content: center; gap: .55rem; margin: .1rem 0 .6rem; }
+  .dots { display: flex; justify-content: center; gap: .45rem; margin: .1rem 0 .6rem; }
   .dot { width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid var(--muted); }
   .dot.done { background: var(--best); border-color: var(--best); }
   .dot.next { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,210,63,.22); }
-  .result { margin: 0; min-height: 1.6em; font-weight: 700; color: var(--best); }
+  .result { margin: 0; min-height: 1.6em; font-weight: 700; color: var(--eternus); }
   .route { display: block; width: min(100%, 34rem); margin: 1.5rem auto 0; overflow: visible; }
   .route .path { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   .route .ring { fill: none; stroke: var(--cyan); stroke-width: 2.5; opacity: .9; }
   .route .ring.passed { stroke: var(--muted); opacity: .45; }
   .route .pillar { fill: url(#pillar); }
   .route .tag { font: 700 13px var(--body); fill: var(--muted); }
+  .route .runner { fill: var(--gold); }
+  .route .ghost { fill: var(--oracle); opacity: .55; }
 
   h1 {
     font: 800 clamp(2.4rem, 7.5vw, 3.6rem)/1.02 var(--display);
@@ -123,6 +133,15 @@
   .btn.primary:hover { background: #ffe07a; border-color: #ffe07a; }
   .btn.quiet { color: var(--gold); }
   .btn.quiet:hover { background: rgba(255,210,63,.1); }
+  /* boxrun.gg/discord lands here: the join button pulses twice */
+  .btn.flash { animation: flash 1.1s ease-out 2; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 0 rgba(255,210,63,.8); }
+    100% { box-shadow: 0 0 0 22px rgba(255,210,63,0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn.flash { animation: none; outline: 3px solid var(--cyan); outline-offset: 4px; }
+  }
   .fine { margin: 1rem 0 0; font-size: .9rem; color: var(--muted); }
   #soon { margin: 0 auto; max-width: 30rem; font-size: 1rem; }
 
@@ -132,6 +151,7 @@
   h3 { font: 700 1.125rem/1.3 var(--body); margin: 0 0 .25rem; }
   p { margin: 0 0 1rem; }
   .muted { color: var(--muted); }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .9em; }
 
   .clip {
     aspect-ratio: 16 / 9;
@@ -163,10 +183,11 @@
     border-left: 2px dotted var(--lilac);
   }
   .steps p { margin: 0; color: var(--muted); }
+  .steps .code-label { margin: .9rem 0 0; font-size: .9rem; }
 
   .code {
     display: flex; align-items: center; gap: .75rem;
-    margin: .9rem 0 0;
+    margin: .4rem 0 0;
     padding: .6rem .6rem .6rem .9rem;
     background: var(--panel);
     border: 1px solid var(--line);
@@ -193,6 +214,11 @@
   .kinds { display: grid; gap: 1.25rem 2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
   .kinds p { margin: 0; color: var(--muted); }
 
+  .list { margin: 0; padding: 0 0 0 1.2rem; color: var(--muted); }
+  .list li { margin: 0 0 .6rem; }
+  .list li::marker { color: var(--cyan); }
+  .list b { color: var(--ink); }
+
   .creator { color: var(--creator); font-weight: 700; }
   .packs { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
   .pack {
@@ -209,6 +235,15 @@
 
   .story p { font-size: 1.125rem; }
   .sig { color: var(--muted); }
+
+  .join {
+    padding: 1.4rem 1.5rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .join p { color: var(--muted); }
+  .join .fine { margin: .9rem 0 0; }
 
   details { border-bottom: 1px solid var(--line); padding: .9rem 0; }
   details:first-of-type { border-top: 1px solid var(--line); }
@@ -235,13 +270,14 @@
   <div class="hero">
     <div class="floor" aria-hidden="true"></div>
     <div class="wrap">
-      <!-- A finish card like the one in the mod; it plays one run on load, then stays. -->
-      <div class="card" role="img" aria-label="A BoxRun finish card: Amber Stairs, 5 checkpoints, finished in 15.733 seconds as Abrams with default souls">
-        <p class="card-title">Amber Stairs</p>
-        <p class="card-meta"><span>5 checkpoints</span> <span><b class="beat">16.400</b> to beat</span> <span>Abrams, default souls</span></p>
-        <p class="clock" id="clock">15<small>.733</small></p>
+      <!-- A finish card like the one in the mod; it plays one run against a ghost on load, then stays. -->
+      <div class="card" role="img" aria-label="A BoxRun finish card: HK Yellow 1, 15 checkpoints, 5 notes, finished in 28.250 seconds as Abrams with default souls, the Eternus tier, 0.412 seconds ahead of the ghost">
+        <p class="card-title">HK Yellow 1</p>
+        <p class="card-meta"><span>15 checkpoints</span> <span>5 notes</span> <span>Abrams, default souls</span></p>
+        <p class="tiers"><span class="t-eternus">Eternus <b>30.0</b></span> <span class="t-oracle">Oracle <b>37.5</b></span> <span class="t-initiate">Initiate <b>45.0</b></span></p>
+        <p class="clock" id="clock">28<small>.250</small></p>
         <div class="dots" id="dots" aria-hidden="true"></div>
-        <p class="result" id="result">0.667 faster than the time to beat</p>
+        <p class="result" id="result">Eternus: 0.412 ahead of the ghost</p>
       </div>
 
       <svg class="route" id="route" viewBox="0 0 540 150" aria-hidden="true">
@@ -251,14 +287,16 @@
             <stop offset="1" stop-color="#62e4ef" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <path class="path" id="routePath" d="M30 118 L118 96 L196 112 L284 70 L372 86 L456 46 L512 58"/>
+        <path class="path" id="routePath" d=""/>
         <g id="rings"></g>
+        <circle class="ghost" id="ghost" r="6" cx="30" cy="118"/>
+        <circle class="runner" id="runner" r="5" cx="30" cy="118"/>
         <text class="tag" x="30" y="143" text-anchor="middle">START</text>
-        <text class="tag" x="512" y="84" text-anchor="middle">END</text>
+        <text class="tag" x="512" y="76" text-anchor="middle">END</text>
       </svg>
 
       <h1>Make your own speedrun routes in Deadlock</h1>
-      <p class="lede">Drop checkpoints anywhere on the map, run them against the clock, and share the route as a short code your friends can paste in and try to beat.</p>
+      <p class="lede">Place checkpoints anywhere on the map, run them against the clock and an animated ghost, and share the route as a short code your friends can import and race.</p>
       <div class="actions">
         <!-- Filled from SITE in the script at the bottom: the GameBanana link and the clip. -->
         <a class="btn primary" href="https://gamebanana.com/" id="download" hidden>Download on GameBanana</a>
@@ -282,19 +320,20 @@
       <ol class="steps">
         <li>
           <h3>Make a route</h3>
-          <p>Walk to each spot and shoot PLACE in the BoxRun menu. The first point is the start and the last is the finish. Test it as you go.</p>
+          <p>Shoot NEW ROUTE in the BoxRun menu, walk to each spot and shoot PLACE. The first point is the start and the last is the finish. In TEST, run it, then use that run as the time to beat, which fills in the three tiers, and as the route's ghost.</p>
         </li>
         <li>
-          <h3>Share the code</h3>
-          <p>COPY CODE turns the route into one line of text. Paste it in Discord, a group chat or a video description.</p>
+          <h3>Share it</h3>
+          <p>SHARE copies one short code, BR- and six letters and digits, that carries the route and its ghost. If the online library can't be reached, it copies the full code instead, which works anywhere.</p>
+          <p class="code-label">The full code of a sample route, HK Yellow 1 (open):</p>
           <div class="code">
-            <code id="sample">BR1-AQEMQW1iZXIgU3RhaXJzAAZNYXJjdXMGnxiZjQGADKAEogUAAPAVX8AH-AoAoAa6FJ8DtxcMhAEABWo</code>
+            <code id="sample">BR1-ATKw6gESSEsgWWVsbG93IDEgKG9wZW4pSkJyZWFrIHRoZSAxMyBtYXJrZWQgYm94ZXMgaW4gYW55IG9yZGVyLCB0aGVuIGZpbmlzaC4gWW91ciBsaW5lLCB5b3VyIGNhbGwuEGdyZWVubGl0dGxlYXBwbGUC24EB6yDwA9QJwAcAAAIEzDrMOgwQDfUCAeMBAQEBAQMBAQgBAfGK</code>
             <button type="button" id="copy" aria-describedby="sample">Copy</button>
           </div>
         </li>
         <li>
           <h3>Race it</h3>
-          <p>Your friends import the code and run it. The cards at the start and finish show the time to beat, their best, and the hero and souls the time was set with.</p>
+          <p>Your friends shoot IMPORT A CODE, paste it and go to the start. Their run starts as they leave the start gate, with your ghost beside them. The cards over the start and finish show the tiers, their best, their splits, and the hero and souls each time was set with.</p>
         </li>
       </ol>
     </div>
@@ -306,11 +345,11 @@
       <div class="kinds">
         <div>
           <h3>Speedruns</h3>
-          <p>A loop through the map with a time to beat.</p>
+          <p>A loop through the map with three tier times to reach.</p>
         </div>
         <div>
           <h3>Box runs</h3>
-          <p>Checkpoints at the crates you want to clear. Every crate is up when you start and comes back within seconds.</p>
+          <p>Mark the boxes a run has to break. Every box is back at the start of each run.</p>
         </div>
         <div>
           <h3>Movement challenges</h3>
@@ -320,15 +359,53 @@
           <h3>Rotations</h3>
           <p>The fastest way between two spots you keep running in real matches.</p>
         </div>
+        <div>
+          <h3>Soul Urn runs</h3>
+          <p>Start with the urn on the ground somewhere on the map, or on your back.</p>
+        </div>
       </div>
+    </div>
+  </section>
+
+  <section id="routes">
+    <div class="wrap">
+      <h2>What a route holds</h2>
+      <ul class="list">
+        <li><b>Guided or open.</b> A guided route has a checkpoint at every turn and notes that explain the line. An open route has a start, a finish and the boxes to break, in any order, and you pick the line.</li>
+        <li><b>Boxes to break.</b> A run that misses one shows its time as Incomplete, with the box it missed, and doesn't count as a best.</li>
+        <li><b>Three tiers.</b> Eternus, Oracle and Initiate times. The finish card shows the tier you reached and how far the next one is.</li>
+        <li><b>Splits and legs.</b> Your time at every checkpoint against your best, named legs, and your best possible time from your fastest sections.</li>
+        <li><b>Notes.</b> Up to 50 tips placed on the route, each shown near the checkpoint it belongs to.</li>
+        <li><b>The Soul Urn.</b> On the ground at a spot you choose, or carried from the start.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="ghosts">
+    <div class="wrap">
+      <h2>Race a ghost</h2>
+      <p>Every run is recorded. Your best comes back as an animated, see-through copy of the hero you ran it with, and it leaves the start gate when you do.</p>
+      <p class="muted">A route can also carry its maker's ghost. You race that one until your best beats it, then your own, and you can switch between them on the route's page. A short code brings the route's ghost along, so a friend who imports your route races your run. Ghosts can be turned off in PRACTICE.</p>
+    </div>
+  </section>
+
+  <section id="map">
+    <div class="wrap">
+      <h2>The map</h2>
+      <p>BoxRun is its own copy of the Deadlock map, set up for practice.</p>
+      <ul class="list">
+        <li><b>One team.</b> Every route plays on one team, so every zipline rides end to end and nothing on the map attacks you.</li>
+        <li><b>A clean start every run.</b> Every box comes back, dropped souls and power-ups are cleared and cooldowns reset when a run starts, when a route loads and when you start editing.</li>
+        <li><b>PRACTICE tools.</b> Max souls, noclip, infinite ammo, game speed, camps on or off, the Soul Urn, and RESET THE MAP or RELOAD THE MAP when something's off. Runs below 100% game speed don't count as bests.</li>
+      </ul>
     </div>
   </section>
 
   <section id="creators">
     <div class="wrap">
       <h2>Routes from Deadlock creators</h2>
-      <p>The route list opens on creator routes: packs made with the people whose videos you already learn from, with their names on them in <span class="creator">purple</span>.</p>
-      <p class="muted" id="packs-empty">The first packs are on the way.</p>
+      <p>The route list has a section for creator routes: packs made with the people whose videos you already learn from, with their names on them in <span class="creator">purple</span>.</p>
+      <p class="muted" id="packs-empty">The first packs are on the way. Until then, BoxRun comes with sample routes I made from box routes in creators' videos, credited to them in each route's description, some in both a guided and an open version.</p>
       <ul class="packs" id="packs" hidden></ul>
     </div>
   </section>
@@ -339,6 +416,17 @@
       <p>I'm learning Deadlock, and box runs were one of the hardest parts for me because I didn't know the map. It's hard to find the best ones and learn them from videos, and I learn better by doing it in game. Some of my friends are learning too, so I made a way to make our own routes in game and share them.</p>
       <p>It ended up more flexible than that: with a timer on every route, it works for speedruns and challenges as well.</p>
       <p class="sig">Marcus</p>
+    </div>
+  </section>
+
+  <section id="discord">
+    <div class="wrap">
+      <h2>Discord</h2>
+      <div class="join">
+        <p>The BoxRun Discord is where route codes get shared: the routes forum has one post per route, with times as replies. It also has install help, bug reports, ideas, and announcements for updates and creator packs.</p>
+        <a class="btn primary" id="discord-join" href="https://discord.gg/zXt8MNZdQR" rel="noopener">Join the BoxRun Discord</a>
+        <p class="fine">Invite: discord.gg/zXt8MNZdQR</p>
+      </div>
     </div>
   </section>
 
@@ -359,19 +447,27 @@
       </details>
       <details>
         <summary>Where are my routes saved?</summary>
-        <p>On your PC, in the storage of the game's built-in browser, through a small BoxRun page at save.boxrun.gg. Nothing is uploaded. Saving needs the internet, and offline, new routes and times last until you quit. Route codes work either way.</p>
+        <p>On your PC, in the storage of the game's built-in browser, through a small BoxRun page at save.boxrun.gg. Saving needs the internet. Offline, new routes and times last until you quit, and full route codes still work.</p>
+      </details>
+      <details>
+        <summary>Does BoxRun send anything online?</summary>
+        <p>Only when you use a short code. Publishing a route, or looking one up by its BR- code, sends that request through BoxRun's save page to api.boxrun.gg. The server keeps the routes and ghosts people publish, plus a scrambled form of the internet address that sent them, so spam can be blocked. It never sees your saves, your Steam account or your best times. Full BR1 codes work without it.</p>
       </details>
       <details>
         <summary>Can I race my friends live?</summary>
-        <p>Not live: Deadlock doesn't let players join custom servers. You race by sharing a route code and beating each other's times.</p>
+        <p>Not yet. Deadlock doesn't let players join custom servers the usual way, and live races are being tested with friends. For now you race each other's times and ghosts by sharing route codes.</p>
       </details>
       <details>
         <summary>Are there leaderboards?</summary>
-        <p>Not yet. Each route has a time to beat and your own best. An online library of community routes, with leaderboards, is the next big thing on the list.</p>
+        <p>Not yet. Each route has three tier times, your best, your splits and a ghost. An online library of community routes, with leaderboards, is on the list for after launch.</p>
       </details>
       <details>
         <summary>Does the hero matter?</summary>
-        <p>Use any hero. Times remember the hero and whether you gave yourself max souls, so you can compare like with like.</p>
+        <p>Use any hero. Times remember the hero and whether you gave yourself max souls, so you can compare like with like, and a ghost is always the hero who ran it.</p>
+      </details>
+      <details>
+        <summary>Something on the map is stuck or missing. What do I do?</summary>
+        <p>In the menu, PRACTICE has RESET THE MAP, which brings back the boxes, the urn and the ghost and puts you at the route's start, and RELOAD THE MAP, which loads the map again with your routes kept. <code>boxrun_reset</code> in the console does the same as RESET THE MAP.</p>
       </details>
       <details>
         <summary>What happens when the map changes in a patch?</summary>
@@ -379,7 +475,7 @@
       </details>
       <details>
         <summary>Where do I report a bug or share a route?</summary>
-        <p>In the <a href="https://discord.gg/zXt8MNZdQR" rel="noopener">BoxRun Discord</a>. Post route codes there, and say what broke and what you were doing when it happened.</p>
+        <p>In the <a href="#discord">BoxRun Discord</a>. Post route codes in the routes forum, and say what broke and what you were doing when it happened.</p>
       </details>
       <details>
         <summary>How do I remove it?</summary>
@@ -393,23 +489,37 @@
   <div class="wrap">
     <p>Share routes and send feedback in the <a href="https://discord.gg/zXt8MNZdQR" rel="noopener">BoxRun Discord</a>. Updates go out on <a href="https://x.com/boxrungg" rel="noopener">X</a>.</p>
     <p>Made by Marcus (greenlittleapple).</p>
+    <p id="counted" hidden>This page counts visits with Cloudflare Web Analytics, which sets no cookies.</p>
     <p>BoxRun is a fan-made mod. It isn't made by or affiliated with Valve. Deadlock is a trademark of Valve Corporation.</p>
   </div>
 </footer>
 
 <script>
+// Launch links and analytics. Leave empty until they exist: the page then says "Coming soon to GameBanana",
+// hides the clip, and loads no analytics script.
+const SITE = {
+  gamebanana: "",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
+  clipId: "",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
+  cfBeacon: "",     // the Cloudflare Web Analytics token, the "token" value in its snippet's data-cf-beacon
+};
+
 (() => {
-  const points = [[30,118],[118,96],[196,112],[284,70],[372,86],[456,46],[512,58]];
+  // HK Yellow 1's 15 points, drawn flat: start, 13 checkpoints, finish
+  const points = [[30,118],[64,98],[99,110],[133,84],[168,94],[202,72],[237,88],[271,62],
+                  [306,76],[340,54],[375,68],[409,46],[444,60],[478,40],[512,50]];
   const checkpoints = points.length - 2;          // start and end aren't checkpoints
-  const finish = 15.733;
+  const finish = 28.250, ghostFinish = 28.662;
   const ns = "http://www.w3.org/2000/svg";
   const rings = document.getElementById("rings");
   const dotsBox = document.getElementById("dots");
   const clock = document.getElementById("clock");
   const result = document.getElementById("result");
   const path = document.getElementById("routePath");
+  const runner = document.getElementById("runner");
+  const ghost = document.getElementById("ghost");
+  path.setAttribute("d", "M" + points.map(p => p.join(" ")).join(" L"));
 
-  const ringEls = points.map(([x, y], i) => {
+  const ringEls = points.map(([x, y]) => {
     const g = document.createElementNS(ns, "g");
     const pillar = document.createElementNS(ns, "rect");
     pillar.setAttribute("class", "pillar");
@@ -419,7 +529,7 @@
     const ring = document.createElementNS(ns, "ellipse");
     ring.setAttribute("class", "ring");
     ring.setAttribute("cx", x); ring.setAttribute("cy", y);
-    ring.setAttribute("rx", 11); ring.setAttribute("ry", 4.5);
+    ring.setAttribute("rx", 9); ring.setAttribute("ry", 4);
     g.append(pillar, ring);
     rings.append(g);
     return { pillar, ring };
@@ -435,6 +545,10 @@
     const s = Math.floor(t), ms = String(Math.round((t - s) * 1000)).padStart(3, "0").slice(0, 3);
     return s + "<small>." + ms + "</small>";
   };
+  const place = (el, dist) => {
+    const p = path.getPointAtLength(Math.min(dist, len));
+    el.setAttribute("cx", p.x); el.setAttribute("cy", p.y);
+  };
   // reached = how many points have been passed (0 = at the start)
   const show = (reached, t) => {
     clock.innerHTML = fmt(t);
@@ -449,9 +563,10 @@
 
   const len = path.getTotalLength();
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (still) { show(points.length, finish); return; }
+  if (still) { show(points.length, finish); place(runner, len); place(ghost, len * 0.985); return; }
 
-  // One run on load: the line draws point to point while the clock counts up to the finish time.
+  // One run on load: the line draws point to point while the clock counts up to the finish time,
+  // and the ghost (a slightly slower run) follows the same line.
   path.style.strokeDasharray = len;
   path.style.strokeDashoffset = len;
   result.style.visibility = "hidden";
@@ -461,29 +576,26 @@
     segs.push(segs[i - 1] + Math.hypot(bx - ax, by - ay));
   }
   const total = segs[segs.length - 1];
-  const duration = 2600;
+  const duration = 3000;
+  const ease = k => 1 - Math.pow(1 - k, 1.6);
   let t0;
   const step = now => {
     t0 ??= now;
     const k = Math.min((now - t0) / duration, 1);
-    const eased = 1 - Math.pow(1 - k, 1.6);
-    const dist = eased * total;
+    const eased = ease(k);
+    const gk = Math.min((now - t0) / (duration * ghostFinish / finish), 1);
     let reached = 0;
-    while (reached < points.length - 1 && segs[reached + 1] <= dist) reached++;
+    while (reached < points.length - 1 && segs[reached + 1] <= eased * total) reached++;
     path.style.strokeDashoffset = len * (1 - eased);
+    place(runner, eased * len);
+    place(ghost, ease(gk) * len);
     show(k === 1 ? points.length : reached, eased * finish);
-    if (k < 1) requestAnimationFrame(step);
-    else result.style.visibility = "visible";
+    if (k < 1 || gk < 1) requestAnimationFrame(step);
+    if (k === 1) result.style.visibility = "visible";
   };
   show(0, 0);
   setTimeout(() => requestAnimationFrame(step), 400);
 })();
-
-// Launch links. Leave empty until they exist: the page then says "Coming soon to GameBanana" and hides the clip.
-const SITE = {
-  gamebanana: "",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
-  clipId: "",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
-};
 
 (() => {
   if (SITE.gamebanana) {
@@ -501,6 +613,15 @@ const SITE = {
     document.getElementById("clipbox").append(f);
     document.getElementById("clip").hidden = false;
     document.getElementById("watch").hidden = false;
+  }
+  // Cloudflare Web Analytics: this page only, never on save.boxrun.gg.
+  if (SITE.cfBeacon) {
+    const s = document.createElement("script");
+    s.defer = true;
+    s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    s.setAttribute("data-cf-beacon", JSON.stringify({ token: SITE.cfBeacon }));
+    document.body.append(s);
+    document.getElementById("counted").hidden = false;
   }
 })();
 
@@ -536,6 +657,47 @@ const CREATORS = [
   }
   list.hidden = false;
   document.getElementById("packs-empty").hidden = true;
+})();
+
+// boxrun.gg/discord sends the browser to /#go-discord (no element has that id, so the browser doesn't jump):
+// scroll smoothly to the Discord section and pulse the join button. A plain #discord link jumps, then pulses.
+(() => {
+  const section = document.getElementById("discord");
+  const join = document.getElementById("discord-join");
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const flash = () => {
+    join.classList.remove("flash");
+    void join.offsetWidth;                        // restart the animation
+    join.classList.add("flash");
+    setTimeout(() => join.classList.remove("flash"), 2600);
+  };
+  const go = smooth => {
+    const r = section.getBoundingClientRect();
+    const top = Math.max(0, scrollY + r.top - Math.max(0, (innerHeight - r.height) / 2));
+    const jump = () => scrollTo({ top, behavior: "instant" });   // plain scrollTo would follow the CSS smooth setting
+    if (!smooth || still || Math.abs(top - scrollY) < 2) { jump(); setTimeout(flash, 100); return; }
+    let done = false;
+    const end = () => {
+      if (done) return;
+      done = true;
+      if (Math.abs(top - scrollY) > 40) jump();  // the smooth scroll didn't run (a background tab) or was cut short
+      flash();
+    };
+    addEventListener("scrollend", () => { if (Math.abs(top - scrollY) < 40) end(); });
+    setTimeout(end, 1600);                       // browsers without scrollend
+    scrollTo({ top, behavior: "smooth" });
+  };
+  const fromLink = location.hash === "#go-discord";
+  if (fromLink) {
+    history.replaceState(null, "", "#discord");
+    history.scrollRestoration = "manual";        // a restored scroll position would cut the scroll short
+  }
+  if (fromLink || location.hash === "#discord") {
+    // after load and the fonts, so the layout doesn't shift under the scroll
+    const start = () => (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => go(fromLink), 150));
+    if (document.readyState === "complete") start(); else addEventListener("load", start, { once: true });
+  }
+  window.addEventListener("hashchange", () => { if (location.hash === "#discord") flash(); });
 })();
 
 document.getElementById("copy").addEventListener("click", async e => {
