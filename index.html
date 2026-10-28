@@ -303,8 +303,8 @@
         <a class="btn primary" href="https://gamebanana.com/" id="download" hidden>Download on GameBanana</a>
         <a class="btn quiet" href="#clip" id="watch" hidden>Watch the clip</a>
       </div>
-      <p class="fine" id="soon">Coming soon to GameBanana. Free, about 800 MB, and it's its own map, so normal matches aren't touched.</p>
-      <p class="fine" id="free" hidden>Free. About 800 MB. It's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="soon">Coming soon to GameBanana. Free, a 3 MB download, and it's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="free" hidden>Free. A 3 MB download. It's its own map, so normal matches aren't touched.</p>
     </div>
   </div>
 
@@ -393,7 +393,7 @@
   <section id="map">
     <div class="wrap">
       <h2>The map</h2>
-      <p>BoxRun is its own copy of the Deadlock map, set up for practice.</p>
+      <p>BoxRun loads the Deadlock map from the game files on your PC when it starts and sets it up for practice.</p>
       <ul class="list">
         <li><b>One team.</b> Every route plays on one team, so every zipline rides end to end and nothing on the map attacks you.</li>
         <li><b>Resets.</b> Every box comes back, dropped souls and power-ups are cleared and cooldowns reset when a run starts, when a route loads and when you start editing.</li>
@@ -436,11 +436,13 @@
       <h2>Questions</h2>
       <details>
         <summary>How do I install it?</summary>
-        <p>With a mod manager like Grimoire, install it from the GameBanana page and start Deadlock from the manager. Then open the console and type <code>map boxrun_midtown</code>. The GameBanana page also has steps for installing by hand.</p>
+        <p>With a mod manager like Grimoire, install it from the GameBanana page and start Deadlock from the manager. Then open the console and type <code>map boxrun_midtown</code>. Give it up to a minute after you spawn in, while the mod loads and the BoxRun menu appears in front of you. It can take longer on some PCs, so wait for the menu. The GameBanana page also has steps for installing by hand.</p>
+        <p>If you close the menu, press 0 to bring it back (with hotkeys on: BoxRun asks at your first start, and HELP &gt; HOTKEYS turns them on later), or type <code>boxrun</code> in the console. Both bring the menu in front of you.</p>
+        <p>Optional, no console needed: also install <a href="https://gamebanana.com/mods/667277" rel="noopener">MapList</a> after BoxRun. Then press Esc in the hideout: BoxRun is under CUSTOM MAPS, at the bottom of the friends column on the right. Click it to load.</p>
       </details>
       <details>
         <summary>What does it change on my PC?</summary>
-        <p>BoxRun is one map file you load yourself and play on your own. There's no DLL, no injection and no replaced game file, and nothing changes in normal matches. A mod manager adds the addons lines to Deadlock's gameinfo.gi file, as it does for every mod.</p>
+        <p>BoxRun is one 42 MB addon file holding a small map you load yourself and play on your own. That map loads the Deadlock map from the game files on your PC instead of carrying a copy, and it never changes them. There's no DLL, no injection and no replaced game file, and nothing changes in normal matches. A mod manager adds the addons lines to Deadlock's gameinfo.gi file, as it does for every mod.</p>
       </details>
       <details>
         <summary>Do I need to keep anything running beside the game?</summary>
@@ -472,7 +474,7 @@
       </details>
       <details>
         <summary>What happens when the map changes in a patch?</summary>
-        <p>BoxRun carries its own copy of the Deadlock map, so after a big map change it needs an update to match. The update goes up on the GameBanana page.</p>
+        <p>BoxRun uses the Deadlock map from your installed game, so the world follows Valve's map patches with no BoxRun download. If a patch moves boxes or paths, routes made before it may need adjusting, and any BoxRun update that follows goes up on the GameBanana page.</p>
       </details>
       <details>
         <summary>Where do I report a bug or share a route?</summary>
@@ -499,8 +501,8 @@
 // Launch links and analytics. Leave empty until they exist: the page then says "Coming soon to GameBanana",
 // hides the clip, and loads no analytics script.
 const SITE = {
-  gamebanana: "",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
-  clipId: "",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
+  gamebanana: "https://gamebanana.com/mods/733166",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
+  clipId: "pA0E4i3yuks",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
   cfBeacon: "3dd07682e35d4e828f72fc3503201532",  // the Cloudflare Web Analytics token, the "token" value in its snippet's data-cf-beacon
 };
 
