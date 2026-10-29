@@ -152,6 +152,8 @@
   .rname[aria-expanded="true"]::before { content: "\25BE  "; }
   .flag { display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--line); color: var(--muted); }
   .flag.held { border-color: var(--beat); color: var(--beat); }
+  tr.held td { background: rgba(255, 125, 125, 0.08); }
+  tr.held td:first-child { box-shadow: inset 3px 0 0 var(--beat); }
   .copy { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 0.1rem 0.45rem; font: 700 0.75rem var(--body); cursor: pointer; margin-right: 0.4rem; }
   tr.desc td { text-align: left; white-space: normal; color: var(--muted); background: var(--night); }
   .num { font-variant-numeric: tabular-nums; }
@@ -195,7 +197,7 @@
       Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
 
     <h2>Routes</h2>
-    <p class="muted small">Every route shared as a short code. Players = distinct players whose game loaded the code, counted since Oct 28 evening.</p>
+    <p class="muted small">Every route shared as a short code. Players = distinct players whose game loaded the code, counted since Oct 28 evening. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red.</p>
     <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
     <div id="routes-box" hidden>
       <div class="controls rcontrols">
@@ -760,7 +762,7 @@
     { k: "players", label: "Players", get: (r) => num(r.players), n: true },
     { k: "checkpoints", label: "Checkpoints / boxes", get: (r) => num(r.checkpoints), n: true },
     { k: "hero", label: "Hero lock", get: (r) => heroName(r.hero) },
-    { k: "tiers", label: "Tiers (s)", get: (r) => tierList(r.tiers)[0] ?? Infinity, n: true },
+    { k: "tiers", label: "Tiers / time to beat (s)", get: (r) => tierList(r.tiers)[0] ?? (Number.isFinite(+r.time_to_beat) && r.time_to_beat !== null ? +r.time_to_beat : Infinity), n: true },
     { k: "ghost", label: "Ghost", get: (r) => (r.ghost ? 1 : 0), n: true },
     { k: "versions", label: "Versions", get: (r) => num(r.versions), n: true },
     { k: "published", label: "First shared", get: (r) => toMs(r.published) || 0, n: true },
@@ -774,7 +776,7 @@
   const heroName = (h) => (!h ? "Any" : String(h).replace(/^hero_/, "").replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()));
   function tierList(tiers) {
     if (Array.isArray(tiers)) return tiers.filter((x) => Number.isFinite(+x)).map(Number);
-    if (tiers && typeof tiers === "object") return ["eternus", "oracle", "initiate"].map((k) => tiers[k]).filter((x) => Number.isFinite(+x)).map(Number);
+    if (tiers && typeof tiers === "object") return (("gold" in tiers) ? ["gold", "silver", "bronze"] : ["eternus", "oracle", "initiate"]).map((k) => tiers[k]).filter((x) => x !== null && Number.isFinite(+x)).map(Number);
     return [];
   }
   const secs = (x) => String(+x.toFixed(3));
@@ -823,6 +825,7 @@
     body.textContent = "";
     for (const r of rows) {
       const tr = document.createElement("tr");
+      if (r.status === "held") tr.className = "held";
       const td = (text, cls) => { const d = document.createElement("td"); if (cls) d.className = cls; if (text !== undefined) d.textContent = text; tr.appendChild(d); return d; };
       const name = td(undefined, "name");
       const nb = document.createElement("button");
@@ -850,7 +853,7 @@
       td((Number.isFinite(+r.checkpoints) ? fmt(r.checkpoints) : "–") + " / " + (Number.isFinite(+r.boxes) ? fmt(r.boxes) : "–") + (r.urn ? " · urn" : ""), "num");
       td(heroName(r.hero));
       const tl = tierList(r.tiers);
-      td(tl.length ? tl.map(secs).join(" / ") : "–", "num");
+      td(tl.length ? tl.map(secs).join(" / ") : r.time_to_beat !== null && Number.isFinite(+r.time_to_beat) ? "beat " + secs(+r.time_to_beat) : "–", "num");
       td(r.ghost ? "Yes" : "No");
       td(fmt(r.versions), "num");
       td(when(r.published));
