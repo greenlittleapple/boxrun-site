@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BoxRun privacy</title>
+<meta name="description" content="What BoxRun keeps on your PC, what SHARE publishes, and what the server and boxrun.gg record.">
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --night: #1b1c2c;
+    --line: #3a3b55;
+    --ink: #ecebf5;
+    --muted: #a9a6c4;
+    --gold: #ffd23f;
+    --cyan: #62e4ef;
+    --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--night); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); }
+  a { color: var(--gold); }
+  a:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+  .wrap { width: min(100% - 2rem, 42rem); margin: 0 auto; }
+  header { padding: 1.25rem 0 0; }
+  .mark { font: 800 1.6rem/1 var(--display); color: var(--gold); text-decoration: none; letter-spacing: .02em; }
+  h1 { font: 800 2.6rem/1.05 var(--display); margin: 1.75rem 0 .5rem; }
+  h2 { font: 800 1.5rem/1.1 var(--display); margin: 2.25rem 0 .7rem; }
+  p, li { margin: 0 0 .8rem; }
+  ul { padding-left: 1.25rem; margin: 0 0 1rem; }
+  .muted { color: var(--muted); }
+  footer { margin-top: 3rem; padding: 2rem 0 3rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted); }
+  footer p { margin: 0 0 .4rem; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap"><a class="mark" href="/">BoxRun</a></div>
+</header>
+
+<main class="wrap">
+  <h1>Privacy</h1>
+  <p class="muted">Updated 28 October 2026.</p>
+
+  <h2>Your saves stay on your PC</h2>
+  <p>Your routes, times, ghosts and settings are saved on your PC, in the storage that Steam's in-game browser keeps for save.boxrun.gg. BoxRun opens that small page inside the game to save and load. Your saves aren't sent anywhere.</p>
+
+  <h2>What SHARE publishes</h2>
+  <p>Pressing SHARE publishes that route and its ghost to BoxRun's server, api.boxrun.gg, and gives it a short code. Anyone with the code can load the route and race the ghost. Loading a code, or checking a loaded route for a newer version, sends a request for that code. BR1 codes, the long kind, work without the server.</p>
+
+  <h2>What the server keeps</h2>
+  <ul>
+    <li>The routes and ghosts people publish.</li>
+    <li>A scrambled form (a keyed hash) of the internet address that sent a request, never the address itself. It's used to limit how often one player can publish, to block spam, to handle reports, and to count each player who loads a code once.</li>
+    <li>The hourly counters for those limits expire within a day or two. Reports are kept until the route is reviewed.</li>
+    <li>Server logs hold no request contents and are deleted after 14 days.</li>
+  </ul>
+  <p>The server never sees your Steam account, your saves or your best times, and sets no cookies. Scrambled isn't the same as anonymous: whoever holds the server's key could match a hash to an address, and only the server and Marcus hold it.</p>
+
+  <h2>Visits to boxrun.gg</h2>
+  <p>The home page and the press page count visits with Cloudflare Web Analytics, which sets no cookies. This page and the save page don't count visits.</p>
+
+  <h2>Nothing else</h2>
+  <p>Nothing else is collected. Questions, or a route of yours you want taken down: ask in the <a href="https://discord.gg/kMaQcMWdsA" rel="noopener">BoxRun Discord</a>.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="/">boxrun.gg</a> &middot; <a href="/press/">Press kit</a> &middot; <a href="https://discord.gg/kMaQcMWdsA" rel="noopener">Discord</a></p>
+    <p>BoxRun is a fan-made mod. It isn't made by or affiliated with Valve. Deadlock is a trademark of Valve Corporation.</p>
+  </div>
+</footer>
+</body>
+</html>
