@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BoxRun usage</title>
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --night: #1b1c2c;
+    --panel: #26273a;
+    --line: #3a3b55;
+    --ink: #ecebf5;
+    --muted: #a9a6c4;
+    --gold: #ffd23f;
+    --cyan: #62e4ef;
+    --beat: #ff7d7d;
+    --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--night); color: var(--ink); font: 400 1rem/1.5 var(--body); }
+  a { color: var(--gold); }
+  .wrap { width: min(100% - 2rem, 62rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .mark { font: 800 1.6rem/1 var(--display); color: var(--gold); text-decoration: none; letter-spacing: 0.02em; }
+  h1 { font: 800 2.2rem/1.1 var(--display); margin: 1.5rem 0 0.25rem; letter-spacing: 0.01em; }
+  h2 { font: 800 1.35rem/1.2 var(--display); margin: 2.25rem 0 0.75rem; letter-spacing: 0.02em; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.875rem; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem; }
+  .tile .n { font: 800 2.4rem/1 var(--display); color: var(--gold); font-variant-numeric: tabular-nums; }
+  .tile .k { margin-top: 0.35rem; }
+  .tile .s { color: var(--muted); font-size: 0.85rem; }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-variant-numeric: tabular-nums; }
+  th, td { padding: 0.5rem 0.75rem; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-weight: 700; color: var(--muted); font-size: 0.85rem; background: var(--panel); vertical-align: bottom; white-space: normal; }
+  tr:last-child td { border-bottom: 0; }
+  td.today { color: var(--cyan); }
+  form { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  input { flex: 1 1 18rem; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+          padding: 0.6rem 0.75rem; font: inherit; }
+  button { background: var(--gold); color: #1b1c2c; border: 0; border-radius: 8px; padding: 0.6rem 1.1rem;
+           font: 700 1rem var(--body); cursor: pointer; }
+  button.plain { background: none; color: var(--gold); padding: 0; text-decoration: underline; font-weight: 400; }
+  input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+  .error { color: var(--beat); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="../">BoxRun</a>
+    <span class="muted small" id="updated"></span>
+  </header>
+  <h1>Usage</h1>
+  <p class="muted">Short codes from api.boxrun.gg and the GameBanana page. Days are Pacific time. Our own PC and test
+    routes are left out.</p>
+
+  <section id="ask" hidden>
+    <h2>Stats key</h2>
+    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the Deadlock project. This browser keeps it.</p>
+    <form id="keyform">
+      <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
+      <button type="submit">Show stats</button>
+    </form>
+    <p class="error" id="keyerror" role="alert"></p>
+  </section>
+
+  <section id="stats" hidden>
+    <div class="tiles" id="tiles"></div>
+
+    <h2>Short codes per day</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Day</th><th>Codes shared</th><th>New versions</th><th>Ghosts uploaded</th><th>Code lookups</th>
+          <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th></tr></thead>
+        <tbody id="days"></tbody>
+      </table>
+    </div>
+    <p class="muted small">A lookup is an import, an update check or a ghost download. Players are counted by
+      scrambled internet address, so a household can count once and a player on two networks twice. A dash means
+      that day's lookup counts expired before they were saved.</p>
+
+    <h2>GameBanana</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Day</th><th>Downloads (total)</th><th>New downloads</th><th>Views (total)</th><th>Likes (total)</th></tr></thead>
+        <tbody id="gb"></tbody>
+      </table>
+    </div>
+    <p class="muted small">Totals as of the end of each day, read from GameBanana by the server. Today's row is live.</p>
+
+    <h2>Discord</h2>
+    <p>Discord doesn't share join numbers without a bot. Joins per invite are under the server's Server Settings &gt;
+      Invites, and member growth under Server Insights. A bot that reads them would need setting up from Marcus's
+      Discord account, so it's left for later.</p>
+
+    <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
+  </section>
+  <p class="error" id="error" role="alert"></p>
+</div>
+<script>
+  const API = "https://api.boxrun.gg/v1/stats";
+  const STORE = "boxrunStatsKey";
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => (n === null || n === undefined ? "–" : Number(n).toLocaleString("en-US"));
+  let timer = null;
+
+  function getKey() { try { return localStorage.getItem(STORE) || ""; } catch (e) { return sessionKey || ""; } }
+  let sessionKey = "";
+  function setKey(k) { sessionKey = k; try { k ? localStorage.setItem(STORE, k) : localStorage.removeItem(STORE); } catch (e) {} }
+
+  function showAsk(message) {
+    $("stats").hidden = true;
+    $("ask").hidden = false;
+    $("keyerror").textContent = message || "";
+    $("updated").textContent = "";
+    clearInterval(timer);
+    $("key").focus();
+  }
+
+  function tile(n, label, sub) {
+    return `<div class="tile"><div class="n">${fmt(n)}</div><div class="k">${label}</div><div class="s">${sub}</div></div>`;
+  }
+
+  function render(b) {
+    const days = b.days || [];
+    const today = days[days.length - 1] || {};
+    const total = (k) => days.reduce((s, d) => s + (d[k] || 0), 0);
+    const gb = b.gamebanana || {};
+    $("tiles").innerHTML =
+      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total") +
+      tile(today.players, "Players who loaded a code", "today, " + (today.day || "")) +
+      tile(total("codes"), "Codes shared", "since " + (days[0] ? days[0].day : "launch")) +
+      tile(today.sharers, "Players who shared", "today");
+    $("days").innerHTML = days.slice().reverse().map((d) => `<tr>
+      <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
+      <td>${fmt(d.codes)}</td><td>${fmt(d.versions)}</td><td>${fmt(d.ghosts)}</td><td>${fmt(d.lookups)}</td>
+      <td>${fmt(d.players)}</td><td>${fmt(d.sharers)}</td><td>${fmt(d.reports)}</td></tr>`).join("");
+    const g = b.gamebanana_days || [];
+    $("gb").innerHTML = g.map((d, i) => ({ d, prev: g[i - 1] })).reverse().map(({ d, prev }) => `<tr>
+      <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
+      <td>${fmt(d.downloads)}</td><td>${prev ? fmt(d.downloads - prev.downloads) : "–"}</td>
+      <td>${fmt(d.views)}</td><td>${fmt(d.likes)}</td></tr>`).join("");
+    $("updated").textContent = "Updated " + new Date(b.generated * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+
+  async function load() {
+    const key = getKey();
+    if (!key) return showAsk();
+    try {
+      const r = await fetch(API, { headers: { authorization: "Bearer " + key }, cache: "no-store" });
+      if (r.status === 404 || r.status === 401) { setKey(""); return showAsk("That key didn't work."); }
+      if (!r.ok) throw new Error("the server answered " + r.status);
+      render(await r.json());
+      $("error").textContent = "";
+      $("ask").hidden = true;
+      $("stats").hidden = false;
+      clearInterval(timer);
+      timer = setInterval(load, 60000);
+    } catch (e) {
+      $("error").textContent = "Couldn't load the stats (" + e.message + "). Trying again in a minute.";
+      clearInterval(timer);
+      timer = setInterval(load, 60000);
+    }
+  }
+
+  $("keyform").addEventListener("submit", (e) => { e.preventDefault(); setKey($("key").value.trim()); $("key").value = ""; load(); });
+  $("forget").addEventListener("click", () => { setKey(""); showAsk(); });
+  load();
+</script>
+</body>
+</html>
