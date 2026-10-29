@@ -16,29 +16,106 @@
     --night: #1b1c2c;
     --panel: #26273a;
     --line: #3a3b55;
+    --grid: #33344c;
     --ink: #ecebf5;
     --muted: #a9a6c4;
     --gold: #ffd23f;
+    --link: #ffd23f;
     --cyan: #62e4ef;
     --beat: #ff7d7d;
+    --live: #78e08f;
+    /* chart marks: one series is BoxRun gold; two series use a validated pair (gold, blue) */
+    --bar: #ffd23f;
+    --bar-on: #ffe383;
+    --wash: rgba(255, 210, 63, 0.1);
+    --s1: #b8860b;
+    --s2: #2a9cd6;
+    --spark: #77749a;
     --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
     --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
   }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --night: #f6f5fb;
+      --panel: #ffffff;
+      --line: #d8d6e6;
+      --grid: #e6e4f0;
+      --ink: #1e1d2b;
+      --muted: #5d5a78;
+      --link: #8a6400;
+      --live: #2f9e4f;
+      --bar: #a87900;
+      --bar-on: #c99a1e;
+      --wash: rgba(168, 121, 0, 0.1);
+      --s1: #a87900;
+      --s2: #0b7fbf;
+      --spark: #9d9ab8;
+    }
+  }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--night); color: var(--ink); font: 400 1rem/1.5 var(--body); }
-  a { color: var(--gold); }
-  .wrap { width: min(100% - 2rem, 62rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  a { color: var(--link); }
+  .wrap { width: min(100% - 2rem, 72rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
   .mark { font: 800 1.6rem/1 var(--display); color: var(--gold); text-decoration: none; letter-spacing: 0.02em; }
+  .live { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--muted); font-size: 0.875rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); }
+  .dot.stale { background: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .dot:not(.stale) { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.35; } }
+  }
   h1 { font: 800 2.2rem/1.1 var(--display); margin: 1.5rem 0 0.25rem; letter-spacing: 0.01em; }
   h2 { font: 800 1.35rem/1.2 var(--display); margin: 2.25rem 0 0.75rem; letter-spacing: 0.02em; }
   .muted { color: var(--muted); }
   .small { font-size: 0.875rem; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
   .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem; }
-  .tile .n { font: 800 2.4rem/1 var(--display); color: var(--gold); font-variant-numeric: tabular-nums; }
+  .tile .n { font: 800 2.4rem/1 var(--display); color: var(--ink); }
   .tile .k { margin-top: 0.35rem; }
   .tile .s { color: var(--muted); font-size: 0.85rem; }
+  .tile svg { display: block; width: 100%; height: 28px; margin-top: 0.5rem; overflow: visible; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; margin: 2rem 0 0.5rem; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: none; border: 0; color: var(--ink); font: 700 0.9rem var(--body); padding: 0.45rem 0.8rem; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--gold); color: #1b1c2c; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  @media (max-width: 720px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .grid.has-expanded .card:not(.expanded) { display: none; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 0.9rem 0.6rem; min-width: 0; position: relative; }
+  .card.expanded { grid-column: 1 / -1; }
+  .card .head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card h3 { font: 700 1rem/1.25 var(--body); margin: 0; }
+  .card .val { font: 800 1.5rem/1 var(--display); white-space: nowrap; }
+  .card .sub { color: var(--muted); font-size: 0.8rem; margin: 0.15rem 0 0.35rem; display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+  .legend { display: inline-flex; gap: 0.9rem; }
+  .key { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 0.3rem; }
+  .plot { position: relative; outline: none; touch-action: pan-y; cursor: zoom-in; }
+  .card.expanded .plot { cursor: default; }
+  .plot:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+  .plot svg { display: block; width: 100%; overflow: visible; }
+  .plot text { fill: var(--muted); font: 11px var(--body); font-variant-numeric: tabular-nums; }
+  .gl { stroke: var(--grid); stroke-width: 1; }
+  .base { stroke: var(--line); stroke-width: 1; }
+  .bar { fill: var(--bar); }
+  .bar.on { fill: var(--bar-on); }
+  .ln { fill: none; stroke: var(--bar); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ln.s1 { stroke: var(--s1); } .ln.s2 { stroke: var(--s2); }
+  .area { fill: var(--wash); }
+  .pt { fill: var(--bar); stroke: var(--panel); stroke-width: 2; }
+  .pt.s1 { fill: var(--s1); } .pt.s2 { fill: var(--s2); }
+  .xh { stroke: var(--muted); stroke-width: 1; }
+  .spk { fill: none; stroke: var(--spark); stroke-width: 1.5; stroke-linejoin: round; }
+  .spk-dot { stroke: var(--bar); stroke-width: 6; stroke-linecap: round; }
+  .tip { position: absolute; top: 0; pointer-events: none; background: var(--night); border: 1px solid var(--line); border-radius: 6px;
+         padding: 0.3rem 0.5rem; font-size: 0.8rem; white-space: nowrap; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .tip b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  .tip .t { color: var(--muted); }
+  .close { position: absolute; top: 0.6rem; right: 0.7rem; background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 0.15rem 0.55rem; cursor: pointer; font: 700 0.85rem var(--body); }
+  .card:not(.expanded) .close { display: none; }
+  .card.expanded .head { padding-right: 4.5rem; }
   .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
   table { border-collapse: collapse; width: 100%; min-width: 40rem; font-variant-numeric: tabular-nums; }
   th, td { padding: 0.5rem 0.75rem; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -49,9 +126,9 @@
   form { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
   input { flex: 1 1 18rem; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
           padding: 0.6rem 0.75rem; font: inherit; }
-  button { background: var(--gold); color: #1b1c2c; border: 0; border-radius: 8px; padding: 0.6rem 1.1rem;
+  button.go { background: var(--gold); color: #1b1c2c; border: 0; border-radius: 8px; padding: 0.6rem 1.1rem;
            font: 700 1rem var(--body); cursor: pointer; }
-  button.plain { background: none; color: var(--gold); padding: 0; text-decoration: underline; font-weight: 400; }
+  button.plain { background: none; border: 0; color: var(--link); padding: 0; text-decoration: underline; font: inherit; cursor: pointer; }
   input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
   .error { color: var(--beat); }
   [hidden] { display: none !important; }
@@ -61,10 +138,10 @@
 <div class="wrap">
   <header>
     <a class="mark" href="../">BoxRun</a>
-    <span class="muted small" id="updated"></span>
+    <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
   </header>
   <h1>Usage</h1>
-  <p class="muted">Short codes from api.boxrun.gg and the GameBanana page. Days are Pacific time. Our own PC and test
+  <p class="muted">Short codes from api.boxrun.gg and the GameBanana page. Times are Pacific. Our own PC and test
     routes are left out.</p>
 
   <section id="ask" hidden>
@@ -72,13 +149,27 @@
     <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the Deadlock project. This browser keeps it.</p>
     <form id="keyform">
       <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
-      <button type="submit">Show stats</button>
+      <button class="go" type="submit">Show stats</button>
     </form>
     <p class="error" id="keyerror" role="alert"></p>
   </section>
 
   <section id="stats" hidden>
     <div class="tiles" id="tiles"></div>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Range" id="range">
+        <button type="button" data-v="24h">24 h</button><button type="button" data-v="48h">48 h</button><button type="button" data-v="7d">7 d</button><button type="button" data-v="all">All</button>
+      </div>
+      <div class="seg" role="group" aria-label="Values" id="mode">
+        <button type="button" data-v="period">Per period</button><button type="button" data-v="total">Running total</button>
+      </div>
+    </div>
+    <p class="muted small" id="note"></p>
+    <div class="grid" id="grid"></div>
+    <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.
+      Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.
+      A lookup is an import, an update check or a ghost download.</p>
 
     <h2>Short codes per day</h2>
     <div class="scroll">
@@ -88,11 +179,9 @@
         <tbody id="days"></tbody>
       </table>
     </div>
-    <p class="muted small">A lookup is an import, an update check or a ghost download. Players are counted by
-      scrambled internet address, so a household can count once and a player on two networks twice. A dash means
-      that day's lookup counts expired before they were saved.</p>
+    <p class="muted small">A dash means that day's lookup counts expired before they were saved.</p>
 
-    <h2>GameBanana</h2>
+    <h2>GameBanana per day</h2>
     <div class="scroll">
       <table>
         <thead><tr><th>Day</th><th>Downloads (total)</th><th>New downloads</th><th>Views (total)</th><th>Likes (total)</th></tr></thead>
@@ -111,39 +200,439 @@
   <p class="error" id="error" role="alert"></p>
 </div>
 <script>
-  const API = "https://api.boxrun.gg/v1/stats";
-  const STORE = "boxrunStatsKey";
+  // Local preview (127.0.0.1/localhost) reads /v1/stats from a dev proxy; ?synth=1 asks it for test hours and samples.
+  const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  const API = LOCAL ? "/v1/stats" + (location.search.includes("synth=1") ? "?synth=1" : "") : "https://api.boxrun.gg/v1/stats";
+  const STORE = "boxrunStatsKey", PREFS = "boxrunStatsView";
+  const HOUR = 3600e3, DAY = 86400e3;
+  const TZ = "America/Los_Angeles";
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => (n === null || n === undefined ? "–" : Number(n).toLocaleString("en-US"));
-  let timer = null;
+  const compact = (n) => (n >= 1e6 ? +(n / 1e6).toFixed(1) + "M" : n >= 1000 ? +(n / 1000).toFixed(1) + "K" : String(n));
+  const NS = "http://www.w3.org/2000/svg";
+  let timer = null, tick = null, data = null, sessionKey = "";
+  let view = { range: "48h", mode: "period" };
+  try { Object.assign(view, JSON.parse(localStorage.getItem(PREFS) || "{}")); } catch (e) {}
+  if (!["24h", "48h", "7d", "all"].includes(view.range)) view.range = "48h";
+  if (!["period", "total"].includes(view.mode)) view.mode = "period";
 
-  function getKey() { try { return localStorage.getItem(STORE) || ""; } catch (e) { return sessionKey || ""; } }
-  let sessionKey = "";
+  function getKey() { try { return localStorage.getItem(STORE) || sessionKey; } catch (e) { return sessionKey; } }
   function setKey(k) { sessionKey = k; try { k ? localStorage.setItem(STORE, k) : localStorage.removeItem(STORE); } catch (e) {} }
 
-  function showAsk(message) {
-    $("stats").hidden = true;
-    $("ask").hidden = false;
-    $("keyerror").textContent = message || "";
-    $("updated").textContent = "";
-    clearInterval(timer);
-    $("key").focus();
+  // ---- Pacific time ----
+  const offFmt = new Intl.DateTimeFormat("en-US", { timeZone: TZ, timeZoneName: "shortOffset" });
+  function ptOffsetMin(ms) {
+    const s = offFmt.formatToParts(new Date(ms)).find((p) => p.type === "timeZoneName").value;
+    const m = s.match(/GMT([+-])(\d+)(?::(\d+))?/);
+    return m ? (m[1] === "-" ? -1 : 1) * (parseInt(m[2]) * 60 + parseInt(m[3] || 0)) : 0;
+  }
+  const dayStart = (day) => { const g = Date.parse(day + "T00:00:00Z"); return g - ptOffsetMin(g + 12 * HOUR) * 60000; };
+  const nextDay = (day) => new Date(Date.parse(day + "T12:00:00Z") + DAY).toISOString().slice(0, 10);
+  const addDays = (day, n) => new Date(Date.parse(day + "T12:00:00Z") + n * DAY).toISOString().slice(0, 10);
+  const toMs = (t) => (typeof t === "number" ? (t < 1e12 ? t * 1000 : t) : Date.parse(t));
+  const fHour = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric" });
+  const fDay = new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "short", day: "numeric" });
+  const fWhen = new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const ptHour = (ms) => parseInt(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(new Date(ms)));
+
+  // ---- the charts ----
+  const CHARTS = [
+    { id: "downloads", title: "GameBanana downloads", src: "gb", key: "downloads", unit: "downloads" },
+    { id: "players", title: "Players loading codes", src: "play", key: "players", unit: "players", distinct: true },
+    { id: "lookups", title: "Code lookups", src: "play", key: "lookups", unit: "lookups" },
+    { id: "codes", title: "Codes shared", src: "play", key: "codes", unit: "codes" },
+    { id: "ghosts", title: "Ghosts uploaded", src: "play", key: "ghosts", unit: "ghosts" },
+    { id: "versions", title: "New versions", src: "play", key: "versions", unit: "versions" },
+    { id: "sharers", title: "Players sharing", src: "play", key: "sharers", unit: "players", distinct: true },
+    { id: "views", title: "GameBanana views", src: "gb", key: "views", unit: "views" },
+    { id: "likes", title: "GameBanana likes and subscribers", src: "gbpair",
+      keys: [["likes", "Likes", "s1"], ["subscribers", "Subscribers", "s2"]] },
+    { id: "reports", title: "Reports", src: "play", key: "reports", unit: "reports" },
+  ];
+
+  // The time window and the buckets every chart shares for a range.
+  function frame(b) {
+    const now = (b.generated ? b.generated * 1000 : Date.now());
+    const hasHours = Array.isArray(b.hours) && b.hours.length > 0;
+    const hasSamples = Array.isArray(b.gamebanana_samples) && b.gamebanana_samples.length > 0;
+    const today = b.today || (b.days && b.days.length ? b.days[b.days.length - 1].day : new Date().toISOString().slice(0, 10));
+    const r = view.range;
+    if ((r === "24h" || r === "48h") && hasHours) {
+      const n = r === "24h" ? 24 : 48;
+      const end = Math.floor(now / HOUR) * HOUR + HOUR;
+      return { gran: "hour", start: end - n * HOUR, end, now, hasHours, hasSamples, gbLine: hasSamples ? "samples" : "days" };
+    }
+    const first = b.days && b.days.length ? b.days[0].day : today;
+    let from = r === "all" ? first : addDays(today, r === "7d" ? -6 : r === "48h" ? -1 : 0);
+    if (r === "all" && from > today) from = today;
+    return { gran: "day", start: dayStart(from), end: dayStart(nextDay(today)), now, hasHours, hasSamples,
+             gbLine: hasSamples && r !== "all" ? "samples" : "days" };
   }
 
-  function tile(n, label, sub) {
-    return `<div class="tile"><div class="n">${fmt(n)}</div><div class="k">${label}</div><div class="s">${sub}</div></div>`;
+  function playBuckets(b, f) {
+    const out = [];
+    if (f.gran === "hour") {
+      const rows = new Map((b.hours || []).map((h) => [Math.floor(toMs(h.t) / HOUR) * HOUR, h]));
+      for (let t = f.start; t < f.end; t += HOUR) out.push({ t0: t, t1: t + HOUR, row: rows.get(t) || null });
+    } else {
+      const rows = new Map((b.days || []).map((d) => [d.day, d]));
+      let day = new Date(f.start + 12 * HOUR).toISOString().slice(0, 10);
+      while (dayStart(day) < f.end) { out.push({ t0: dayStart(day), t1: dayStart(nextDay(day)), row: rows.get(day) || null, day }); day = nextDay(day); }
+    }
+    return out;
   }
 
-  function render(b) {
+  // GameBanana totals as points in time: the 15-minute samples, or end-of-day totals.
+  function gbPoints(b, f) {
+    if (f.gbLine === "samples") {
+      return b.gamebanana_samples.map((s) => ({ ...s, t: toMs(s.t) })).filter((p) => p.t <= f.now).sort((a, c) => a.t - c.t);
+    }
+    const pts = (b.gamebanana_days || []).map((d) => ({ ...d, t: Math.min(dayStart(nextDay(d.day)), f.now) }));
+    const gb = b.gamebanana || {};
+    if (!gb.error && gb.downloads !== undefined) pts.push({ ...gb, t: f.now });
+    return pts.sort((a, c) => a.t - c.t);
+  }
+  const valueAt = (pts, t, k) => { let v = null; for (const p of pts) { if (p.t <= t) v = p[k]; else break; } return v; };
+
+  // What one chart shows for the current range and mode.
+  function series(c, b, f) {
+    const per = view.mode === "period";
+    if (c.src === "play") {
+      const bk = playBuckets(b, f);
+      const vals = bk.map((x) => (x.row ? x.row[c.key] : f.gran === "hour" && f.hasHours ? 0 : null));
+      const sum = vals.reduce((s, v) => s + (v || 0), 0);
+      const unitWord = f.gran === "hour" ? "hour" : "day";
+      if (per) return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i] })),
+        sub: "Per " + unitWord, val: fmt(sum), valNote: c.distinct ? (f.gran === "hour" ? "hourly" : "daily") + " counts added up" : "in range", unit: c.unit };
+      let run = 0;
+      const pts = [{ t: f.start, v: 0 }].concat(bk.filter((x) => x.t0 < f.now).map((x, i) => { run += vals[i] || 0; return { t: Math.min(x.t1, f.now), v: run, t0: x.t0 }; }));
+      return { kind: "lines", lines: [{ pts, cls: "" }], sub: c.distinct ? "Running total of " + (f.gran === "hour" ? "hourly" : "daily") + " counts (a returning player counts again)" : "Running total",
+        val: fmt(run), valNote: "in range", unit: c.unit };
+    }
+    const pts = gbPoints(b, f);
+    const inWin = (p) => p.t >= f.start && p.t <= f.end;
+    if (c.src === "gbpair") {
+      const lines = c.keys.map(([k, name, cls]) => ({ name, cls, k, pts: edge(pts, f, k) }));
+      return { kind: "lines", lines, sub: "Totals", legend: c.keys, val: c.keys.map(([k, n]) => fmt(lastVal(pts, k)) + " " + n.toLowerCase()).join(" · "), unit: "" };
+    }
+    // New per period needs totals at both ends of each bucket: hourly buckets need the 15-minute samples.
+    if (per && !(f.gran === "hour" && f.gbLine === "days")) {
+      const bk = playBuckets(b, f).map((x) => ({ t0: x.t0, t1: x.t1 }));
+      const firstT = pts.length ? pts[0].t : Infinity;
+      const out = bk.map((x) => {
+        if (x.t0 >= f.now || (f.gbLine === "samples" && x.t1 <= firstT)) return { ...x, v: null };
+        const end = valueAt(pts, Math.min(x.t1, f.now), c.key);
+        if (end === null) return { ...x, v: null };
+        let s0 = valueAt(pts, x.t0, c.key);
+        if (s0 === null) s0 = f.gbLine === "days" ? 0 : pts[0][c.key];   // days: the first day counts from launch
+        return { ...x, v: Math.max(0, end - s0) };
+      });
+      const step = f.gran === "hour";
+      const total = out.reduce((s, x) => s + (x.v || 0), 0);
+      const since = f.gbLine === "samples" && pts.length && pts[0].t > f.start ? ", counted from " + fWhen.format(new Date(pts[0].t)) : "";
+      return { kind: "bars", buckets: out, sub: "New per " + (step ? "hour" : "day"), val: "+" + fmt(total), valNote: "in range" + since + ", " + fmt(lastVal(pts, c.key)) + " total", unit: c.unit };
+    }
+    return { kind: "lines", lines: [{ pts: edge(pts, f, c.key), cls: "" }], sub: "Total", val: fmt(lastVal(pts, c.key)), valNote: "", unit: c.unit };
+
+    function edge(all, f, k) {
+      const inside = all.filter(inWin).map((p) => ({ t: p.t, v: p[k] }));
+      const before = valueAt(all, f.start, k);
+      if (before !== null && (!inside.length || inside[0].t > f.start)) inside.unshift({ t: f.start, v: before });
+      return inside;
+    }
+  }
+  const lastVal = (pts, k) => (pts.length ? pts[pts.length - 1][k] : null);
+
+  function nice(max) {
+    if (!(max > 0)) return { top: 1, step: 1 };
+    const raw = max / 3, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p;
+    const step = Math.max(1, (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p);
+    return { top: Math.ceil(max / step) * step, step };
+  }
+
+  function el(name, attrs, parent) {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function xTicks(f) {
+    const ticks = [];
+    if (f.gran === "hour") {
+      const every = f.end - f.start <= 24 * HOUR ? 6 : 12;
+      for (let t = f.start; t <= f.end; t += HOUR) {
+        const h = ptHour(t);
+        if (h % every === 0) ticks.push({ t, label: h === 0 ? fDay.format(new Date(t)) : fHour.format(new Date(t)) });
+      }
+    } else {
+      const days = [];
+      for (let t = f.start; t < f.end; t = dayStart(nextDay(new Date(t + 12 * HOUR).toISOString().slice(0, 10)))) days.push(t);
+      const k = Math.ceil(days.length / 7);
+      days.forEach((t, i) => { if (i % k === 0) ticks.push({ t: t + 12 * HOUR, label: fDay.format(new Date(t + 12 * HOUR)), mid: true }); });
+    }
+    return ticks;
+  }
+
+  const charts = new Map();
+  let hoverT = null;
+
+  function buildCards() {
+    const grid = $("grid");
+    grid.textContent = "";
+    for (const c of CHARTS) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<div class="head"><h3></h3><span class="val"></span></div><div class="sub"><span class="what"></span><span class="legend"></span></div>
+        <div class="plot" tabindex="0" role="img"></div><button class="close" type="button">Close</button>`;
+      card.querySelector("h3").textContent = c.title;
+      const plot = card.querySelector(".plot");
+      const tip = document.createElement("div");
+      tip.className = "tip"; tip.hidden = true;
+      plot.appendChild(tip);
+      grid.appendChild(card);
+      const ch = { c, card, plot, tip, svg: null, s: null, geo: null };
+      charts.set(c.id, ch);
+      wire(ch);
+    }
+  }
+
+  function draw(ch, f) {
+    const { c, card, plot } = ch;
+    const s = series(c, data, f);
+    ch.s = s;
+    card.querySelector(".val").textContent = s.val;
+    card.querySelector(".what").textContent = s.sub + (s.valNote ? " · " + s.val + " " + s.valNote : "");
+    const lg = card.querySelector(".legend");
+    lg.textContent = "";
+    if (s.legend) for (const [, name, cls] of s.legend) {
+      const span = document.createElement("span");
+      const key = document.createElement("span");
+      key.className = "key"; key.style.background = `var(--${cls})`;
+      span.append(key, document.createTextNode(name));
+      lg.appendChild(span);
+    }
+    const W = Math.max(200, plot.clientWidth), H = card.classList.contains("expanded") ? 340 : 150;
+    const ml = 34, mr = 6, mt = 8, mb = 20, pw = W - ml - mr, ph = H - mt - mb;
+    let max = 0;
+    if (s.kind === "bars") s.buckets.forEach((x) => { if (x.v > max) max = x.v; });
+    else s.lines.forEach((l) => l.pts.forEach((p) => { if (p.v > max) max = p.v; }));
+    const y = nice(max);
+    const X = (t) => ml + ((t - f.start) / (f.end - f.start)) * pw;
+    const Y = (v) => mt + ph - (v / y.top) * ph;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, "aria-hidden": "true" });
+    for (let v = 0; v <= y.top + 1e-9; v += y.step) {
+      el("line", { class: v === 0 ? "base" : "gl", x1: ml, x2: W - mr, y1: Y(v), y2: Y(v) }, svg);
+      const tx = el("text", { x: ml - 6, y: Y(v) + 4, "text-anchor": "end" }, svg);
+      tx.textContent = compact(v);
+    }
+    for (const tk of xTicks(f)) {
+      const x = X(tk.t);
+      if (x < ml - 1 || x > W - mr + 1) continue;
+      const tx = el("text", { x, y: H - 4, "text-anchor": x < ml + 20 ? "start" : x > W - mr - 20 ? "end" : "middle" }, svg);
+      tx.textContent = tk.label;
+    }
+    const marks = el("g", {}, svg);
+    if (s.kind === "bars") {
+      const n = s.buckets.length, slot = pw / Math.max(1, n);
+      const bw = Math.max(1, Math.min(24, slot - 2));
+      ch.bars = s.buckets.map((x) => {
+        if (!x.v) return null;
+        const cx = X((x.t0 + x.t1) / 2), x0 = cx - bw / 2, y0 = Y(0), y1 = Y(x.v), r = Math.min(4, bw / 2, y0 - y1);
+        return el("path", { class: "bar", d: `M${x0},${y0}V${y1 + r}Q${x0},${y1} ${x0 + r},${y1}H${x0 + bw - r}Q${x0 + bw},${y1} ${x0 + bw},${y1 + r}V${y0}Z` }, marks);
+      });
+    } else {
+      for (const l of s.lines) {
+        if (!l.pts.length) continue;
+        const d = l.pts.map((p, i) => `${i ? "L" : "M"}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join("");
+        if (s.lines.length === 1) el("path", { class: "area", d: d + `L${X(l.pts[l.pts.length - 1].t).toFixed(1)},${Y(0)}L${X(l.pts[0].t).toFixed(1)},${Y(0)}Z` }, marks);
+        el("path", { class: "ln " + l.cls, d }, marks);
+        const last = l.pts[l.pts.length - 1];
+        el("circle", { class: "pt " + l.cls, cx: X(last.t), cy: Y(last.v), r: 4 }, marks);
+      }
+    }
+    ch.xh = el("line", { class: "xh", y1: mt, y2: mt + ph, visibility: "hidden" }, svg);
+    ch.dots = el("g", {}, svg);
+    ch.geo = { W, H, ml, mr, mt, ph, pw, X, Y, f };
+    if (ch.svg) ch.svg.replaceWith(svg); else plot.insertBefore(svg, ch.tip);
+    ch.svg = svg;
+    plot.setAttribute("aria-label", `${c.title}: ${s.sub.toLowerCase()}, ${s.val}${s.valNote ? " " + s.valNote : ""}`);
+    showAt(ch, hoverT);
+  }
+
+  // The value of one chart at time t: the bucket that holds it, or the last point at or before it.
+  function readAt(ch, t) {
+    const s = ch.s, f = ch.geo.f;
+    if (s.kind === "bars") {
+      const i = s.buckets.findIndex((x) => t >= x.t0 && t < x.t1);
+      if (i < 0) return null;
+      const x = s.buckets[i];
+      return { x: (x.t0 + x.t1) / 2, i, rows: [{ v: x.v, name: s.unit }], when: label(x.t0, x.t1, f) };
+    }
+    let at = null;
+    const rows = s.lines.map((l) => {
+      let p = null;
+      for (const q of l.pts) { if (q.t <= t) p = q; else break; }
+      if (p && (at === null || p.t > at)) at = p.t;
+      return { v: p ? p.v : null, name: l.name || s.unit, cls: l.cls };
+    });
+    if (at === null) return null;
+    return { x: at, rows, when: fWhen.format(new Date(at)) + " PT" };
+  }
+  function label(t0, t1, f) {
+    if (f.gran === "hour") return fDay.format(new Date(t0)) + ", " + fHour.format(new Date(t0)) + " to " + fHour.format(new Date(t1)) + " PT";
+    return fDay.format(new Date(t0 + 12 * HOUR)) + " (Pacific day)";
+  }
+
+  function showAt(ch, t) {
+    if (!ch.geo) return;
+    const { X, mt, W } = ch.geo;
+    (ch.bars || []).forEach((b) => b && b.classList.remove("on"));
+    ch.dots.textContent = "";
+    const r = t === null ? null : readAt(ch, t);
+    if (!r) { ch.xh.setAttribute("visibility", "hidden"); ch.tip.hidden = true; return; }
+    const x = X(r.x);
+    ch.xh.setAttribute("x1", x); ch.xh.setAttribute("x2", x); ch.xh.setAttribute("visibility", "visible");
+    if (ch.s.kind === "bars" && ch.bars && ch.bars[r.i]) ch.bars[r.i].classList.add("on");
+    if (ch.s.kind === "lines") ch.s.lines.forEach((l, k) => { const v = r.rows[k].v; if (v !== null) el("circle", { class: "pt " + l.cls, cx: x, cy: ch.geo.Y(v), r: 4 }, ch.dots); });
+    const tip = ch.tip;
+    tip.textContent = "";
+    for (const row of r.rows) {
+      const line = document.createElement("div");
+      if (row.cls) { const key = document.createElement("span"); key.className = "key"; key.style.background = `var(--${row.cls})`; line.appendChild(key); }
+      const b = document.createElement("b"); b.textContent = row.v === null ? "not saved" : fmt(row.v);
+      const name = row.name || "";
+      line.append(b, document.createTextNode(" " + (row.v === 1 && /s$/.test(name) ? name.slice(0, -1) : name)));
+      tip.appendChild(line);
+    }
+    const when = document.createElement("div"); when.className = "t"; when.textContent = r.when; tip.appendChild(when);
+    tip.hidden = false;
+    const tw = tip.offsetWidth, px = ch.plot.clientWidth * (x / W);
+    tip.style.left = Math.max(0, Math.min(ch.plot.clientWidth - tw, px + 10 + tw > ch.plot.clientWidth ? px - tw - 10 : px + 10)) + "px";
+    tip.style.top = mt + "px";
+  }
+
+  function setHover(t) { hoverT = t; for (const ch of charts.values()) showAt(ch, t); }
+
+  function tAt(ch, clientX) {
+    const rect = ch.svg.getBoundingClientRect(), { W, ml, pw, f } = ch.geo;
+    const xs = ((clientX - rect.left) / rect.width) * W;
+    return f.start + Math.max(0, Math.min(1, (xs - ml) / pw)) * (f.end - f.start) - 1;
+  }
+
+  function wire(ch) {
+    const plot = ch.plot;
+    let hold = null, touching = false, moved = false;
+    plot.addEventListener("pointermove", (e) => {
+      if (!ch.svg) return;
+      if (e.pointerType === "touch") { if (touching) setHover(tAt(ch, e.clientX)); return; }
+      setHover(tAt(ch, e.clientX));
+    });
+    plot.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") setHover(null); });
+    plot.addEventListener("pointerdown", (e) => {
+      moved = false;
+      if (e.pointerType !== "touch") return;
+      hold = setTimeout(() => { touching = true; plot.style.touchAction = "none"; setHover(tAt(ch, e.clientX)); }, 350);
+    });
+    const end = () => { clearTimeout(hold); if (touching) { touching = false; moved = true; plot.style.touchAction = ""; setHover(null); } };
+    plot.addEventListener("pointerup", end);
+    plot.addEventListener("pointercancel", end);
+    plot.addEventListener("contextmenu", (e) => { if (touching) e.preventDefault(); });
+    plot.addEventListener("click", () => { if (!moved && !ch.card.classList.contains("expanded")) expand(ch); });
+    plot.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); ch.card.classList.contains("expanded") ? collapse() : expand(ch); return; }
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const f = ch.geo.f, step = f.gran === "hour" ? HOUR : DAY;
+      const base = hoverT === null ? (e.key === "ArrowLeft" ? f.end - 1 : f.start) : hoverT + (e.key === "ArrowLeft" ? -step : step);
+      setHover(Math.max(f.start, Math.min(f.end - 1, base)));
+    });
+    plot.addEventListener("blur", () => setHover(null));
+    ch.card.querySelector(".close").addEventListener("click", collapse);
+  }
+
+  let expanded = null;
+  function expand(ch) {
+    collapse(true);
+    expanded = ch;
+    ch.card.classList.add("expanded");
+    $("grid").classList.add("has-expanded");
+    redraw();
+    ch.card.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+  function collapse(quiet) {
+    if (!expanded) return;
+    expanded.card.classList.remove("expanded");
+    $("grid").classList.remove("has-expanded");
+    const was = expanded; expanded = null;
+    if (quiet !== true) { redraw(); was.plot.focus({ preventScroll: true }); }
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") collapse(); });
+
+  function redraw() {
+    if (!data) return;
+    const f = frame(data);
+    for (const ch of charts.values()) draw(ch, f);
+    const notes = [];
+    if (!f.hasHours) notes.push("Hourly data starts when the server sends it. Until then the charts show days.");
+    else if (view.range === "7d") notes.push("Hourly rows cover the last 48 hours, so 7 d shows code activity per day.");
+    if (data.synthetic) notes.push("Test data (local preview).");
+    $("note").textContent = notes.join(" ");
+    for (const g of ["range", "mode"]) for (const btn of $(g).querySelectorAll("button")) btn.setAttribute("aria-pressed", String(btn.dataset.v === view[g]));
+  }
+
+  for (const g of ["range", "mode"]) $(g).addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    view[g] = btn.dataset.v;
+    try { localStorage.setItem(PREFS, JSON.stringify(view)); } catch (err) {}
+    redraw();
+  });
+  new ResizeObserver(() => { if (data) redraw(); }).observe($("grid"));
+
+  // ---- tiles ----
+  function spark(values) {
+    const v = values.filter((x) => x !== null && x !== undefined);
+    if (v.length < 2) return null;
+    const svg = el("svg", { viewBox: "0 0 100 28", preserveAspectRatio: "none", "aria-hidden": "true" });
+    const max = Math.max(...v, 1), min = Math.min(...v, 0);
+    const P = (x, i) => `${(i / (v.length - 1)) * 100},${26 - ((x - min) / (max - min || 1)) * 24}`;
+    el("polyline", { class: "spk", points: v.map(P).join(" "), "vector-effect": "non-scaling-stroke" }, svg);
+    const [lx, ly] = P(v[v.length - 1], v.length - 1).split(",");
+    // a zero-length round-capped line stays a circle when the sparkline stretches
+    el("line", { class: "spk-dot", x1: lx, y1: ly, x2: lx, y2: ly, "vector-effect": "non-scaling-stroke" }, svg);
+    return svg;
+  }
+  function tile(n, label, sub, sp) {
+    const d = document.createElement("div");
+    d.className = "tile";
+    d.innerHTML = '<div class="n"></div><div class="k"></div><div class="s"></div>';
+    d.querySelector(".n").textContent = fmt(n);
+    d.querySelector(".k").textContent = label;
+    d.querySelector(".s").textContent = sub;
+    const svg = sp && spark(sp);
+    if (svg) d.appendChild(svg);
+    return d;
+  }
+  function renderTiles(b) {
     const days = b.days || [];
     const today = days[days.length - 1] || {};
     const total = (k) => days.reduce((s, d) => s + (d[k] || 0), 0);
     const gb = b.gamebanana || {};
-    $("tiles").innerHTML =
-      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total") +
-      tile(today.players, "Players who loaded a code", "today, " + (today.day || "")) +
-      tile(total("codes"), "Codes shared", "since " + (days[0] ? days[0].day : "launch")) +
-      tile(today.sharers, "Players who shared", "today");
+    const now = b.generated ? b.generated * 1000 : Date.now();
+    const hours = (b.hours || []).filter((h) => toMs(h.t) > now - 24 * HOUR);
+    const hourly = (k) => (hours.length ? hours.map((h) => h[k]) : null);
+    const samples = (b.gamebanana_samples || []).filter((s) => toMs(s.t) > now - 24 * HOUR).map((s) => s.downloads);
+    const sfx = hours.length ? ", last 24 h per hour" : "";
+    $("tiles").replaceChildren(
+      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total" + (samples.length > 1 ? ", last 24 h" : ""), samples),
+      tile(today.players, "Players who loaded a code", "today, " + (today.day || "") + sfx, hourly("players")),
+      tile(total("codes"), "Codes shared", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
+      tile(today.sharers, "Players who shared", "today" + sfx, hourly("sharers")));
+  }
+
+  function renderTables(b) {
+    const days = b.days || [];
     $("days").innerHTML = days.slice().reverse().map((d) => `<tr>
       <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
       <td>${fmt(d.codes)}</td><td>${fmt(d.versions)}</td><td>${fmt(d.ghosts)}</td><td>${fmt(d.lookups)}</td>
@@ -153,8 +642,23 @@
       <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
       <td>${fmt(d.downloads)}</td><td>${prev ? fmt(d.downloads - prev.downloads) : "–"}</td>
       <td>${fmt(d.views)}</td><td>${fmt(d.likes)}</td></tr>`).join("");
-    $("updated").textContent = "Updated " + new Date(b.generated * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
+
+  // ---- loading and the live clock ----
+  function showAsk(message) {
+    $("stats").hidden = true;
+    $("live").hidden = true;
+    $("ask").hidden = false;
+    $("keyerror").textContent = message || "";
+    clearTimeout(timer);
+    $("key").focus();
+  }
+  function updatedText() {
+    if (!data) return;
+    const s = Math.max(0, Math.round((Date.now() - data.generated * 1000) / 1000));
+    $("updated").textContent = "Updated " + (s < 60 ? s + " s" : s < 3600 ? Math.floor(s / 60) + " min" : Math.floor(s / 3600) + " h") + " ago";
+  }
+  function schedule() { clearTimeout(timer); if (!document.hidden) timer = setTimeout(load, 60000); }
 
   async function load() {
     const key = getKey();
@@ -163,21 +667,32 @@
       const r = await fetch(API, { headers: { authorization: "Bearer " + key }, cache: "no-store" });
       if (r.status === 404 || r.status === 401) { setKey(""); return showAsk("That key didn't work."); }
       if (!r.ok) throw new Error("the server answered " + r.status);
-      render(await r.json());
-      $("error").textContent = "";
+      const first = !data;
+      data = await r.json();
       $("ask").hidden = true;
       $("stats").hidden = false;
-      clearInterval(timer);
-      timer = setInterval(load, 60000);
+      $("live").hidden = false;
+      if (first) buildCards();
+      renderTiles(data);
+      renderTables(data);
+      redraw();
+      $("error").textContent = "";
+      $("dot").classList.remove("stale");
+      updatedText();
     } catch (e) {
       $("error").textContent = "Couldn't load the stats (" + e.message + "). Trying again in a minute.";
-      clearInterval(timer);
-      timer = setInterval(load, 60000);
+      $("dot").classList.add("stale");
     }
+    schedule();
   }
 
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { clearTimeout(timer); return; }
+    if (!data || Date.now() - data.generated * 1000 > 60000) load(); else schedule();
+  });
+  tick = setInterval(updatedText, 1000);
   $("keyform").addEventListener("submit", (e) => { e.preventDefault(); setKey($("key").value.trim()); $("key").value = ""; load(); });
-  $("forget").addEventListener("click", () => { setKey(""); showAsk(); });
+  $("forget").addEventListener("click", () => { setKey(""); data = null; charts.clear(); showAsk(); });
   load();
 </script>
 </body>
