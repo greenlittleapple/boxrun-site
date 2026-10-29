@@ -219,7 +219,7 @@
     <h2>Short codes per day</h2>
     <div class="scroll">
       <table>
-        <thead><tr><th>Day</th><th>Codes shared</th><th>New versions</th><th>Ghosts uploaded</th><th>Code lookups</th>
+        <thead><tr><th>Day</th><th>Codes shared</th><th>Route updates</th><th>Ghosts uploaded</th><th>Code lookups</th>
           <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th></tr></thead>
         <tbody id="days"></tbody>
       </table>
@@ -300,8 +300,8 @@
               total: "Codes shared since launch, a plain sum. It ends on the Codes shared since launch tile." } },
     { id: "ghosts", title: "Ghosts uploaded", src: "play", key: "ghosts", unit: "ghosts",
       note: { period: "Ghosts uploaded in each {h}, a plain count.", total: "Ghosts uploaded since launch, a plain sum. No tile." } },
-    { id: "versions", title: "New versions", src: "play", key: "versions", unit: "versions",
-      note: { period: "New versions of shared routes in each {h}, a plain count.", total: "New versions since launch, a plain sum. No tile." } },
+    { id: "versions", title: "Route updates", src: "play", key: "versions", unit: "updates",
+      note: { period: "Shared routes updated by their makers in each {h} (a new version under the same code), a plain count.", total: "Route updates since launch, a plain sum. No tile." } },
     { id: "sharers", title: "Players who shared", src: "play", key: "sharers", newKey: "new_sharers", totalKey: "sharers_total", unit: "players",
       names: ["active (shared a code)", "first time"],
       note: { period: "Gold: players who shared a code in that {h}. Dark: players sharing for the first time. A player who shares in several {h}s counts in each.",
@@ -412,7 +412,7 @@
       const step = f.gran === "hour";
       const total = out.reduce((s, x) => s + (x.v || 0), 0);
       const since = f.gbLine === "samples" && pts.length && pts[0].t > f.start ? ", counted from " + fWhen.format(new Date(pts[0].t)) : "";
-      return { kind: "bars", buckets: out, sub: "New per " + (step ? "hour" : "day"), val: "+" + fmt(total), valNote: "in range" + since + ", " + fmt(lastVal(pts, c.key)) + " total", unit: c.unit };
+      return { kind: "bars", buckets: out, nullText: "no sample yet", sub: "New per " + (step ? "hour" : "day"), val: "+" + fmt(total), valNote: "in range" + since + ", " + fmt(lastVal(pts, c.key)) + " total", unit: c.unit };
     }
     return { kind: "lines", lines: [{ pts: edge(pts, f, c.key), cls: "" }], sub: "Total", val: fmt(lastVal(pts, c.key)), valNote: "", unit: c.unit };
 
@@ -607,9 +607,9 @@
     for (const row of r.rows) {
       const line = document.createElement("div");
       if (row.cls) { const key = document.createElement("span"); key.className = "key" + (row.box ? " box" : ""); key.style.background = `var(--${row.cls})`; line.appendChild(key); }
-      const b = document.createElement("b"); b.textContent = row.v === null ? "not saved" : fmt(row.v);
+      const b = document.createElement("b"); b.textContent = row.v === null ? (ch.s.nullText || "not saved") : fmt(row.v);
       const name = row.name || "";
-      line.append(b, document.createTextNode(" " + (row.v === 1 && /s$/.test(name) ? name.slice(0, -1) : name)));
+      line.append(b, document.createTextNode(row.v === null ? "" : " " + (row.v === 1 && /s$/.test(name) ? name.slice(0, -1) : name)));
       tip.appendChild(line);
     }
     const when = document.createElement("div"); when.className = "t"; when.textContent = r.when; tip.appendChild(when);
