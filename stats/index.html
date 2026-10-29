@@ -732,12 +732,20 @@
     const samples = (b.gamebanana_samples || []).filter((s) => toMs(s.t) > now - 24 * HOUR).map((s) => s.downloads);
     const sfx = hours.length ? ", last 24 h per hour" : "";
     const once = (k) => (Number.isFinite(b[k]) ? "each counted once" : "the server doesn't send this yet");
+    // The running total since launch over the last 24 hours, as the Players chart draws it: start at the total minus
+    // the first-time players in those hours, add each hour's first-timers, end on the total.
+    const runSpark = (totalKey, newKey) => {
+      if (!Number.isFinite(b[totalKey]) || !hours.length || !hours.every((h) => Number.isFinite(h[newKey]))) return null;
+      let run = b[totalKey] - hours.reduce((s, h) => s + h[newKey], 0);
+      return [run].concat(hours.map((h) => (run += h[newKey])));
+    };
+    const runSfx = (k) => (runSpark(k, k === "players_total" ? "new_players" : "new_sharers") ? ", last 24 h" : "");
     $("tiles").replaceChildren(
       tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total" + (samples.length > 1 ? ", last 24 h" : ""), samples),
-      tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" : once("players_total"), null),
+      tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
       tile(today.players, "Players active today", "loaded a code, " + (today.day || "") + sfx, hourly("players")),
       tile(total("codes"), "Codes shared since launch", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
-      tile(Number.isFinite(b.sharers_total) ? b.sharers_total : null, "Players who shared since launch", once("sharers_total"), null),
+      tile(Number.isFinite(b.sharers_total) ? b.sharers_total : null, "Players who shared since launch", once("sharers_total") + runSfx("sharers_total"), runSpark("sharers_total", "new_sharers")),
       tile(today.sharers, "Players who shared today", (today.day || "") + sfx, hourly("sharers")));
   }
 
