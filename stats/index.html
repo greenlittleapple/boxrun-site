@@ -27,6 +27,7 @@
     /* chart marks: one series is BoxRun gold; two series use a validated pair (gold, blue) */
     --bar: #ffd23f;
     --bar-on: #ffe383;
+    --bar2: #a8790a;
     --wash: rgba(255, 210, 63, 0.1);
     --s1: #b8860b;
     --s2: #2a9cd6;
@@ -47,6 +48,7 @@
       --live: #2f9e4f;
       --bar: #a87900;
       --bar-on: #c99a1e;
+      --bar2: #5e4300;
       --wash: rgba(168, 121, 0, 0.1);
       --s1: #a87900;
       --s2: #0b7fbf;
@@ -89,6 +91,8 @@
   .card .head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
   .card h3 { font: 700 1rem/1.25 var(--body); margin: 0; }
   .card .val { font: 800 1.5rem/1 var(--display); white-space: nowrap; }
+  .card .foot { color: var(--muted); font-size: 0.8rem; margin: 0.35rem 0 0; }
+  .key.box { height: 8px; width: 8px; border-radius: 2px; }
   .card .sub { color: var(--muted); font-size: 0.8rem; margin: 0.15rem 0 0.35rem; display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
   .legend { display: inline-flex; gap: 0.9rem; }
   .key { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 0.3rem; }
@@ -102,6 +106,7 @@
   .base { stroke: var(--line); stroke-width: 1; }
   .bar { fill: var(--bar); }
   .bar.on { fill: var(--bar-on); }
+  .bar2 { fill: var(--bar2); pointer-events: none; }
   .ln { fill: none; stroke: var(--bar); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
   .ln.s1 { stroke: var(--s1); } .ln.s2 { stroke: var(--s2); }
   .area { fill: var(--wash); }
@@ -169,8 +174,7 @@
     <p class="muted small" id="note"></p>
     <div class="grid" id="grid"></div>
     <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.
-      Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.
-      A lookup is an import, an update check or a ghost download.</p>
+      Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
 
     <h2>Short codes per day</h2>
     <div class="scroll">
@@ -237,18 +241,38 @@
   const ptHour = (ms) => parseInt(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(new Date(ms)));
 
   // ---- the charts ----
+  // note: one plain line under the chart per mode; {h} is "hour" or "day".
+  // Players and sharers are distinct counts: a running total adds up first-time counts (newKey) and ends on the
+  // server's distinct total (totalKey), which is also a tile. Adding up active counts would count a returning player again.
   const CHARTS = [
-    { id: "downloads", title: "GameBanana downloads", src: "gb", key: "downloads", unit: "downloads" },
-    { id: "players", title: "Players loading codes", src: "play", key: "players", unit: "players", distinct: true, totalKey: "players_total" },
-    { id: "lookups", title: "Code lookups", src: "play", key: "lookups", unit: "lookups" },
-    { id: "codes", title: "Codes shared", src: "play", key: "codes", unit: "codes" },
-    { id: "ghosts", title: "Ghosts uploaded", src: "play", key: "ghosts", unit: "ghosts" },
-    { id: "versions", title: "New versions", src: "play", key: "versions", unit: "versions" },
-    { id: "sharers", title: "Players sharing", src: "play", key: "sharers", unit: "players", distinct: true, totalKey: "sharers_total" },
-    { id: "views", title: "GameBanana views", src: "gb", key: "views", unit: "views" },
+    { id: "downloads", title: "GameBanana downloads", src: "gb", key: "downloads", unit: "downloads",
+      note: { period: "New downloads in each {h}, from the change in GameBanana's download count.",
+              total: "GameBanana's download count. It ends on the GameBanana downloads tile." } },
+    { id: "players", title: "Players", src: "play", key: "players", newKey: "new_players", totalKey: "players_total", unit: "players",
+      names: ["active (loaded a code)", "first time"],
+      note: { period: "Gold: players who loaded a code in that {h}. Dark: players loading one for the first time. A player active in several {h}s counts in each.",
+              total: "Distinct players since launch, adding up first-time players. It ends on the Players since launch tile." } },
+    { id: "lookups", title: "Code lookups", src: "play", key: "lookups", unit: "lookups",
+      note: { period: "Imports, update checks and ghost downloads in each {h}, a plain count.",
+              total: "All lookups since launch, a plain sum. No tile." } },
+    { id: "codes", title: "Codes shared", src: "play", key: "codes", unit: "codes",
+      note: { period: "Codes shared in each {h}, a plain count.",
+              total: "Codes shared since launch, a plain sum. It ends on the Codes shared since launch tile." } },
+    { id: "ghosts", title: "Ghosts uploaded", src: "play", key: "ghosts", unit: "ghosts",
+      note: { period: "Ghosts uploaded in each {h}, a plain count.", total: "Ghosts uploaded since launch, a plain sum. No tile." } },
+    { id: "versions", title: "New versions", src: "play", key: "versions", unit: "versions",
+      note: { period: "New versions of shared routes in each {h}, a plain count.", total: "New versions since launch, a plain sum. No tile." } },
+    { id: "sharers", title: "Players who shared", src: "play", key: "sharers", newKey: "new_sharers", totalKey: "sharers_total", unit: "players",
+      names: ["active (shared a code)", "first time"],
+      note: { period: "Gold: players who shared a code in that {h}. Dark: players sharing for the first time. A player who shares in several {h}s counts in each.",
+              total: "Distinct players who shared since launch, adding up first-time sharers. It ends on the Players who shared since launch tile." } },
+    { id: "views", title: "GameBanana views", src: "gb", key: "views", unit: "views",
+      note: { period: "New views in each {h}, from the change in GameBanana's view count.", total: "GameBanana's view count. No tile." } },
     { id: "likes", title: "GameBanana likes and subscribers", src: "gbpair",
-      keys: [["likes", "Likes", "s1"], ["subscribers", "Subscribers", "s2"]] },
-    { id: "reports", title: "Reports", src: "play", key: "reports", unit: "reports" },
+      keys: [["likes", "Likes", "s1"], ["subscribers", "Subscribers", "s2"]],
+      note: { period: "GameBanana's like and subscriber counts. No tile.", total: "GameBanana's like and subscriber counts. No tile." } },
+    { id: "reports", title: "Reports", src: "play", key: "reports", unit: "reports",
+      note: { period: "Reports on routes in each {h}, a plain count.", total: "Reports since launch, a plain sum. No tile." } },
   ];
 
   // The time window and the buckets every chart shares for a range.
@@ -300,20 +324,32 @@
     const per = view.mode === "period";
     if (c.src === "play") {
       const bk = playBuckets(b, f);
-      const vals = bk.map((x) => (x.row ? x.row[c.key] : f.gran === "hour" && f.hasHours ? 0 : null));
-      const sum = vals.reduce((s, v) => s + (v || 0), 0);
+      const pick = (k) => bk.map((x) => (x.row ? (Number.isFinite(x.row[k]) ? x.row[k] : null) : f.gran === "hour" && f.hasHours ? 0 : null));
+      const add = (a) => a.reduce((s, v) => s + (v || 0), 0);
+      const vals = pick(c.key);
       const unitWord = f.gran === "hour" ? "hour" : "day";
-      if (per) return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i] })),
-        sub: "Per " + unitWord, val: fmt(sum), valNote: c.distinct ? (f.gran === "hour" ? "hourly" : "daily") + " counts added up" : "in range", unit: c.unit };
-      // Adding up hourly distinct counts counts a returning player again, so a distinct running total comes from the
-      // server's own total. It's one number (no series over time), so the chart shows it as a figure.
-      if (c.totalKey && Number.isFinite(b[c.totalKey])) return { kind: "figure", val: fmt(b[c.totalKey]), valNote: "",
-        sub: "Running total: distinct " + c.unit + " since launch", unit: c.unit,
-        lines2: [fmt(b[c.totalKey]) + " " + c.unit + " since launch, each counted once.", "The server sends this as one number, so there's no line over time."] };
-      let run = 0;
-      const pts = [{ t: f.start, v: 0 }].concat(bk.filter((x) => x.t0 < f.now).map((x, i) => { run += vals[i] || 0; return { t: Math.min(x.t1, f.now), v: run, t0: x.t0 }; }));
-      return { kind: "lines", lines: [{ pts, cls: "" }], sub: c.distinct ? "Running total of " + (f.gran === "hour" ? "hourly" : "daily") + " counts (a returning player counts again)" : "Running total",
-        val: fmt(run), valNote: "in range", unit: c.unit };
+      const hasNew = !!c.newKey && bk.some((x) => x.row && Number.isFinite(x.row[c.newKey]));
+      const news = hasNew ? pick(c.newKey) : null;
+      if (per) {
+        if (c.newKey) return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i], v2: news ? news[i] : undefined })),
+          names: hasNew ? c.names : [c.names[0]], legend: hasNew ? [[null, c.names[0], "bar"], [null, c.names[1], "bar2"]] : null,
+          sub: "Per " + unitWord, val: hasNew ? fmt(add(news)) : "", valNote: hasNew ? "first time in range" : "", unit: c.unit };
+        return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i] })),
+          sub: "Per " + unitWord, val: fmt(add(vals)), valNote: "in range", unit: c.unit };
+      }
+      // Running total since launch: it rises through the range and ends on the since-launch total (the tile).
+      let total, steps;
+      if (c.newKey) {
+        if (!hasNew || !Number.isFinite(b[c.totalKey])) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.unit,
+          lines2: ["Running total appears when the server sends first-time counts.", "Adding up active " + c.unit + " would count a returning player again."] };
+        total = b[c.totalKey]; steps = news;
+      } else {
+        total = add((b.days || []).map((d) => d[c.key])); steps = vals;
+      }
+      const past = bk.filter((x) => x.t0 < f.now);
+      let run = total - add(steps.slice(0, past.length));
+      const pts = [{ t: f.start, v: run }].concat(past.map((x, i) => { run += steps[i] || 0; return { t: Math.min(x.t1, f.now), v: run }; }));
+      return { kind: "lines", lines: [{ pts, cls: "" }], sub: "Running total since launch", val: fmt(total), valNote: "", unit: c.unit, end: total };
     }
     const pts = gbPoints(b, f);
     const inWin = (p) => p.t >= f.start && p.t <= f.end;
@@ -390,7 +426,7 @@
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `<div class="head"><h3></h3><span class="val"></span></div><div class="sub"><span class="what"></span><span class="legend"></span></div>
-        <div class="plot" tabindex="0" role="img"></div><button class="close" type="button">Close</button>`;
+        <div class="plot" tabindex="0" role="img"></div><p class="foot"></p><button class="close" type="button">Close</button>`;
       card.querySelector("h3").textContent = c.title;
       const plot = card.querySelector(".plot");
       const tip = document.createElement("div");
@@ -409,13 +445,15 @@
     ch.s = s;
     card.querySelector(".val").textContent = s.val;
     card.querySelector(".what").textContent = s.sub + (s.valNote ? " · " + s.val + " " + s.valNote : "");
+    const h = f.gran === "hour" ? "hour" : "day";
+    card.querySelector(".foot").textContent = (c.note[view.mode] || "").replaceAll("{h}", h);
     const lg = card.querySelector(".legend");
     lg.textContent = "";
     if (s.legend) for (const [, name, cls] of s.legend) {
       const span = document.createElement("span");
       const key = document.createElement("span");
-      key.className = "key"; key.style.background = `var(--${cls})`;
-      span.append(key, document.createTextNode(name));
+      key.className = "key" + (cls.startsWith("bar") ? " box" : ""); key.style.background = `var(--${cls})`;
+      span.append(key, document.createTextNode(name.charAt(0).toUpperCase() + name.slice(1)));
       lg.appendChild(span);
     }
     const W = Math.max(200, plot.clientWidth), H = card.classList.contains("expanded") ? 340 : 150;
@@ -456,10 +494,16 @@
     if (s.kind === "bars") {
       const n = s.buckets.length, slot = pw / Math.max(1, n);
       const bw = Math.max(1, Math.min(24, slot - 2));
+      const shape = (cx, v) => {
+        const x0 = cx - bw / 2, y0 = Y(0), y1 = Y(v), r = Math.min(4, bw / 2, y0 - y1);
+        return `M${x0},${y0}V${y1 + r}Q${x0},${y1} ${x0 + r},${y1}H${x0 + bw - r}Q${x0 + bw},${y1} ${x0 + bw},${y1 + r}V${y0}Z`;
+      };
       ch.bars = s.buckets.map((x) => {
         if (!x.v) return null;
-        const cx = X((x.t0 + x.t1) / 2), x0 = cx - bw / 2, y0 = Y(0), y1 = Y(x.v), r = Math.min(4, bw / 2, y0 - y1);
-        return el("path", { class: "bar", d: `M${x0},${y0}V${y1 + r}Q${x0},${y1} ${x0 + r},${y1}H${x0 + bw - r}Q${x0 + bw},${y1} ${x0 + bw},${y1 + r}V${y0}Z` }, marks);
+        const cx = X((x.t0 + x.t1) / 2);
+        const bar = el("path", { class: "bar", d: shape(cx, x.v) }, marks);
+        if (x.v2 > 0) el("path", { class: "bar2", d: shape(cx, Math.min(x.v2, x.v)) }, marks);   // first time is part of active
+        return bar;
       });
     } else {
       for (const l of s.lines) {
@@ -488,7 +532,9 @@
       const i = s.buckets.findIndex((x) => t >= x.t0 && t < x.t1);
       if (i < 0) return null;
       const x = s.buckets[i];
-      return { x: (x.t0 + x.t1) / 2, i, rows: [{ v: x.v, name: s.unit }], when: label(x.t0, x.t1, f) };
+      const rows = s.names ? [{ v: x.v, name: s.unit + " " + s.names[0], cls: "bar", box: true }] : [{ v: x.v, name: s.unit }];
+      if (s.names && s.names[1] && x.v2 !== undefined) rows.push({ v: x.v2, name: s.names[1], cls: "bar2", box: true });
+      return { x: (x.t0 + x.t1) / 2, i, rows, when: label(x.t0, x.t1, f) };
     }
     let at = null;
     const rows = s.lines.map((l) => {
@@ -520,7 +566,7 @@
     tip.textContent = "";
     for (const row of r.rows) {
       const line = document.createElement("div");
-      if (row.cls) { const key = document.createElement("span"); key.className = "key"; key.style.background = `var(--${row.cls})`; line.appendChild(key); }
+      if (row.cls) { const key = document.createElement("span"); key.className = "key" + (row.box ? " box" : ""); key.style.background = `var(--${row.cls})`; line.appendChild(key); }
       const b = document.createElement("b"); b.textContent = row.v === null ? "not saved" : fmt(row.v);
       const name = row.name || "";
       line.append(b, document.createTextNode(" " + (row.v === 1 && /s$/.test(name) ? name.slice(0, -1) : name)));
@@ -645,12 +691,14 @@
     const hourly = (k) => (hours.length ? hours.map((h) => h[k]) : null);
     const samples = (b.gamebanana_samples || []).filter((s) => toMs(s.t) > now - 24 * HOUR).map((s) => s.downloads);
     const sfx = hours.length ? ", last 24 h per hour" : "";
+    const once = (k) => (Number.isFinite(b[k]) ? "each counted once" : "the server doesn't send this yet");
     $("tiles").replaceChildren(
       tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total" + (samples.length > 1 ? ", last 24 h" : ""), samples),
-      tile(today.players, "Players who loaded a code", "today, " + (today.day || "") + sfx, hourly("players")),
-      ...(Number.isFinite(b.players_total) ? [tile(b.players_total, "Players since launch", "each counted once", null)] : []),
-      tile(total("codes"), "Codes shared", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
-      tile(today.sharers, "Players who shared", "today" + sfx, hourly("sharers")));
+      tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", once("players_total"), null),
+      tile(today.players, "Players active today", "loaded a code, " + (today.day || "") + sfx, hourly("players")),
+      tile(total("codes"), "Codes shared since launch", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
+      tile(Number.isFinite(b.sharers_total) ? b.sharers_total : null, "Players who shared since launch", once("sharers_total"), null),
+      tile(today.sharers, "Players who shared today", (today.day || "") + sfx, hourly("sharers")));
   }
 
   function renderTables(b) {
