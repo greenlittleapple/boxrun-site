@@ -137,6 +137,24 @@
   button.plain { background: none; border: 0; color: var(--link); padding: 0; text-decoration: underline; font: inherit; cursor: pointer; }
   input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
   .error { color: var(--beat); }
+  .rcontrols { margin-top: 0.5rem; }
+  .rcontrols input { flex: 1 1 16rem; max-width: 24rem; }
+  table.routes { min-width: 64rem; }
+  table.routes td, table.routes th { vertical-align: top; text-align: left; }
+  table.routes td.num, table.routes th.num { text-align: right; }
+  tr.desc .dtext { position: sticky; left: 0.75rem; max-width: min(40rem, calc(100vw - 4.5rem)); white-space: normal; }
+  table.routes th button { background: none; border: 0; color: inherit; font: inherit; padding: 0; cursor: pointer; text-align: inherit; }
+  table.routes th[aria-sort="ascending"] button::after { content: " \2191"; }
+  table.routes th[aria-sort="descending"] button::after { content: " \2193"; }
+  table.routes td.name { white-space: normal; min-width: 12rem; max-width: 18rem; }
+  .rname { background: none; border: 0; padding: 0; color: var(--ink); font: 700 1rem var(--body); text-align: left; cursor: pointer; }
+  .rname::before { content: "\25B8  "; color: var(--muted); }
+  .rname[aria-expanded="true"]::before { content: "\25BE  "; }
+  .flag { display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--line); color: var(--muted); }
+  .flag.held { border-color: var(--beat); color: var(--beat); }
+  .copy { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 0.1rem 0.45rem; font: 700 0.75rem var(--body); cursor: pointer; margin-right: 0.4rem; }
+  tr.desc td { text-align: left; white-space: normal; color: var(--muted); background: var(--night); }
+  .num { font-variant-numeric: tabular-nums; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -175,6 +193,25 @@
     <div class="grid" id="grid"></div>
     <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.
       Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
+
+    <h2>Routes</h2>
+    <p class="muted small">Every route shared as a short code. Players = distinct players whose game loaded the code, counted since Oct 28 evening.</p>
+    <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
+    <div id="routes-box" hidden>
+      <div class="controls rcontrols">
+        <input id="rsearch" type="search" placeholder="Search name, creator or code" aria-label="Search routes" autocomplete="off">
+        <div class="seg" role="group" aria-label="Which routes" id="rfilter">
+          <button type="button" data-v="all">All</button><button type="button" data-v="players">Players' routes</button><button type="button" data-v="ours">Samples</button><button type="button" data-v="held">Held</button>
+        </div>
+      </div>
+      <p class="small" id="rcount"></p>
+      <div class="scroll">
+        <table class="routes">
+          <thead><tr id="rhead"></tr></thead>
+          <tbody id="rbody"></tbody>
+        </table>
+      </div>
+    </div>
 
     <h2>Short codes per day</h2>
     <div class="scroll">
@@ -714,6 +751,136 @@
       <td>${fmt(d.views)}</td><td>${fmt(d.likes)}</td></tr>`).join("");
   }
 
+  // ---- routes: Marcus's list of every shared route (private: behind the key, noindex) ----
+  // Route names, creators and descriptions are players' text: they go in with textContent only.
+  const RCOLS = [
+    { k: "name", label: "Route", get: (r) => (r.name || "").toLowerCase() },
+    { k: "creator", label: "Creator", get: (r) => (r.creator || "").toLowerCase() },
+    { k: "code", label: "Code", get: (r) => r.code || "" },
+    { k: "players", label: "Players", get: (r) => num(r.players), n: true },
+    { k: "checkpoints", label: "Checkpoints / boxes", get: (r) => num(r.checkpoints), n: true },
+    { k: "hero", label: "Hero lock", get: (r) => heroName(r.hero) },
+    { k: "tiers", label: "Tiers (s)", get: (r) => tierList(r.tiers)[0] ?? Infinity, n: true },
+    { k: "ghost", label: "Ghost", get: (r) => (r.ghost ? 1 : 0), n: true },
+    { k: "versions", label: "Versions", get: (r) => num(r.versions), n: true },
+    { k: "published", label: "First shared", get: (r) => toMs(r.published) || 0, n: true },
+    { k: "updated", label: "Last updated", get: (r) => toMs(r.updated) || 0, n: true },
+    { k: "reports", label: "Reports", get: (r) => num(r.reports), n: true },
+    { k: "status", label: "Status", get: (r) => (r.status === "held" ? 0 : 1), n: true },
+  ];
+  const rstate = { sort: "published", dir: -1, filter: "all", q: "", open: new Set() };
+  try { const saved = JSON.parse(localStorage.getItem("boxrunStatsRoutes") || "{}"); if (saved.filter) rstate.filter = saved.filter; } catch (e) {}
+  const num = (v) => (Number.isFinite(+v) && v !== null && v !== "" ? +v : -1);
+  const heroName = (h) => (!h ? "Any" : String(h).replace(/^hero_/, "").replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()));
+  function tierList(tiers) {
+    if (Array.isArray(tiers)) return tiers.filter((x) => Number.isFinite(+x)).map(Number);
+    if (tiers && typeof tiers === "object") return ["eternus", "oracle", "initiate"].map((k) => tiers[k]).filter((x) => Number.isFinite(+x)).map(Number);
+    return [];
+  }
+  const secs = (x) => String(+x.toFixed(3));
+  const when = (v) => { const ms = toMs(v); return ms ? fWhen.format(new Date(ms)) : "–"; };
+  const CODE = /^BR-[A-Z0-9]{6}$/;
+
+  function headRoutes() {
+    const tr = $("rhead");
+    tr.textContent = "";
+    for (const c of RCOLS) {
+      const th = document.createElement("th");
+      th.scope = "col";
+      if (c.n && !["published", "updated", "status", "ghost"].includes(c.k)) th.className = "num";
+      if (rstate.sort === c.k) th.setAttribute("aria-sort", rstate.dir > 0 ? "ascending" : "descending");
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c.label;
+      b.addEventListener("click", () => {
+        if (rstate.sort === c.k) rstate.dir = -rstate.dir; else { rstate.sort = c.k; rstate.dir = c.n ? -1 : 1; }
+        renderRoutes(data);
+      });
+      th.appendChild(b);
+      tr.appendChild(th);
+    }
+  }
+
+  function renderRoutes(b) {
+    const all = Array.isArray(b.routes) ? b.routes : null;
+    $("routes-missing").hidden = !!all;
+    $("routes-box").hidden = !all;
+    if (!all) return;
+    for (const btn of $("rfilter").querySelectorAll("button")) btn.setAttribute("aria-pressed", String(btn.dataset.v === rstate.filter));
+    headRoutes();
+    const q = rstate.q.trim().toLowerCase();
+    const rows = all.filter((r) => {
+      if (rstate.filter === "ours" && !r.ours) return false;
+      if (rstate.filter === "players" && r.ours) return false;
+      if (rstate.filter === "held" && r.status !== "held") return false;
+      return !q || [r.name, r.creator, r.code].some((s) => String(s || "").toLowerCase().includes(q));
+    });
+    const col = RCOLS.find((c) => c.k === rstate.sort) || RCOLS[9];
+    rows.sort((a, c) => { const x = col.get(a), y = col.get(c); return (x < y ? -1 : x > y ? 1 : 0) * rstate.dir || (toMs(c.published) || 0) - (toMs(a.published) || 0); });
+    const creators = new Set(rows.map((r) => (r.creator || "").trim().toLowerCase()).filter(Boolean));
+    $("rcount").textContent = `${fmt(rows.length)} route${rows.length === 1 ? "" : "s"} from ${fmt(creators.size)} creator${creators.size === 1 ? "" : "s"}` +
+      (rows.length !== all.length ? ` (of ${fmt(all.length)})` : "");
+    const body = $("rbody");
+    body.textContent = "";
+    for (const r of rows) {
+      const tr = document.createElement("tr");
+      const td = (text, cls) => { const d = document.createElement("td"); if (cls) d.className = cls; if (text !== undefined) d.textContent = text; tr.appendChild(d); return d; };
+      const name = td(undefined, "name");
+      const nb = document.createElement("button");
+      nb.type = "button"; nb.className = "rname"; nb.textContent = r.name || "(no name)";
+      const open = rstate.open.has(r.code);
+      nb.setAttribute("aria-expanded", String(open));
+      nb.addEventListener("click", () => { open ? rstate.open.delete(r.code) : rstate.open.add(r.code); renderRoutes(data); });
+      name.appendChild(nb);
+      if (r.ours) { const f = document.createElement("span"); f.className = "flag"; f.textContent = "Sample"; name.appendChild(f); }
+      if (r.status === "held") { const f = document.createElement("span"); f.className = "flag held"; f.textContent = "Held"; name.appendChild(f); }
+      td(r.creator || "–");
+      const code = td(undefined);
+      if (CODE.test(r.code || "")) {
+        const cb = document.createElement("button");
+        cb.type = "button"; cb.className = "copy"; cb.textContent = "COPY CODE";
+        cb.addEventListener("click", async () => {
+          try { await navigator.clipboard.writeText(r.code); cb.textContent = "COPIED"; } catch (e) { cb.textContent = "COPY FAILED"; }
+          setTimeout(() => { cb.textContent = "COPY CODE"; }, 1500);
+        });
+        const a = document.createElement("a");
+        a.href = "https://r.boxrun.gg/" + encodeURIComponent(r.code); a.rel = "noopener noreferrer"; a.target = "_blank"; a.textContent = r.code;
+        code.append(cb, a);
+      } else code.textContent = r.code || "–";
+      td(fmt(r.players), "num");
+      td((Number.isFinite(+r.checkpoints) ? fmt(r.checkpoints) : "–") + " / " + (Number.isFinite(+r.boxes) ? fmt(r.boxes) : "–") + (r.urn ? " · urn" : ""), "num");
+      td(heroName(r.hero));
+      const tl = tierList(r.tiers);
+      td(tl.length ? tl.map(secs).join(" / ") : "–", "num");
+      td(r.ghost ? "Yes" : "No");
+      td(fmt(r.versions), "num");
+      td(when(r.published));
+      td(when(r.updated));
+      td(fmt(r.reports), "num");
+      td(r.status === "held" ? "Held" : "OK");
+      body.appendChild(tr);
+      if (open) {
+        const dr = document.createElement("tr");
+        dr.className = "desc";
+        const d = document.createElement("td");
+        d.colSpan = RCOLS.length;
+        const dt = document.createElement("div");
+        dt.className = "dtext";
+        dt.textContent = (r.description || "No description.") + (r.version ? `  (version ${r.version})` : "");
+        d.appendChild(dt);
+        dr.appendChild(d);
+        body.appendChild(dr);
+      }
+    }
+  }
+  $("rsearch").addEventListener("input", (e) => { rstate.q = e.target.value; if (data) renderRoutes(data); });
+  $("rfilter").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    rstate.filter = btn.dataset.v;
+    try { localStorage.setItem("boxrunStatsRoutes", JSON.stringify({ filter: rstate.filter })); } catch (err) {}
+    if (data) renderRoutes(data);
+  });
+
   // ---- loading and the live clock ----
   function showAsk(message) {
     $("stats").hidden = true;
@@ -745,6 +912,7 @@
       if (first) buildCards();
       renderTiles(data);
       renderTables(data);
+      renderRoutes(data);
       redraw();
       $("error").textContent = "";
       $("dot").classList.remove("stale");
