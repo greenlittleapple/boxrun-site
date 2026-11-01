@@ -274,7 +274,8 @@
     const m = s.match(/GMT([+-])(\d+)(?::(\d+))?/);
     return m ? (m[1] === "-" ? -1 : 1) * (parseInt(m[2]) * 60 + parseInt(m[3] || 0)) : 0;
   }
-  const dayStart = (day) => { const g = Date.parse(day + "T00:00:00Z"); return g - ptOffsetMin(g + 12 * HOUR) * 60000; };
+  // The offset at about local midnight (UTC 08:00), not noon: on a clock-change day noon has the new offset.
+  const dayStart = (day) => { const g = Date.parse(day + "T00:00:00Z"); return g - ptOffsetMin(g + 8 * HOUR) * 60000; };
   const nextDay = (day) => new Date(Date.parse(day + "T12:00:00Z") + DAY).toISOString().slice(0, 10);
   const addDays = (day, n) => new Date(Date.parse(day + "T12:00:00Z") + n * DAY).toISOString().slice(0, 10);
   const toMs = (t) => (typeof t === "number" ? (t < 1e12 ? t * 1000 : t) : Date.parse(t));
@@ -296,11 +297,11 @@
       note: { period: "Gold: players who loaded a code in that {h}. Dark: players loading one for the first time. A player active in several {h}s counts in each.",
               total: "Distinct players since launch, adding up first-time players. It ends on the Players since launch tile." } },
     // Phase 0 (docs/BOXRUN-MEASUREMENT.md): every online game asks for the route of the week once a session, at its
-    // first menu. Distinct per bucket, so there's no sum or running total.
+    // first menu. Distinct per bucket, so its running total adds up whole days (player-days), never hours.
     { id: "menu", title: "Menu opened (online)", src: "play", key: "menu_players", newKey: "menu_back", distinct: true, unit: "players",
-      names: ["opened the menu", "back from the day before"],
+      totalUnit: "player-days", names: ["opened the menu", "back from the day before"],
       note: { period: "Gold: players whose game opened the menu in that {h} (online, BoxRun 2.0.6 and later). Dark, per day only: those of them who also opened it the day before. A player counts once per {h}.",
-              total: "No running total: a player who opens the menu on several days counts on each." } },
+              total: "Player-days: each day's menu players added up since the count started. A player who opens the menu on 3 days adds 3, so this is more than the number of different players." } },
     { id: "codes", title: "Codes shared", src: "play", key: "codes", unit: "codes",
       note: { period: "Codes shared in each {h}, a plain count.",
               total: "Codes shared since launch, a plain sum. It ends on the Codes shared since launch tile." } },
@@ -388,8 +389,25 @@
       }
       // Running total since launch: it rises through the range and ends on the since-launch total (the tile).
       let total, steps;
-      if (c.distinct) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.unit,
-        lines2: ["No running total for this one.", "A player who opens the menu on several days counts on each."] };
+      if (c.distinct) {
+        // Whole days only, also in the hourly ranges: adding up hours would count a player again each hour.
+        const days = (b.days || []).filter((d) => Number.isFinite(d[c.key]));
+        if (!days.length) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.totalUnit,
+          lines2: ["Running total appears when the server sends daily counts."] };
+        let run = 0;
+        const pts = [{ t: f.start, v: 0 }];
+        if (dayStart(days[0].day) > f.start && dayStart(days[0].day) < f.end) pts.push({ t: dayStart(days[0].day), v: 0 });   // flat until the count started
+        for (const d of days) {
+          const t1 = Math.min(dayStart(nextDay(d.day)), f.now);
+          if (t1 <= f.start) { run += d[c.key]; pts[0].v = run; continue; }
+          if (dayStart(d.day) >= f.end) break;
+          run += d[c.key];
+          pts.push({ t: Math.min(t1, f.end), v: run });
+        }
+        total = days.reduce((s, d) => s + d[c.key], 0);
+        return { kind: "lines", lines: [{ pts, cls: "" }], sub: "Running total since " + fDay.format(new Date(dayStart(days[0].day) + 12 * HOUR)),
+          val: fmt(total), valNote: "", unit: c.totalUnit, end: total };
+      }
       if (c.newKey) {
         if (!hasNew || !Number.isFinite(b[c.totalKey])) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.unit,
           lines2: ["Running total appears when the server sends first-time counts.", "Adding up active " + c.unit + " would count a returning player again."] };
