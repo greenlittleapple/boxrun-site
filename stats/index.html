@@ -168,8 +168,8 @@
     <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
   </header>
   <h1>Usage</h1>
-  <p class="muted">Short codes from api.boxrun.gg and the GameBanana page. Times are Pacific. Our own PC and test
-    routes are left out.</p>
+  <p class="muted">Short codes and menu opens from api.boxrun.gg, and the GameBanana page. Times are Pacific. Our own
+    PC and test routes are left out.</p>
 
   <section id="ask" hidden>
     <h2>Stats key</h2>
@@ -220,11 +220,14 @@
     <div class="scroll">
       <table>
         <thead><tr><th>Day</th><th>Codes shared</th><th>Route updates</th><th>Ghosts uploaded</th><th>Code lookups</th>
-          <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th></tr></thead>
+          <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th><th>Menu opened (online)</th>
+          <th>Back from the day before</th></tr></thead>
         <tbody id="days"></tbody>
       </table>
     </div>
-    <p class="muted small">A dash means that day's lookup counts expired before they were saved.</p>
+    <p class="muted small">A dash means that day's counts expired before they were saved. Menu opened counts the players
+      whose game asked for the route of the week (once a session, at the first menu: online, BoxRun 2.0.6 and later).
+      Back from the day before is how many of them also opened it the day before.</p>
 
     <h2>GameBanana per day</h2>
     <div class="scroll">
@@ -292,6 +295,12 @@
       names: ["active (loaded a code)", "first time"],
       note: { period: "Gold: players who loaded a code in that {h}. Dark: players loading one for the first time. A player active in several {h}s counts in each.",
               total: "Distinct players since launch, adding up first-time players. It ends on the Players since launch tile." } },
+    // Phase 0 (docs/BOXRUN-MEASUREMENT.md): every online game asks for the route of the week once a session, at its
+    // first menu. Distinct per bucket, so there's no sum or running total.
+    { id: "menu", title: "Menu opened (online)", src: "play", key: "menu_players", newKey: "menu_back", distinct: true, unit: "players",
+      names: ["opened the menu", "back from the day before"],
+      note: { period: "Gold: players whose game opened the menu in that {h} (online, BoxRun 2.0.6 and later). Dark, per day only: those of them who also opened it the day before. A player counts once per {h}.",
+              total: "No running total: a player who opens the menu on several days counts on each." } },
     { id: "codes", title: "Codes shared", src: "play", key: "codes", unit: "codes",
       note: { period: "Codes shared in each {h}, a plain count.",
               total: "Codes shared since launch, a plain sum. It ends on the Codes shared since launch tile." } },
@@ -368,6 +377,9 @@
       const hasNew = !!c.newKey && bk.some((x) => x.row && Number.isFinite(x.row[c.newKey]));
       const news = hasNew ? pick(c.newKey) : null;
       if (per) {
+        if (c.distinct) return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i], v2: news ? news[i] : undefined })),
+          names: hasNew ? c.names : [c.names[0]], legend: hasNew ? [[null, c.names[0], "bar"], [null, c.names[1], "bar2"]] : null,
+          sub: "Per " + unitWord, val: "", valNote: "", unit: c.unit };
         if (c.newKey) return { kind: "bars", buckets: bk.map((x, i) => ({ t0: x.t0, t1: x.t1, v: vals[i], v2: news ? news[i] : undefined })),
           names: hasNew ? c.names : [c.names[0]], legend: hasNew ? [[null, c.names[0], "bar"], [null, c.names[1], "bar2"]] : null,
           sub: "Per " + unitWord, val: hasNew ? fmt(add(news)) : "", valNote: hasNew ? "first time in range" : "", unit: c.unit };
@@ -376,6 +388,8 @@
       }
       // Running total since launch: it rises through the range and ends on the since-launch total (the tile).
       let total, steps;
+      if (c.distinct) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.unit,
+        lines2: ["No running total for this one.", "A player who opens the menu on several days counts on each."] };
       if (c.newKey) {
         if (!hasNew || !Number.isFinite(b[c.totalKey])) return { kind: "figure", val: "", valNote: "", sub: "Running total", unit: c.unit,
           lines2: ["Running total appears when the server sends first-time counts.", "Adding up active " + c.unit + " would count a returning player again."] };
@@ -741,6 +755,9 @@
       tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total" + (samples.length > 1 ? ", last 24 h" : ""), samples),
       tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
       tile(today.players, "Players active today", "loaded a code, " + (today.day || "") + sfx, hourly("players")),
+      tile(Number.isFinite(today.menu_players) ? today.menu_players : null, "Menu opened (online)", "menu_players" in today
+        ? "players today" + (Number.isFinite(today.menu_back) ? ", " + fmt(today.menu_back) + " back from yesterday" : "") + sfx
+        : "the server doesn't send this yet", hourly("menu_players")),
       tile(total("codes"), "Codes shared since launch", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
       tile(Number.isFinite(b.sharers_total) ? b.sharers_total : null, "Players who shared since launch", once("sharers_total") + runSfx("sharers_total"), runSpark("sharers_total", "new_sharers")),
       tile(today.sharers, "Players who shared today", (today.day || "") + sfx, hourly("sharers")));
@@ -751,7 +768,8 @@
     $("days").innerHTML = days.slice().reverse().map((d) => `<tr>
       <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
       <td>${fmt(d.codes)}</td><td>${fmt(d.versions)}</td><td>${fmt(d.ghosts)}</td><td>${fmt(d.lookups)}</td>
-      <td>${fmt(d.players)}</td><td>${fmt(d.sharers)}</td><td>${fmt(d.reports)}</td></tr>`).join("");
+      <td>${fmt(d.players)}</td><td>${fmt(d.sharers)}</td><td>${fmt(d.reports)}</td>
+      <td>${fmt(d.menu_players)}</td><td>${fmt(d.menu_back)}</td></tr>`).join("");
     const g = b.gamebanana_days || [];
     $("gb").innerHTML = g.map((d, i) => ({ d, prev: g[i - 1] })).reverse().map(({ d, prev }) => `<tr>
       <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
