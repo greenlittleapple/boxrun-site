@@ -12,43 +12,122 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/stats/pages.css">
 <style>
-  .rel { display: grid; grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem 1.25rem; padding: 0.8rem 1rem; border-bottom: 1px solid var(--line); }
-  .rel:last-child { border-bottom: 0; }
-  .rel .name { font-weight: 700; }
-  .rel .lab { display: none; color: var(--muted); font-size: 0.8rem; }
-  .rels { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
-  .rels .headrow { color: var(--muted); font-size: 0.85rem; font-weight: 700; padding-top: 0.5rem; padding-bottom: 0.5rem; }
-  .track { margin-top: 1.75rem; }
-  .track h3 { font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; margin-bottom: 0.5rem; }
-  .track h3 .tid { color: var(--gold-ink); }
-  .track h3 .n { color: var(--muted); font: 400 0.85rem var(--body); margin-left: 0.4rem; }
-  table.items { min-width: 0; table-layout: fixed; }
-  table.items th:nth-child(1) { width: 6.5rem; }
-  table.items th:nth-child(3) { width: 36%; }
-  table.items th:nth-child(4) { width: 6rem; }
-  table.items th:nth-child(5) { width: 5.5rem; }
-  table.items td { overflow-wrap: anywhere; }
-  table.items td.id { white-space: nowrap; font-weight: 700; }
-  table.items tr.hit td { background: var(--wash); }
-  table.items tr.hit td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
-  @media (max-width: 720px) { table.items tr.hit { background: var(--wash); box-shadow: inset 3px 0 0 var(--gold); } table.items tr.hit td { background: none; box-shadow: none; } }
-  .state .pill { margin-right: 0.4rem; }
-  .state .txt { color: var(--muted); }
+  /* a colour per state, always shown next to the state's word */
+  :root { --st-done: var(--ok-ink); --st-built: var(--blue-ink); --st-building: var(--gold-ink); --st-queued: #b9a6ff;
+          --st-idea: var(--muted); --st-parked: #77749a; --st-other: var(--muted); }
+  @media (prefers-color-scheme: light) { :root { --st-queued: #6346c8; --st-parked: #9d9ab8; } }
+  .pill.queued { border-color: var(--st-queued); color: var(--st-queued); }
+  .sw { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 3px; vertical-align: -0.05em; margin-right: 0.35rem; flex: none; }
+  .sw.done, .seg-done { background: var(--st-done); }
+  .sw.built, .seg-built { background: var(--st-built); }
+  .sw.building, .seg-building { background: var(--st-building); }
+  .sw.queued, .seg-queued { background: var(--st-queued); }
+  .sw.idea, .seg-idea { background: repeating-linear-gradient(135deg, var(--st-idea) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--st-idea); }
+  .sw.parked, .seg-parked { background: repeating-linear-gradient(45deg, var(--st-parked) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--st-parked); }
+  .sw.other, .seg-other { background: var(--grid); box-shadow: inset 0 0 0 1px var(--st-other); }
+  .ico { width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .w { display: inline-block; min-width: 1.35rem; padding: 0 0.3rem; border-radius: 4px; font: 700 0.75rem/1.5 var(--body); text-align: center; border: 1px solid var(--line); color: var(--muted); }
+  .w.M { border-color: var(--gold-ink); color: var(--gold-ink); }
+  a.chipid { font-weight: 700; text-decoration: none; white-space: nowrap; }
+  a.chipid:hover { text-decoration: underline; }
+  h2 .aside { font: 400 0.9rem var(--body); color: var(--muted); letter-spacing: 0; margin-left: 0.5rem; }
+  .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  @media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.85rem 1rem; min-width: 0; }
+  .box > h3 { display: flex; align-items: center; gap: 0.5rem; font: 800 1.15rem/1.2 var(--display); letter-spacing: 0.02em; margin-bottom: 0.55rem; }
+  .box > h3 .w { margin-left: auto; }
+  .box.run > h3 { color: var(--gold-ink); }
+  .box.run { border-top: 3px solid var(--st-building); }
+  .box.wait { border-top: 3px solid var(--red-ink); }
+  .box.wait > h3 .ico { color: var(--red-ink); }
+  .whoset { display: inline-flex; gap: 0.2rem; flex: none; }
+  .lead { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list > li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0; border-top: 1px solid var(--line); min-width: 0; }
+  ul.list > li:first-child { border-top: 0; padding-top: 0; }
+  ul.list > li > .txt { min-width: 0; overflow-wrap: anywhere; }
+  .tag { font: 700 0.8rem var(--body); color: var(--ink); background: var(--wash); border-radius: 4px; padding: 0 0.35rem; white-space: nowrap; }
+  li.c-step > .txt { color: var(--muted); }
+  .sublab { color: var(--muted); font-size: 0.8rem; font-weight: 700; margin: 0.75rem 0 0.3rem; }
+  .mini { display: grid; gap: 0.3rem; }
+  .mini .row { display: flex; gap: 0.5rem; align-items: baseline; min-width: 0; font-size: 0.925rem; }
+  .mini .row .t { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+  .mini .row .pill { flex: none; }
+  .donetoday { display: flex; gap: 0.5rem; align-items: baseline; margin: 0.75rem 0 0; color: var(--muted); font-size: 0.9rem; }
+  .donetoday .ico { color: var(--st-done); align-self: center; }
+  .donetoday b { color: var(--ink); }
+  details.fold { margin-top: 0.5rem; }
+  details.fold > summary { color: var(--link); font-size: 0.9rem; display: inline-block; }
+  details.fold > summary::before { content: "\25B8  "; color: var(--muted); }
+  details.fold[open] > summary::before { content: "\25BE  "; }
+  details.fold > .prose { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.25rem 1rem; margin-top: 0.5rem; }
+
+  .rels { display: grid; gap: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .rel { display: grid; grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr); gap: 0.35rem 1.25rem; padding: 0.8rem 1rem; border-top: 1px solid var(--line); }
+  .rel:first-child { border-top: 0; }
+  .rel .rid { font: 800 1.35rem/1 var(--display); color: var(--gold-ink); margin-right: 0.4rem; }
+  .rel .rname { font-weight: 700; }
+  .rel .rtarget { color: var(--muted); font-size: 0.875rem; }
+  .rel .rstate { font-size: 0.875rem; margin-top: 0.15rem; }
+  .rel .rstate .txt { color: var(--muted); }
+  .bar { display: flex; height: 0.9rem; border-radius: 4px; overflow: hidden; background: var(--grid); gap: 2px; }
+  .bar > span { min-width: 4px; }
+  .counts { display: flex; flex-wrap: wrap; gap: 0.15rem 0.9rem; font-size: 0.85rem; margin-top: 0.35rem; color: var(--muted); }
+  .counts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .rel details { font-size: 0.85rem; margin-top: 0.3rem; }
+  .rel details > summary { color: var(--muted); display: inline-block; }
+  .rel details > summary::before { content: "\25B8  "; }
+  .rel details[open] > summary::before { content: "\25BE  "; }
+  .rel details > summary:hover { color: var(--ink); }
+  .rel details .prose p { margin: 0.3rem 0; }
+  @media (max-width: 640px) { .rel { grid-template-columns: minmax(0, 1fr); } }
+
+  ol.next { list-style: none; margin: 0; padding: 0; counter-reset: n; }
+  ol.next li { display: flex; gap: 0.55rem; align-items: baseline; padding: 0.35rem 0; border-top: 1px solid var(--line); counter-increment: n; min-width: 0; }
+  ol.next li:first-child { border-top: 0; padding-top: 0; }
+  ol.next li::before { content: counter(n); font: 800 1.05rem/1 var(--display); color: var(--muted); min-width: 0.9rem; }
+  ol.next .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  ol.next .r { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+  .meter { margin-top: 0.7rem; }
+  .meter .top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+  .meter .big { font: 800 2rem/1 var(--display); }
+  .meter .of { color: var(--muted); font-size: 0.875rem; }
+  .track-bar { position: relative; height: 0.7rem; border-radius: 4px; background: var(--grid); margin: 0.4rem 0 0.25rem; }
+  .track-bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--bar); }
+  .track-bar .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+  .track-bar .mark.from { background: var(--muted); }
+  .meter .note { color: var(--muted); font-size: 0.8rem; }
+  .linkbtn { background: none; border: 0; padding: 0; color: var(--link); font: inherit; font-size: 0.875rem; text-decoration: underline; cursor: pointer; }
+
+  .controls { margin: 0.75rem 0 0.4rem; gap: 0.5rem 0.9rem; }
+  .crow { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: center; width: 100%; }
+  .crow .lab { min-width: 3.4rem; margin-right: 0; }
   #search { flex: 0 1 16rem; }
-  @media (max-width: 720px) {
-    .rel { grid-template-columns: minmax(0, 1fr); }
-    .rel .lab { display: inline; }
-    .rels .headrow { display: none; }
-    table.items, table.items tbody, table.items tr, table.items td { display: block; width: auto !important; table-layout: auto; }
-    table.items thead { display: none; }
-    table.items tr { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--line); }
-    table.items tr:last-child { border-bottom: 0; }
-    table.items td { border: 0; padding: 0.1rem 0; white-space: normal !important; }
-    table.items td.id { display: inline-block; margin-right: 0.5rem; }
-    table.items td.who, table.items td.release { display: inline-block; color: var(--muted); font-size: 0.875rem; margin-right: 0.9rem; }
-    table.items td[data-label]::before { content: attr(data-label) " "; color: var(--muted); font-size: 0.8rem; }
-    #search { flex: 1 1 100%; }
-  }
+  .group { margin-top: 1.25rem; }
+  .group > summary h3 { font: 800 1.15rem/1.2 var(--display); letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.45rem; }
+  .group > summary h3::before { content: "\25BE"; color: var(--muted); font-size: 0.85em; }
+  .group:not([open]) > summary h3::before { content: "\25B8"; }
+  .group > summary h3 .n { color: var(--muted); font: 400 0.85rem var(--body); }
+  .group > summary h3 .sub { color: var(--muted); font: 400 0.9rem var(--body); letter-spacing: 0; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--st-other); border-radius: 8px; min-width: 0; }
+  .card.done { border-left-color: var(--st-done); } .card.built { border-left-color: var(--st-built); }
+  .card.building { border-left-color: var(--st-building); } .card.queued { border-left-color: var(--st-queued); }
+  .card.idea { border-left-style: dashed; border-left-color: var(--st-idea); } .card.parked { border-left-style: dashed; border-left-color: var(--st-parked); }
+  .card[open] { grid-column: 1 / -1; }
+  .card.hit { box-shadow: 0 0 0 2px var(--gold); }
+  .card > summary { padding: 0.5rem 0.7rem 0.55rem; display: grid; gap: 0.15rem; }
+  .card .l1 { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+  .card .cid { font-weight: 700; color: var(--gold-ink); }
+  .card .l1 .whos { margin-left: auto; display: inline-flex; gap: 0.25rem; }
+  .card .ctitle { font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+  .card .l3 { color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+  .card .body { padding: 0 0.7rem 0.7rem; border-top: 1px solid var(--line); font-size: 0.925rem; overflow-wrap: anywhere; }
+  .card .body dl { margin: 0.5rem 0 0; display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.35rem 0.75rem; }
+  .card .body dt { color: var(--muted); font-size: 0.8rem; padding-top: 0.15rem; }
+  .card .body dd { margin: 0; max-width: 52rem; }
+  @media (max-width: 480px) { .card .body dl { grid-template-columns: minmax(0, 1fr); gap: 0 0; } .card .body dd { margin-bottom: 0.4rem; } }
+  section.closing > details { margin-top: 1.5rem; }
 </style>
 </head>
 <body>
@@ -59,7 +138,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Roadmap</h1>
-  <p class="muted" id="sub">Releases and every track's items from <code>docs/BOXRUN-ROADMAP.md</code>.</p>
+  <p class="muted" id="sub">From <code>docs/BOXRUN-ROADMAP.md</code>.</p>
 
   <section id="ask" hidden>
     <h2>Stats key</h2>
@@ -79,121 +158,344 @@
 <script>
   "use strict";
   const { el, $ } = Stats;
-  const STATES = ["done", "built", "building", "queued", "parked", "idea", "other"];
-  const view = Stats.prefs("boxrunStatsRoadmap", { state: "all", who: "all", q: "" });
-  let body = null, ids = new Set(), searchFocus = false;
+  // Bar and legend order; the board shows what's moving first and done last.
+  const STATES = ["done", "built", "building", "queued", "idea", "parked", "other"];
+  const BOARD = ["building", "built", "queued", "idea", "other", "parked", "done"];
+  const view = Stats.prefs("boxrunStatsRoadmap", { state: "all", who: "all", track: "all", q: "", group: "state" });
+  const openGroups = {}, openCards = new Set();
+  let body = null, ids = new Set(), byId = new Map(), trackOf = new Map(), all = [];
   const href = (id) => (ids.has(id) ? "#" + id : null);
   const text = (spans) => (spans || []).map((s) => s[1]).join("");
+  const SVGNS = "http://www.w3.org/2000/svg";
+  // Small line icons; fixed shapes only.
+  const ICONS = {
+    run: [["circle", { cx: 12, cy: 12, r: 9 }], ["path", { d: "M12 3a9 9 0 0 1 0 18z", fill: "currentColor" }]],
+    wait: [["circle", { cx: 12, cy: 8, r: 4 }], ["path", { d: "M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" }]],
+    next: [["path", { d: "M4 12h15M13 6l6 6-6 6" }]],
+    goal: [["circle", { cx: 12, cy: 12, r: 9 }], ["circle", { cx: 12, cy: 12, r: 5 }], ["circle", { cx: 12, cy: 12, r: 1.5, fill: "currentColor" }]],
+    check: [["path", { d: "M4 12.5l5 5L20 6.5" }]],
+  };
+  function icon(name) {
+    const s = document.createElementNS(SVGNS, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", "ico"); s.setAttribute("aria-hidden", "true");
+    for (const [tag, attrs] of ICONS[name]) {
+      const n = document.createElementNS(SVGNS, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      s.append(n);
+    }
+    return s;
+  }
+  const pill = (cls) => el("span", { className: "pill " + cls, text: cls });
+  const whoTags = (it) => it.who_set.map((w) => el("span", { className: "w " + w, title: w === "M" ? "Marcus's hands" : "Coordinator and workers", text: w }));
+  const idLink = (id) => (href(id) ? el("a", { className: "chipid", href: href(id), text: id }) : el("span", { className: "chipid", text: id }));
+  const pct = (x) => (Math.round(x * 1000) / 10).toFixed(1) + "%";
+  const shortDay = (s) => String(s || "").replace(/^\d{4}-/, "");
 
+  // A state's text without its own first word, which the pill already says: "built, waits for a pass" -> "waits for a pass".
+  function afterWord(s, cls) {
+    const m = String(s || "").match(/^\s*([a-z]+)(?![a-z0-9])[\s;,:]*/i);
+    return m && m[1].toLowerCase() === cls ? s.slice(m[0].length) : String(s || "");
+  }
+  // A release cell short enough for a card: "2.2 or 2.3 (building from 11-02, ...)" -> "2.2 or 2.3".
+  const relLabel = (it) => it.release_id || String(it.release || "").replace(/\s*\(.*$/, "");
+
+  // A row for a short list: id, title, state.
+  function miniRow(it) {
+    return el("div", { className: "row" }, idLink(it.id), el("span", { className: "t", title: it.title, text: it.title }), pill(it.state_class));
+  }
+
+  function nowSection(d) {
+    const out = [];
+    const today = d.today || {};
+    const parts = today.parts || [];
+    out.push(el("h2", null, "Now", today.title ? el("span", { className: "aside", text: today.title }) : null));
+
+    // Building now: Today's running part, then items marked building that aren't waiting on Marcus.
+    const run = el("div", { className: "box run" }, el("h3", null, icon("run"), "Building now", el("span", { className: "w C", text: "C" })));
+    const running = parts.filter((p) => p.kind === "running");
+    for (const p of running) {
+      if (p.inl && p.inl.length) run.append(Stats.spans(el("p", { className: "lead" }), p.inl, href));
+      if (p.list.length) {
+        run.append(el("ul", { className: "list" }, p.list.map((inl) => {
+          const li = el("li");
+          const rest = inl.slice();
+          if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
+          if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
+          li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
+          return li;
+        })));
+      }
+    }
+    if (!running.length) run.append(el("p", { className: "lead", text: "Today names nothing running." }));
+    const busy = all.filter((it) => it.state_class === "building" && !it.waits_on_m && trackOf.get(it.id) !== "GOAL");
+    const ongoing = busy.filter((it) => /^\s*ongoing/i.test(text(it.state)));
+    const also = busy.filter((it) => !ongoing.includes(it));
+    if (also.length) run.append(el("div", { className: "sublab", text: "Also building" }), el("div", { className: "mini" }, also.map(miniRow)));
+    if (ongoing.length) run.append(el("div", { className: "sublab", text: "Ongoing" }), el("div", { className: "mini" }, ongoing.map(miniRow)));
+
+    // Waiting on Marcus: Today's coming steps (his in full, the coordinator's between them dimmed), then open items with M.
+    const wait = el("div", { className: "box wait" }, el("h3", null, icon("wait"), "Waiting on Marcus", el("span", { className: "w M", text: "M" })));
+    const mentioned = new Set();
+    for (const p of parts.filter((x) => x.kind === "next" && x.steps.some((s) => s.who.includes("M")))) {
+      wait.append(el("div", { className: "sublab", text: p.label }));
+      wait.append(el("ul", { className: "list" }, p.steps.map((s) => {
+        const mine = s.who.includes("M");
+        for (const m of s.text.matchAll(/\b[A-Z]{3,7}-\d+\b/g)) if (mine) mentioned.add(m[0]);
+        return el("li", { className: mine ? "m-step" : "c-step" },
+          el("span", { className: "whoset" }, s.who.map((w) => el("span", { className: "w " + w, text: w }))),
+          Stats.spans(el("span", { className: "txt" }), [["t", s.text]], href));
+      })));
+    }
+    const mine = all.filter((it) => it.waits_on_m && !mentioned.has(it.id));
+    if (mine.length) wait.append(el("div", { className: "sublab", text: "Open items with M" }), el("div", { className: "mini" }, mine.map(miniRow)));
+    if (wait.childNodes.length === 1) wait.append(el("p", { className: "lead", text: "Nothing waiting on Marcus." }));
+    out.push(el("div", { className: "cols" }, run, wait));
+
+    for (const p of parts.filter((x) => x.kind === "done")) {
+      out.push(el("p", { className: "donetoday" }, icon("check"), el("span", null, el("b", { text: p.label + ": " }), Stats.spans(el("span"), p.inl, href))));
+    }
+    if (today.blocks && today.blocks.length) {
+      const det = el("details", { className: "fold" }, el("summary", { text: "Today in full" }));
+      det.append(Stats.blocks(el("div", { className: "prose" }), today.blocks, href));
+      out.push(det);
+    }
+    return out;
+  }
+
+  function counts(list) {
+    const c = {};
+    for (const it of list) c[it.state_class] = (c[it.state_class] || 0) + 1;
+    return c;
+  }
+  function stateBar(c, total) {
+    const bar = el("div", { className: "bar", role: "img",
+      "aria-label": STATES.filter((s) => c[s]).map((s) => c[s] + " " + s).join(", ") });
+    for (const s of STATES) if (c[s]) bar.append(el("span", { className: "seg-" + s, style: "flex: " + c[s] + " 1 0" }));
+    return bar;
+  }
+  function legend(c) {
+    return el("div", { className: "counts" }, STATES.filter((s) => c[s]).map((s) => el("span", null, el("span", { className: "sw " + s }), el("b", { text: c[s] }), " " + s)));
+  }
+
+  function releasesSection(d) {
+    const out = [el("h2", { text: "Releases" })];
+    const box = el("div", { className: "rels" });
+    for (const r of d.releases || []) {
+      const items = (r.items || []).map((i) => byId.get(i)).filter(Boolean);
+      const c = counts(items);
+      const left = el("div", null,
+        el("div", null, r.id ? el("span", { className: "rid", text: r.id }) : null, el("span", { className: "rname", text: r.name || text(r.release) })),
+        el("div", { className: "rtarget", text: r.target_short || text(r.target) }));
+      const right = el("div");
+      if (items.length) {
+        right.append(stateBar(c, items.length), legend(c));
+      } else {
+        // No item ids in its contents: one segment for the release's own state.
+        right.append(stateBar({ [r.state_class]: 1 }, 1), el("div", { className: "counts" }, Stats.spans(el("span"), r.contents, href)));
+      }
+      right.append(el("div", { className: "rstate" }, pill(r.state_class), " ", el("span", { className: "txt", text: afterWord(r.state_short, r.state_class) })));
+      const det = el("details", null, el("summary", { text: "Full contents and state" }),
+        el("div", { className: "prose" },
+          Stats.spans(el("p"), [["b", "Target: "]].concat(r.target || []), href),
+          Stats.spans(el("p", { className: "ids" }), [["b", "Contents: "]].concat(r.contents || []), href),
+          Stats.spans(el("p"), [["b", "State: "]].concat(r.state || []), href)));
+      right.append(det);
+      box.append(el("div", { className: "rel" }, left, right));
+    }
+    out.push(box);
+    return out;
+  }
+
+  function nextAndGoal(d) {
+    const nextIds = (d.next || []).filter((i) => byId.has(i));
+    const nb = el("div", { className: "box" }, el("h3", null, icon("next"), "Next up"));
+    if (nextIds.length) {
+      nb.append(el("ol", { className: "next" }, nextIds.slice(0, 6).map((i) => {
+        const it = byId.get(i);
+        return el("li", null, idLink(it.id), el("span", { className: "t", text: it.title }), el("span", { className: "whoset" }, whoTags(it)), el("span", { className: "r", text: relLabel(it) }));
+      })));
+      nb.append(el("p", { className: "small muted", style: "margin: 0.6rem 0 0" },
+        nextIds.length + " queued in all, earliest release first. ",
+        el("button", { className: "linkbtn", type: "button", text: "Show them on the board",
+          on: { click: () => { Object.assign(view.p, { state: "queued", who: "all", track: "all", q: "" }); view.save(); drawAll(); $("board").scrollIntoView({ block: "start" }); } } })));
+    } else nb.append(el("p", { className: "lead", text: "Nothing queued." }));
+
+    const g = d.goal;
+    const gb = el("div", { className: "box" });
+    if (g) {
+      const it = byId.get(g.id);
+      gb.append(el("h3", null, icon("goal"), g.id, g.by ? el("span", { className: "aside muted", style: "font: 400 0.9rem var(--body)", text: "by " + g.by }) : null));
+      if (it) gb.append(el("p", { className: "lead", style: "margin: 0" }, it.title + ". ", el("a", { href: "#" + g.id, text: "Full text and guardrails" })));
+      const rets = g.returns || [];
+      const done = rets.filter((x) => !x.partial);
+      const last = done[done.length - 1], part = rets.find((x) => x.partial);
+      if (last || g.return_target) {
+        const m = el("div", { className: "meter" });
+        const scale = Math.max(g.return_target || 0, last ? last.rate : 0) * 1.25 || 0.2;
+        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: last ? pct(last.rate) : "–" }), " next-day return"),
+          g.return_target ? el("span", { className: "of", text: "target " + pct(g.return_target) + (g.return_from ? ", from about " + pct(g.return_from) : "") }) : null));
+        const tb = el("div", { className: "track-bar", role: "img", "aria-label": (last ? pct(last.rate) : "no reading") + (g.return_target ? " of a " + pct(g.return_target) + " target" : "") });
+        if (last) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, last.rate / scale * 100).toFixed(1) + "%" }));
+        if (g.return_from) tb.append(el("span", { className: "mark from", style: "left: " + (g.return_from / scale * 100).toFixed(1) + "%" }));
+        if (g.return_target) tb.append(el("span", { className: "mark", style: "left: " + (g.return_target / scale * 100).toFixed(1) + "%" }));
+        m.append(tb);
+        m.append(el("div", { className: "note", text: (last ? shortDay(last.day) + ": " + last.back + " of the day before's " + Stats.fmt(last.of) + " came back." : "")
+          + (part ? " " + shortDay(part.day) + " so far: " + pct(part.rate) + "." : "") }));
+        gb.append(m);
+      }
+      if (g.weekly || g.weekly_target) {
+        const w = g.weekly, m = el("div", { className: "meter" });
+        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: w ? Stats.fmt(w.players) : "–" }), " menu players"),
+          g.weekly_target ? el("span", { className: "of", text: "target " + Stats.fmt(g.weekly_target) + " a week" }) : null));
+        if (g.weekly_target) {
+          const tb = el("div", { className: "track-bar", role: "img", "aria-label": (w ? Stats.fmt(w.players) : "none") + " of " + Stats.fmt(g.weekly_target) });
+          if (w) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, w.players / g.weekly_target * 100).toFixed(1) + "%" }));
+          m.append(tb);
+        }
+        if (w) m.append(el("div", { className: "note", text: "Daily counts added up over the last " + (w.days === 1 ? "day" : w.days + " complete days") + " (" + shortDay(w.from) + " to " + shortDay(w.to) + ")." }));
+        gb.append(m);
+      }
+      gb.append(el("p", { className: "small muted", style: "margin: 0.6rem 0 0" }, "From ", el("code", { text: g.source }), "."));
+    } else gb.append(el("h3", null, icon("goal"), "Goal"), el("p", { className: "lead", text: "No adopted goal in the roadmap." }));
+    return [el("div", { className: "cols", style: "margin-top: 2.25rem" }, nb, gb)];
+  }
+
+  // ---- the board ----
   function matches(it) {
     const v = view.p;
     if (v.state !== "all" && it.state_class !== v.state) return false;
     if (v.who !== "all" && !it.who_set.includes(v.who)) return false;
+    if (v.track !== "all" && trackOf.get(it.id) !== v.track) return false;
     if (v.q) {
       const hay = (it.id + " " + text(it.item) + " " + text(it.state) + " " + it.who + " " + it.release).toLowerCase();
       if (!hay.includes(v.q.toLowerCase())) return false;
     }
     return true;
   }
-  // The state's own first word isn't repeated after its pill: "done (10-31)" shows as [done] (10-31).
-  function rest(spansList, cls) {
-    const list = (spansList || []).map((x) => x.slice());
-    if (list.length && list[0][0] === "t") {
-      const m = list[0][1].match(/^\s*([a-z]+)(?![a-z0-9])[\s;,:]*/i);
-      if (m && m[1].toLowerCase() === cls) list[0][1] = list[0][1].slice(m[0].length);
-      if (!list[0][1]) list.shift();
-    }
-    return list;
+  function card(it, track) {
+    const det = el("details", { className: "card " + it.state_class, id: /^[A-Z]+-\d+$/.test(it.id) ? it.id : null });
+    if (openCards.has(it.id)) det.open = true;
+    if (location.hash === "#" + it.id) det.classList.add("hit");
+    det.addEventListener("toggle", () => { det.open ? openCards.add(it.id) : openCards.delete(it.id); });
+    const l3 = [relLabel(it), view.p.group !== "track" ? track.id : null].filter((x) => x && x !== "—");
+    det.append(el("summary", null,
+      el("span", { className: "l1" }, el("span", { className: "cid", text: it.id }), pill(it.state_class), el("span", { className: "whos" }, whoTags(it))),
+      el("span", { className: "ctitle", text: it.title }),
+      el("span", { className: "l3", text: (it.state_class === "other" && it.state_short ? it.state_short + " · " : "") + l3.join(" · ") })));
+    det.append(el("div", { className: "body" }, el("dl", null,
+      el("dt", { text: "Item" }), Stats.spans(el("dd"), it.item, href),
+      el("dt", { text: "State" }), Stats.spans(el("dd"), it.state, href),
+      el("dt", { text: "Who" }), el("dd", { text: it.who || "–" }),
+      el("dt", { text: "Release" }), el("dd", { text: it.release || "–" }),
+      el("dt", { text: "Track" }), el("dd", { text: track.id + ": " + track.title }))));
+    return det;
   }
-  function stateCell(spansList, cls) {
-    const td = el("td", { className: "state", "data-label": "" });
-    td.append(el("span", { className: "pill " + cls, text: cls }));
-    td.append(Stats.spans(el("span", { className: "txt" }), rest(spansList, cls), href));
-    return td;
+  function groups(d) {
+    const tracks = d.tracks || [];
+    const T = new Map(tracks.map((t) => [t.id, t]));
+    const pairs = tracks.flatMap((t) => t.items.map((it) => [it, t]));
+    const g = view.p.group;
+    if (g === "track") return tracks.map((t) => ({ key: "t:" + t.id, title: t.id, sub: t.title, pairs: t.items.map((it) => [it, t]), open: true }));
+    if (g === "release") {
+      const seen = new Set(), out = [];
+      for (const r of d.releases || []) {
+        const ps = pairs.filter(([it]) => !seen.has(it.id) && (r.items || []).includes(it.id));
+        ps.forEach(([it]) => seen.add(it.id));
+        out.push({ key: "r:" + (r.id || r.name), title: r.id || r.name, sub: r.id ? r.name : "", pairs: ps, open: true });
+      }
+      out.push({ key: "r:none", title: "No release", sub: "later, ongoing or unset", pairs: pairs.filter(([it]) => !seen.has(it.id)), open: true });
+      return out;
+    }
+    return BOARD.map((s) => ({ key: "s:" + s, title: s, state: s, pairs: pairs.filter(([it]) => it.state_class === s), open: s !== "done" }));
+  }
+  function drawBoard() {
+    const d = body.doc;
+    const out = [];
+    let shown = 0;
+    for (const g of groups(d)) {
+      const ps = g.pairs.filter(([it]) => matches(it));
+      if (!ps.length) continue;
+      shown += ps.length;
+      const det = el("details", { className: "group" });
+      det.open = g.key in openGroups ? openGroups[g.key] : (g.open || view.p.state === g.state);
+      det.addEventListener("toggle", () => { openGroups[g.key] = det.open; });
+      det.append(el("summary", null, el("h3", null, g.state ? el("span", { className: "sw " + g.state }) : null,
+        el("span", { text: g.title }), g.sub ? el("span", { className: "sub", text: g.sub }) : null,
+        el("span", { className: "n", text: ps.length + (ps.length === g.pairs.length ? "" : " of " + g.pairs.length) }))));
+      det.append(el("div", { className: "cards" }, ps.map(([it, t]) => card(it, t))));
+      out.push(det);
+    }
+    $("shown").textContent = shown + " of " + all.length + " items. Click a card for its full text. M is Marcus's hands, C the coordinator and workers.";
+    if (!shown) out.push(el("p", { className: "empty", text: "No items match." }));
+    $("groups").replaceChildren(...out);
+  }
+  function boardSection(d) {
+    const count = (f) => all.filter(f).length;
+    const box = (label) => el("div", { className: "chips", role: "group", "aria-label": label });
+    const groupBox = el("div", { className: "seg", role: "group", "aria-label": "Group by" });
+    const stateBox = box("State"), whoBox = box("Who"), trackBox = box("Track");
+    const repick = (fn) => (v) => { fn(v); view.save(); paint(); drawBoard(); };
+    function paint() {
+      Stats.seg(groupBox, [["state", "State"], ["track", "Track"], ["release", "Release"]], view.p.group, repick((v) => { view.p.group = v; }));
+      const states = STATES.filter((s) => count((i) => i.state_class === s));
+      Stats.seg(stateBox, [["all", "All", all.length]].concat(states.map((s) => [s, s, count((i) => i.state_class === s)])), view.p.state, repick((v) => { view.p.state = v; }));
+      for (const b of stateBox.querySelectorAll("button")) if (b.dataset.v !== "all") b.prepend(el("span", { className: "sw " + b.dataset.v }));
+      Stats.seg(whoBox, [["all", "Anyone"], ["M", "M", count((i) => i.who_set.includes("M"))], ["C", "C", count((i) => i.who_set.includes("C"))]], view.p.who, repick((v) => { view.p.who = v; }));
+      Stats.seg(trackBox, [["all", "All"]].concat((d.tracks || []).map((t) => [t.id, t.id, t.items.length])), view.p.track, repick((v) => { view.p.track = v; }));
+    }
+    paint();
+    const search = el("input", { id: "search", type: "search", placeholder: "Search ids and text", "aria-label": "Search items", autocomplete: "off", value: view.p.q });
+    search.addEventListener("input", () => { view.p.q = search.value; view.save(); drawBoard(); });
+    const row = (label, ...kids) => el("div", { className: "crow" }, el("span", { className: "lab", text: label }), ...kids);
+    return [el("h2", { id: "board", text: "All items" }),
+      el("div", { className: "controls" }, row("Group", groupBox, search), row("State", stateBox), row("Who", whoBox), row("Track", trackBox)),
+      el("p", { className: "small muted", id: "shown" }),
+      el("div", { id: "groups" })];
   }
 
-  function draw() {
+  function drawAll() {
     const d = body.doc;
     ids = new Set(d.ids || []);
-    const main = $("main");
-    const kids = [];
-    $("sub").replaceChildren("Releases and every track's items from ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
-      ". Last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
-    kids.push(Stats.blocks(el("div", { className: "prose muted small" }), d.intro, href));
-
-    for (const key of ["today", "strategy"]) {
-      const s = d[key];
-      if (!s) continue;
-      const det = el("details", { open: true });
-      det.append(el("summary", null, el("h2", { text: s.title })));
-      det.append(Stats.blocks(el("div", { className: "prose" }), s.blocks, href));
-      kids.push(det);
+    all = []; byId = new Map(); trackOf = new Map();
+    for (const t of d.tracks || []) for (const it of t.items) {
+      // a document converted before short titles: take the text before the first break
+      if (!it.title) it.title = text(it.item).split(/ \(|[:.](?=\s|$)/)[0].slice(0, 60);
+      all.push(it); byId.set(it.id, it); trackOf.set(it.id, t.id);
     }
-
-    kids.push(el("h2", { text: "Releases" }));
-    const rels = el("div", { className: "rels" });
-    rels.append(el("div", { className: "rel headrow" }, el("div", { text: "Release and target" }), el("div", { text: "Contents" }), el("div", { text: "State" })));
-    for (const r of d.releases || []) {
-      const st = el("div", { className: "state" }, el("span", { className: "lab", text: "State " }),
-        el("span", { className: "pill " + r.state_class, text: r.state_class }), " ", Stats.spans(el("span", { className: "txt" }), rest(r.state, r.state_class), href));
-      rels.append(el("div", { className: "rel" },
-        el("div", null, Stats.spans(el("div", { className: "name" }), r.release, href), Stats.spans(el("div", { className: "muted small" }), r.target, href)),
-        el("div", { className: "ids" }, el("span", { className: "lab", text: "Contents " }), Stats.spans(el("span"), r.contents, href)),
-        st));
+    $("sub").replaceChildren("From ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
+      ", last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
+    const kids = [].concat(nowSection(d), releasesSection(d), nextAndGoal(d), boardSection(d));
+    const closing = el("section", { className: "closing" });
+    if (d.strategy) {
+      const det = el("details", null, el("summary", null, el("h2", { text: d.strategy.title })));
+      det.append(Stats.blocks(el("div", { className: "prose" }), d.strategy.blocks, href));
+      closing.append(det);
     }
-    kids.push(rels);
-
-    // filters with counts over every item
-    const all = (d.tracks || []).flatMap((t) => t.items);
-    const count = (f) => all.filter(f).length;
-    kids.push(el("h2", { text: "Tracks" }));
-    const stateBox = el("div", { className: "chips", role: "group", "aria-label": "State" });
-    const whoBox = el("div", { className: "chips", role: "group", "aria-label": "Who" });
-    const states = STATES.filter((s) => s !== "other" || count((i) => i.state_class === "other"));
-    Stats.seg(stateBox, [["all", "All", all.length]].concat(states.map((s) => [s, s, count((i) => i.state_class === s)])), view.p.state,
-      (v) => { view.p.state = v; view.save(); draw(); });
-    Stats.seg(whoBox, [["all", "Anyone"], ["M", "M", count((i) => i.who_set.includes("M"))], ["C", "C", count((i) => i.who_set.includes("C"))]], view.p.who,
-      (v) => { view.p.who = v; view.save(); draw(); });
-    const search = el("input", { id: "search", type: "search", placeholder: "Search ids and text", "aria-label": "Search items", autocomplete: "off", value: view.p.q });
-    search.addEventListener("input", () => { view.p.q = search.value; view.save(); searchFocus = true; draw(); });
-    kids.push(el("div", { className: "controls" }, el("span", { className: "lab", text: "State" }), stateBox, el("span", { className: "lab", text: "Who" }), whoBox, search));
-    const shown = all.filter(matches).length;
-    kids.push(el("p", { className: "small", text: shown + " of " + all.length + " items. M is Marcus's hands, C the coordinator and workers." }));
-
-    for (const t of d.tracks || []) {
-      const items = t.items.filter(matches);
-      if (!items.length) continue;
-      const sec = el("section", { className: "track" });
-      sec.append(el("h3", null, el("span", { className: "tid", text: t.id }), " " + t.title, el("span", { className: "n", text: items.length + (items.length === t.items.length ? "" : " of " + t.items.length) })));
-      const tb = el("tbody");
-      for (const it of items) {
-        tb.append(el("tr", { id: /^[A-Z]+-\d+$/.test(it.id) ? it.id : null, className: location.hash === "#" + it.id ? "hit" : null },
-          el("td", { className: "id", text: it.id }),
-          Stats.spans(el("td", { className: "item" }), it.item, href),
-          stateCell(it.state, it.state_class),
-          el("td", { className: "who", "data-label": "Who", text: it.who }),
-          el("td", { className: "release", "data-label": "Release", text: it.release })));
-      }
-      sec.append(el("div", { className: "scroll" }, el("table", { className: "items" },
-        el("thead", null, el("tr", null, ["Id", "Item", "State", "Who", "Release"].map((h) => el("th", { scope: "col", text: h })))), tb)));
-      kids.push(sec);
+    if (d.intro && d.intro.length) {
+      const det = el("details", null, el("summary", null, el("h2", { text: "About the roadmap" })));
+      det.append(Stats.blocks(el("div", { className: "prose" }), d.intro, href));
+      closing.append(det);
     }
-    if (!shown) kids.push(el("p", { className: "empty", text: "No items match." }));
-    main.replaceChildren(...kids);
-    if (searchFocus) { const s = $("search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); searchFocus = false; }
+    kids.push(closing);
+    $("main").replaceChildren(...kids);
+    drawBoard();
   }
 
-  // A link to an item (#FIND-3) shows it even when the filters hide it.
+  // A link to an item (#FIND-3) opens its card, clearing filters that hide it.
   function reveal() {
     const id = decodeURIComponent(location.hash.slice(1));
-    if (!body || !/^[A-Z]+-\d+$/.test(id)) return;
-    if (!document.getElementById(id)) Object.assign(view.p, { state: "all", who: "all", q: "" }), view.save();
-    draw();
-    const row = document.getElementById(id);
-    if (row) row.scrollIntoView({ block: "center" });
+    if (!body || !/^[A-Z]+-\d+$/.test(id) || !byId.has(id)) return;
+    if (!matches(byId.get(id))) { Object.assign(view.p, { state: "all", who: "all", track: "all", q: "" }); view.save(); }
+    openCards.add(id);
+    drawAll();
+    const c = document.getElementById(id);
+    if (!c) return;
+    const g = c.closest("details.group");
+    if (g && !g.open) g.open = true;
+    c.scrollIntoView({ block: "center" });
   }
   window.addEventListener("hashchange", reveal);
-  Stats.start("roadmap", (b) => { const first = !body; body = b; draw(); if (first) reveal(); });
+  Stats.start("roadmap", (b) => { const first = !body; body = b; drawAll(); if (first) reveal(); });
 </script>
 </body>
 </html>
