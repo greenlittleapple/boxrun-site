@@ -45,7 +45,7 @@
 
 <main class="wrap">
   <h1>Privacy</h1>
-  <p class="muted">Updated 31 October 2026.</p>
+  <p class="muted">Updated 2 November 2026.</p>
 
   <h2>Your saves stay on your PC</h2>
   <p>Your routes, times, ghosts and settings are saved on your PC, in the storage that Steam's in-game browser keeps for save.boxrun.gg. BoxRun opens that small page inside the game to save and load. Your routes and times stay on your PC until you press SHARE.</p>
@@ -56,11 +56,21 @@
   <h2>What the menu asks for</h2>
   <p>When the menu opens, BoxRun asks api.boxrun.gg for the route of the week, the newest BoxRun version and any notice. When you open a shipped route or one you loaded by code, BoxRun checks that code for a newer version, once a session. Loading a code sends a request for that code.</p>
 
+  <h2>Anonymous counts</h2>
+  <p>BoxRun sends a few counts to api.boxrun.gg so we can see where new players get stuck and which routes get played:</p>
+  <ul>
+    <li>once each: the first time the map loads, the menu shows, you start a run, finish one, finish one that counts, make a route or load a code, with the number of days since your first day and how many minutes after your first map load it came, rounded down to 0, 1, 2, 5, 10, 30 or 60 minutes or a day</li>
+    <li>once a day you play: the days since your first day, whether it's your first day this week, and whether you came back the day after your first day or in your second week</li>
+    <li>after you play: how many runs you started, finished and got counted, how many of the counted ones were on sample, creator, community or your own routes, and the short code of each of those routes that has one, with how many runs and whether this PC sent that code before (up to 20 codes in one count)</li>
+  </ul>
+  <p>Every count also carries BoxRun's version number and says which of these it is (for example &ldquo;a run finished&rdquo;). Nothing else, and no ID of any kind. They never include your routes, times, splits, names, Steam ID or saves. The server adds them to daily totals, and the short codes to each route's totals of runs and players, and keeps only the totals. With counts off, the menu's request for the route of the week isn't counted either. OPTIONS &gt; MORE &gt; COUNTS turns them off.</p>
+
   <h2>What the server keeps</h2>
   <ul>
     <li>The routes and ghosts people publish.</li>
     <li>A scrambled form (a keyed hash) of the internet address that sent a request, never the address itself. It's used to limit how often one player can send requests, to block spam, to handle reports, to count each player who loads a code once, and to count how many players opened the menu each day and how many of them also opened it the day before. Only the daily totals of those menu counts are kept.</li>
     <li>The hourly counters for those limits expire within 4 days. The record that a scrambled address loaded a code, and when it first loaded one, is kept, because it's what "Loaded by N players" and the player counts use. Reports are kept until the route is reviewed.</li>
+    <li>Daily totals of the anonymous counts, and each route's totals of runs and players from them.</li>
     <li>Server logs hold no request contents and are deleted after 14 days.</li>
   </ul>
   <p>The server never sees your Steam account, your saves or your best times, and sets no cookies. Scrambled isn't the same as anonymous: whoever holds the server's key could match a hash to an address, and only the server and Marcus hold it.</p>
