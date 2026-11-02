@@ -40,6 +40,11 @@
   table.posts td.title { white-space: normal; }
   table.posts .status { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
   table.days { min-width: 34rem; }
+  .others-h { margin: 1.25rem 0 0.5rem; padding-top: 0.9rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
+  table.mentions { min-width: 56rem; }
+  table.mentions td { white-space: nowrap; }
+  table.mentions td.title { white-space: normal; min-width: 18rem; }
+  table.mentions .status { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
   .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 0.3rem 0 0.8rem; vertical-align: -0.05em; }
 </style>
 </head>
@@ -51,7 +56,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/">Roadmap</a><a href="/stats/social/" aria-current="page">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Social</h1>
-  <p class="muted" id="sub">Every BoxRun video and post, with the numbers read by the coordinator and public counts read by the server every hour.</p>
+  <p class="muted" id="sub">Every BoxRun video and post and videos about BoxRun by others, with the numbers read by the coordinator and public counts read by the server every hour.</p>
 
   <section id="ask" hidden>
     <h2>Stats key</h2>
@@ -72,7 +77,7 @@
   "use strict";
   const { el, $, fmt } = Stats;
   const SVG = "http://www.w3.org/2000/svg";
-  const view = Stats.prefs("boxrunStatsSocial", { metric: "views", range: "7d", sort: { key: "posted", dir: -1 } });
+  const view = Stats.prefs("boxrunStatsSocial", { metric: "views", range: "7d", sort: { key: "posted", dir: -1 }, msort: { key: "posted", dir: -1 } });
   let body = null;
 
   // The newest sampled counts of a post, and its series of one metric.
@@ -134,7 +139,7 @@
       el("p", { className: "muted small", text: "Each bar is one Short, grouped by its hook, scaled to the largest. Views are the latest hourly public count where the server has one, else the number read by hand. Like rate is likes per 100 views. Stayed to watch comes from YouTube Studio only." })];
   }
 
-  function chart(p, key, label) {
+  function chart(p, key, label, name) {
     const r = { "48h": 2, "7d": 7, "30d": 30 }[view.p.range] || 7;
     const now = body.samples.length ? Date.parse(body.samples[body.samples.length - 1].t) : Date.now();
     const pts = series(p.id, key).filter((x) => x.t >= now - r * 86400e3);
@@ -170,7 +175,7 @@
     svg.addEventListener("pointermove", pick);
     svg.addEventListener("pointerdown", pick);
     svg.addEventListener("pointerleave", () => { xh.setAttribute("x1", -10); xh.setAttribute("x2", -10); read.textContent = rest; });
-    const name = p.platform + " · " + (p.hook || p.title || p.id);
+    name = name || p.platform + " · " + (p.hook || p.title || p.id);
     return el("div", { className: "card" },
       el("div", { className: "head" }, el("h3", { text: name, title: p.title || name }), el("span", { className: "val", text: Stats.compact(last.v) })),
       read, svg,
@@ -189,10 +194,21 @@
     }
     if (!cards.length) out.push(el("p", { className: "empty", text: "No hourly counts yet. The server reads public counts every hour once the social document is uploaded." }));
     else out.push(el("div", { className: "charts" }, cards));
+    // Videos by others: their own group, named by creator and platform.
+    const byOthers = mentions();
+    if (byOthers.length) {
+      const theirs = byOthers.map((m) => chart(m, "views", "Views", (m.creator || m.handle || m.id) + " · " + m.platform)).filter(Boolean);
+      out.push(el("h3", { className: "others-h", text: "Videos by others (" + theirs.length + " of " + byOthers.length + " with hourly counts)" }));
+      if (theirs.length) out.push(el("div", { className: "charts" }, theirs));
+      else out.push(el("p", { className: "empty", text: "No hourly counts for these yet." }));
+    }
     const s = body.samples || [];
     const lastS = s.length ? s[s.length - 1] : null;
-    out.push(el("p", { className: "muted small", text: "Read every hour from public pages, without a sign-in: YouTube watch pages, TikTok video pages and GameBanana. A source that couldn't be read that hour is skipped. " +
-      (lastS ? "Last read " + Stats.when(lastS.t) + ", " + Object.keys(lastS.counts).length + " posts." : "") }));
+    const ids = new Set(byOthers.map((m) => m.id));
+    const read = lastS ? Object.keys(lastS.counts) : [];
+    const theirsRead = read.filter((k) => ids.has(k)).length;
+    out.push(el("p", { className: "muted small", text: "Read every hour from public pages, without a sign-in: YouTube channel feeds (the watch page when a video isn't in its feed), TikTok video pages and GameBanana. A source that couldn't be read that hour is skipped. " +
+      (lastS ? "Last read " + Stats.when(lastS.t) + ": " + (read.length - theirsRead) + " posts, " + theirsRead + " videos by others." : "") }));
     return out;
   }
 
@@ -235,6 +251,57 @@
       el("p", { className: "muted small", text: "Views (read) are the numbers the coordinator read in YouTube Studio, TikTok Studio and GameBanana on the date under the post. Views now is the latest hourly public count; YouTube's public count can trail Studio's. Click a header to sort." })];
   }
 
+  // Videos about BoxRun by other people (social.json's mentions).
+  const mentions = () => (Array.isArray(body.doc.mentions) ? body.doc.mentions.filter((m) => m && typeof m.id === "string") : []);
+  const viewsNow = (m) => { const l = latest(m.id); return l && typeof l.views === "number" ? l.views : null; };
+  const MCOLS = [
+    { key: "platform", label: "Where", sort: (m) => m.platform || null },
+    { key: "creator", label: "Who", sort: (m) => (m.creator || m.handle || "").toLowerCase() || null },
+    { key: "title", label: "Video", sort: (m) => (m.title || "").toLowerCase() || null },
+    { key: "posted", label: "Posted", sort: (m) => m.posted || null },
+    { key: "views", label: "Views (read)", num: true, sort: (m) => (typeof m.views === "number" ? m.views : null) },
+    { key: "now", label: "Views now", num: true, sort: viewsNow },
+    { key: "likes", label: "Likes", num: true, sort: (m) => m.likes ?? null },
+    { key: "comments", label: "Comments", num: true, sort: (m) => m.comments ?? null },
+    { key: "shares", label: "Shares", num: true, sort: (m) => m.shares ?? null },
+    { key: "names", label: "Names BoxRun", sort: (m) => (typeof m.names_boxrun === "boolean" ? (m.names_boxrun ? 1 : 0) : null) },
+  ];
+  function others() {
+    const list = mentions();
+    if (!list.length) return [el("h2", { text: "Videos by others" }), el("p", { className: "empty", text: "None found yet." })];
+    const total = list.reduce((n, m) => n + (views(m) || 0), 0);
+    const unnamed = list.filter((m) => m.names_boxrun === false).length;
+    const head = el("tr");
+    Stats.sortHead(head, MCOLS, view.p.msort, () => { view.save(); draw(); });
+    const tb = el("tbody");
+    for (const m of Stats.sortRows(list, MCOLS, view.p.msort)) {
+      const url = Stats.safeUrl(m.url);
+      const l = latest(m.id);
+      const notes = typeof m.notes === "string" ? m.notes.trim() : "";
+      const status = [notes, typeof m.read === "string" && m.read ? "Read " + Stats.day(m.read.slice(0, 10)) + "." : null].filter(Boolean).join(" ");
+      const names = typeof m.names_boxrun === "boolean"
+        ? el("span", { className: "pill " + (m.names_boxrun ? "done" : "problem"), text: m.names_boxrun ? "Yes" : "No" }) : "–";
+      tb.append(el("tr", null,
+        el("td", { text: m.platform || "–" }),
+        el("td", null, m.creator || "–", m.handle ? el("div", { className: "muted small", text: m.handle }) : null,
+          typeof m.followers === "number" ? el("div", { className: "muted small", text: Stats.compact(m.followers) + " followers" }) : null),
+        el("td", { className: "title" }, url ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: m.title || url }) : (m.title || "–"),
+          status ? el("div", { className: "status", text: status }) : null),
+        el("td", { text: m.posted ? Stats.day(m.posted) : "–" }),
+        el("td", { className: "num", text: fmt(m.views) }),
+        el("td", { className: "num", text: fmt(viewsNow(m)), title: l ? "read " + Stats.when(l.t) : null }),
+        el("td", { className: "num", text: fmt(m.likes) }),
+        el("td", { className: "num", text: fmt(m.comments) }),
+        el("td", { className: "num", text: fmt(m.shares) }),
+        el("td", null, names)));
+    }
+    return [el("h2", { text: "Videos by others" }),
+      el("p", { text: fmt(list.length) + (list.length === 1 ? " video, " : " videos, ") + fmt(total) + " views in all; " +
+        (unnamed === 1 ? "1 doesn't" : unnamed + " don't") + " name BoxRun." }),
+      el("div", { className: "scroll" }, el("table", { className: "mentions" }, el("thead", null, head), tb)),
+      el("p", { className: "muted small", text: "Videos about BoxRun posted by other people. Views in all use the latest hourly public count where there is one, else the number read by hand. Views (read), likes, comments and shares were read by the coordinator on the date under the title. Names BoxRun: whether the video or its caption names or links BoxRun. Click a header to sort." })];
+  }
+
   function days() {
     const rows = body.doc.daily || [];
     const tb = el("tbody");
@@ -257,8 +324,8 @@
 
   function draw() {
     const d = body.doc;
-    $("sub").textContent = "Every BoxRun video and post. Numbers read by hand " + Stats.when(d.updated) + "; public counts read by the server every hour.";
-    $("main").replaceChildren(...compare(), ...overTime(), ...posts(), ...days());
+    $("sub").textContent = "Every BoxRun video and post, and videos about BoxRun by others. Numbers read by hand " + Stats.when(d.updated) + "; public counts read by the server every hour.";
+    $("main").replaceChildren(...compare(), ...overTime(), ...posts(), ...others(), ...days());
   }
   Stats.start("social", (b) => { body = b; draw(); });
 </script>
