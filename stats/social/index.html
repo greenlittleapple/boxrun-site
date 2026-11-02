@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BoxRun social</title>
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/stats/pages.css">
+<style>
+  .cmp { display: grid; gap: 1rem; }
+  .group h3 { margin-bottom: 0.35rem; }
+  .row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 4.5rem; align-items: center; gap: 0.6rem; margin: 0.25rem 0; }
+  .row .plat { color: var(--muted); font-size: 0.875rem; }
+  .row .track { height: 14px; background: var(--grid); border-radius: 3px; overflow: hidden; }
+  .row .fill { height: 100%; background: var(--bar); border-radius: 3px; }
+  .row .fill.tt { background: var(--s2); }
+  .row .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .row .v.none { color: var(--muted); font-weight: 400; }
+  .charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 0.75rem; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 0.9rem 0.6rem; min-width: 0; }
+  .card .head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card h3 { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .card .val { font: 800 1.5rem/1 var(--display); white-space: nowrap; }
+  .card .read { color: var(--muted); font-size: 0.8rem; min-height: 1.2em; margin: 0.15rem 0 0.35rem; font-variant-numeric: tabular-nums; }
+  .card svg { display: block; width: 100%; height: 90px; touch-action: pan-y; }
+  .card .ln { fill: none; stroke: var(--bar); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .card .ln.tt { stroke: var(--s2); }
+  .card .area { fill: var(--wash); }
+  .card .area.tt { fill: rgba(42, 156, 214, 0.12); }
+  .card .xh { stroke: var(--muted); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .card .axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.75rem; margin-top: 0.2rem; }
+  table.posts { min-width: 50rem; }
+  table.posts td.title { min-width: 14rem; }
+  table.posts td { white-space: nowrap; }
+  table.posts td.title { white-space: normal; }
+  table.posts .status { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
+  table.days { min-width: 34rem; }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 0.3rem 0 0.8rem; vertical-align: -0.05em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="/">BoxRun</a>
+    <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
+  </header>
+  <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/">Roadmap</a><a href="/stats/social/" aria-current="page">Social</a><a href="/stats/opinions/">Opinions</a></nav>
+  <h1>Social</h1>
+  <p class="muted" id="sub">Every BoxRun video and post, with the numbers read by the coordinator and public counts read by the server every hour.</p>
+
+  <section id="ask" hidden>
+    <h2>Stats key</h2>
+    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the BoxRun project. This browser keeps it.</p>
+    <form id="keyform">
+      <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
+      <button class="go" type="submit">Show the tracker</button>
+    </form>
+    <p class="error" id="keyerror" role="alert"></p>
+  </section>
+
+  <section id="main" hidden></section>
+  <p class="error" id="error" role="alert"></p>
+  <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
+</div>
+<script src="/stats/pages.js"></script>
+<script>
+  "use strict";
+  const { el, $, fmt } = Stats;
+  const SVG = "http://www.w3.org/2000/svg";
+  const view = Stats.prefs("boxrunStatsSocial", { metric: "views", range: "7d", sort: { key: "posted", dir: -1 } });
+  let body = null;
+
+  // The newest sampled counts of a post, and its series of one metric.
+  function latest(pid) {
+    const s = body.samples || [];
+    for (let i = s.length - 1; i >= 0; i--) if (s[i].counts && s[i].counts[pid]) return Object.assign({ t: s[i].t }, s[i].counts[pid]);
+    return null;
+  }
+  function series(pid, key) {
+    return (body.samples || []).filter((s) => s.counts && s.counts[pid] && typeof s.counts[pid][key] === "number")
+      .map((s) => ({ t: Date.parse(s.t), v: s.counts[pid][key] }));
+  }
+  const isTT = (p) => p.platform === "TikTok";
+  // Views: the hourly public count when there is one, else the number the coordinator read.
+  function views(p) { const l = latest(p.id); return l && typeof l.views === "number" ? l.views : (typeof p.views === "number" ? p.views : null); }
+  function likeRate(p) {
+    const l = latest(p.id);
+    if (l && typeof l.views === "number" && typeof l.likes === "number" && l.views) return (l.likes / l.views) * 100;
+    return typeof p.likes === "number" && p.views ? (p.likes / p.views) * 100 : null;
+  }
+  const METRICS = {
+    views: { label: "Views", get: views, show: (v) => Stats.compact(Math.round(v)) },
+    stayed: { label: "Stayed to watch", get: (p) => (typeof p.stayed === "number" ? p.stayed * 100 : null), show: (v) => v.toFixed(1) + "%" },
+    likes: { label: "Like rate", get: likeRate, show: (v) => v.toFixed(2) },
+  };
+
+  function compare() {
+    const shorts = body.doc.posts.filter((p) => p.kind === "short" && p.posted);
+    const m = METRICS[view.p.metric] || METRICS.views;
+    const groups = new Map();
+    for (const p of shorts) {
+      const g = p.hook || "launch Short (no challenge)";
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(p);
+    }
+    const max = Math.max(0, ...shorts.map((p) => m.get(p) || 0));
+    const order = [...groups.entries()].sort((a, b) => Math.max(...b[1].map((p) => views(p) || 0)) - Math.max(...a[1].map((p) => views(p) || 0)));
+    const box = el("div", { className: "panel cmp" });
+    for (const [hook, posts] of order) {
+      const g = el("div", { className: "group" }, el("h3", { text: hook }));
+      for (const p of posts.sort((a, b) => (isTT(a) ? 1 : 0) - (isTT(b) ? 1 : 0))) {
+        const v = m.get(p);
+        const pct = v !== null && max > 0 ? Math.max(0.5, (v / max) * 100) : 0;
+        g.append(el("div", { className: "row", title: p.title || "" },
+          el("span", { className: "plat", text: p.platform }),
+          el("div", { className: "track", role: "img", "aria-label": p.platform + " " + hook + ": " + (v === null ? "no number" : m.show(v)) },
+            v === null ? null : el("div", { className: "fill" + (isTT(p) ? " tt" : ""), style: "width:" + pct.toFixed(1) + "%" })),
+          el("span", { className: "v" + (v === null ? " none" : ""), text: v === null ? "–" : m.show(v) })));
+      }
+      box.append(g);
+    }
+    const seg = el("div", { className: "seg", role: "group", "aria-label": "Compare by" });
+    Stats.seg(seg, Object.entries(METRICS).map(([k, x]) => [k, x.label]), view.p.metric, (v) => { view.p.metric = v; view.save(); draw(); });
+    return [el("h2", { text: "Shorts compared" }),
+      el("div", { className: "controls" }, seg,
+        el("span", { className: "small muted" }, el("span", { className: "key", style: "background:var(--bar)" }), "YouTube",
+          el("span", { className: "key", style: "background:var(--s2)" }), "TikTok")),
+      box,
+      el("p", { className: "muted small", text: "Each bar is one Short, grouped by its hook, scaled to the largest. Views are the latest hourly public count where the server has one, else the number read by hand. Like rate is likes per 100 views. Stayed to watch comes from YouTube Studio only." })];
+  }
+
+  function chart(p, key, label) {
+    const r = { "48h": 2, "7d": 7, "30d": 30 }[view.p.range] || 7;
+    const now = body.samples.length ? Date.parse(body.samples[body.samples.length - 1].t) : Date.now();
+    const pts = series(p.id, key).filter((x) => x.t >= now - r * 86400e3);
+    if (!pts.length) return null;
+    const last = pts[pts.length - 1];
+    const dayAgo = pts.find((x) => x.t >= last.t - 86400e3 - 1800e3);
+    const gain = dayAgo && last.t - dayAgo.t >= 20 * 3600e3 ? last.v - dayAgo.v : null;
+    const t0 = pts[0].t, t1 = Math.max(last.t, t0 + 1);
+    const lo = Math.min(...pts.map((x) => x.v)), hi = Math.max(...pts.map((x) => x.v));
+    const span = hi - lo || 1;
+    const X = (t) => ((t - t0) / (t1 - t0)) * 300, Y = (v) => 86 - ((v - lo) / span) * 80;
+    const d = pts.map((x, i) => (i ? "L" : "M") + X(x.t).toFixed(1) + " " + Y(x.v).toFixed(1)).join(" ");
+    const svg = document.createElementNS(SVG, "svg");
+    svg.setAttribute("viewBox", "0 0 300 90");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", label + " over time, " + fmt(pts[0].v) + " to " + fmt(last.v));
+    const mk = (tag, attrs) => { const n = document.createElementNS(SVG, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
+    if (pts.length > 1) svg.append(mk("path", { class: "area" + (isTT(p) ? " tt" : ""), d: d + " L300 90 L0 90 Z" }));
+    svg.append(mk("path", { class: "ln" + (isTT(p) ? " tt" : ""), d: pts.length > 1 ? d : "M0 " + Y(last.v) + " L300 " + Y(last.v) }));
+    const xh = mk("line", { class: "xh", y1: 0, y2: 90, x1: -10, x2: -10 });
+    svg.append(xh);
+    const read = el("div", { className: "read", text: gain === null ? fmt(pts.length) + (pts.length === 1 ? " sample" : " samples") : (gain < 0 ? "" : "+") + fmt(gain) + " in the last 24 h" });
+    const rest = read.textContent;
+    const pick = (e) => {
+      const b = svg.getBoundingClientRect();
+      const t = t0 + ((e.clientX - b.left) / b.width) * (t1 - t0);
+      let best = pts[0];
+      for (const x of pts) if (Math.abs(x.t - t) < Math.abs(best.t - t)) best = x;
+      xh.setAttribute("x1", X(best.t)); xh.setAttribute("x2", X(best.t));
+      read.textContent = Stats.when(best.t) + ": " + fmt(best.v);
+    };
+    svg.addEventListener("pointermove", pick);
+    svg.addEventListener("pointerdown", pick);
+    svg.addEventListener("pointerleave", () => { xh.setAttribute("x1", -10); xh.setAttribute("x2", -10); read.textContent = rest; });
+    const name = p.platform + " · " + (p.hook || p.title || p.id);
+    return el("div", { className: "card" },
+      el("div", { className: "head" }, el("h3", { text: name, title: p.title || name }), el("span", { className: "val", text: Stats.compact(last.v) })),
+      read, svg,
+      el("div", { className: "axis" }, el("span", { text: Stats.when(t0) }), el("span", { text: label + ", " + fmt(lo) + " to " + fmt(hi) })));
+  }
+
+  function overTime() {
+    const out = [el("h2", { text: "Views over time" })];
+    const seg = el("div", { className: "seg", role: "group", "aria-label": "Range" });
+    Stats.seg(seg, [["48h", "48 h"], ["7d", "7 d"], ["30d", "30 d"]], view.p.range, (v) => { view.p.range = v; view.save(); draw(); });
+    out.push(el("div", { className: "controls" }, seg));
+    const cards = [];
+    for (const p of body.doc.posts) {
+      const c = p.id === "gamebanana" ? chart(p, "downloads", "Downloads") : chart(p, "views", "Views");
+      if (c) cards.push(c);
+    }
+    if (!cards.length) out.push(el("p", { className: "empty", text: "No hourly counts yet. The server reads public counts every hour once the social document is uploaded." }));
+    else out.push(el("div", { className: "charts" }, cards));
+    const s = body.samples || [];
+    const lastS = s.length ? s[s.length - 1] : null;
+    out.push(el("p", { className: "muted small", text: "Read every hour from public pages, without a sign-in: YouTube watch pages, TikTok video pages and GameBanana. A source that couldn't be read that hour is skipped. " +
+      (lastS ? "Last read " + Stats.when(lastS.t) + ", " + Object.keys(lastS.counts).length + " posts." : "") }));
+    return out;
+  }
+
+  // GameBanana's page counts downloads; everything else views.
+  const readCount = (p) => (typeof p.downloads === "number" ? p.downloads : typeof p.views === "number" ? p.views : null);
+  const nowCount = (p) => { const l = latest(p.id); return l ? (typeof p.downloads === "number" || p.id === "gamebanana" ? l.downloads : l.views) ?? null : null; };
+  const unit = (p, n) => (n === null ? "–" : fmt(n) + (typeof p.downloads === "number" || p.id === "gamebanana" ? " downloads" : ""));
+  const COLS = [
+    { key: "platform", label: "Where", sort: (p) => p.platform + " " + p.kind },
+    { key: "hook", label: "Hook", sort: (p) => p.hook || null },
+    { key: "title", label: "Post", sort: (p) => (p.title || "").toLowerCase() },
+    { key: "posted", label: "Posted", sort: (p) => p.posted || null },
+    { key: "views", label: "Views (read)", num: true, sort: readCount },
+    { key: "now", label: "Views now", num: true, sort: nowCount },
+    { key: "stayed", label: "Stayed", num: true, sort: (p) => p.stayed ?? null },
+    { key: "likes", label: "Likes", num: true, sort: (p) => p.likes ?? null },
+    { key: "subs", label: "Subs", num: true, sort: (p) => p.subs ?? null },
+  ];
+  function posts() {
+    const head = el("tr");
+    Stats.sortHead(head, COLS, view.p.sort, () => { view.save(); draw(); });
+    const tb = el("tbody");
+    for (const p of Stats.sortRows(body.doc.posts, COLS, view.p.sort)) {
+      const url = Stats.safeUrl(p.url);
+      const l = latest(p.id);
+      const status = [p.status, p.read ? "read " + Stats.day(p.read) : null].filter(Boolean).join("; ");
+      tb.append(el("tr", null,
+        el("td", null, p.platform, el("div", { className: "muted small", text: p.kind })), el("td", { text: p.hook || "–" }),
+        el("td", { className: "title" }, url ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: p.title || url }) : (p.title || "–"),
+          status ? el("div", { className: "status", text: status }) : null),
+        el("td", { text: p.posted ? Stats.day(p.posted) : "–" }),
+        el("td", { className: "num", text: unit(p, readCount(p)) }),
+        el("td", { className: "num", text: unit(p, nowCount(p)), title: l ? "read " + Stats.when(l.t) : null }),
+        el("td", { className: "num", text: typeof p.stayed === "number" ? (p.stayed * 100).toFixed(1) + "%" : "–" }),
+        el("td", { className: "num", text: fmt(p.likes) }),
+        el("td", { className: "num", text: fmt(p.subs) })));
+    }
+    return [el("h2", { text: "Posts" }),
+      el("div", { className: "scroll" }, el("table", { className: "posts" }, el("thead", null, head), tb)),
+      el("p", { className: "muted small", text: "Views (read) are the numbers the coordinator read in YouTube Studio, TikTok Studio and GameBanana on the date under the post. Views now is the latest hourly public count; YouTube's public count can trail Studio's. Click a header to sort." })];
+  }
+
+  function days() {
+    const rows = body.doc.daily || [];
+    const tb = el("tbody");
+    rows.forEach((d, i) => {
+      const prev = i ? rows[i - 1] : null;
+      const share = d.back !== null && d.back !== undefined && prev && prev.menu_players ? " (" + ((d.back / prev.menu_players) * 100).toFixed(1) + "%)" : "";
+      tb.append(el("tr", null, el("td", { text: Stats.day(d.day) + (d.partial ? " (so far)" : "") }),
+        el("td", { className: "num", text: fmt(d.menu_players) }),
+        el("td", { className: "num", text: fmt(d.back) + share }),
+        el("td", { className: "num", text: fmt(d.codes) }),
+        el("td", { className: "num", text: fmt(d.fetchers) })));
+    });
+    return [el("h2", { text: "Players per day" }),
+      el("div", { className: "scroll" }, el("table", { className: "days" },
+        el("thead", null, el("tr", null, el("th", { text: "Day" }), el("th", { className: "num", text: "Menu opened" }),
+          el("th", { className: "num", text: "Back from the day before" }), el("th", { className: "num", text: "Codes shared" }),
+          el("th", { className: "num", text: "Players who loaded a code" }))), tb)),
+      el("p", { className: "muted small", text: "Menu opened counts players whose game opened BoxRun's menu online that day. Back from the day before is how many of them also opened it the day before, with the share of the day before's players. The full history is on the Stats page." })];
+  }
+
+  function draw() {
+    const d = body.doc;
+    $("sub").textContent = "Every BoxRun video and post. Numbers read by hand " + Stats.when(d.updated) + "; public counts read by the server every hour.";
+    $("main").replaceChildren(...compare(), ...overTime(), ...posts(), ...days());
+  }
+  Stats.start("social", (b) => { body = b; draw(); });
+</script>
+</body>
+</html>

@@ -61,6 +61,10 @@
   .wrap { width: min(100% - 2rem, 72rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
   .mark { font: 800 1.6rem/1 var(--display); color: var(--gold); text-decoration: none; letter-spacing: 0.02em; }
+  nav.pages { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.9rem; }
+  nav.pages a { color: var(--muted); text-decoration: none; font: 700 0.95rem var(--body); padding: 0.3rem 0.7rem; border-radius: 8px; border: 1px solid transparent; }
+  nav.pages a:hover { color: var(--ink); }
+  nav.pages a[aria-current="page"] { color: var(--ink); background: var(--panel); border-color: var(--line); }
   .live { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--muted); font-size: 0.875rem; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--live); }
   .dot.stale { background: var(--muted); }
@@ -167,13 +171,14 @@
     <a class="mark" href="../">BoxRun</a>
     <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
   </header>
+  <nav class="pages" aria-label="Stats pages"><a href="/stats/" aria-current="page">Stats</a><a href="/stats/roadmap/">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Usage</h1>
   <p class="muted">Short codes and menu opens from api.boxrun.gg, and the GameBanana page. Times are Pacific. Our own
     PC and test routes are left out.</p>
 
   <section id="ask" hidden>
     <h2>Stats key</h2>
-    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the Deadlock project. This browser keeps it.</p>
+    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the BoxRun project. This browser keeps it.</p>
     <form id="keyform">
       <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
       <button class="go" type="submit">Show stats</button>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BoxRun opinions</title>
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/stats/pages.css">
+<style>
+  .themes { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
+  .theme { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem; }
+  .theme .top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 1rem; align-items: start; }
+  .theme .n { text-align: right; line-height: 1; }
+  .theme .n b { display: block; font: 800 1.9rem/1 var(--display); }
+  .theme .n span { color: var(--muted); font-size: 0.75rem; }
+  .theme .tags { display: flex; flex-wrap: wrap; gap: 0.35rem 0.5rem; align-items: center; margin-top: 0.4rem; font-size: 0.875rem; }
+  .theme .note { color: var(--muted); font-size: 0.875rem; margin: 0.5rem 0 0; max-width: 52rem; }
+  .quotes { list-style: none; padding: 0; margin: 0.7rem 0 0; display: grid; gap: 0.55rem; }
+  .quotes li { border-left: 3px solid var(--line); padding: 0.1rem 0 0.1rem 0.75rem; max-width: 52rem; }
+  .quotes .q { overflow-wrap: anywhere; }
+  .quotes .by { color: var(--muted); font-size: 0.8rem; }
+  .more { margin-top: 0.5rem; font-size: 0.875rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="/">BoxRun</a>
+    <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
+  </header>
+  <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/" aria-current="page">Opinions</a></nav>
+  <h1>Opinions</h1>
+  <p class="muted" id="sub">What players say, grouped by theme.</p>
+
+  <section id="ask" hidden>
+    <h2>Stats key</h2>
+    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the BoxRun project. This browser keeps it.</p>
+    <form id="keyform">
+      <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
+      <button class="go" type="submit">Show the tracker</button>
+    </form>
+    <p class="error" id="keyerror" role="alert"></p>
+  </section>
+
+  <section id="main" hidden></section>
+  <p class="error" id="error" role="alert"></p>
+  <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
+</div>
+<script src="/stats/pages.js"></script>
+<script>
+  "use strict";
+  const { el, $ } = Stats;
+  const KINDS = ["problem", "request", "praise"];
+  const STATUS_ORDER = ["open", "planned", "in 2.1", "done", "exists", "no"];
+  const QUOTES_SHOWN = 3;
+  const view = Stats.prefs("boxrunStatsOpinions", { sort: "count", kind: "all", status: "all", src: "all" });
+  const open = new Set();
+  let body = null;
+  const pillClass = (s) => String(s).replace(/[^a-z0-9]/gi, "").toLowerCase();
+  const newest = (t) => (t.quotes || []).reduce((m, q) => (q.when > m ? q.when : m), "");
+
+  function quotesOf(t) {
+    const v = view.p;
+    return (t.quotes || []).filter((q) => v.src === "all" || q.src === v.src);
+  }
+  function matches(t, skip) {
+    const v = view.p;
+    if (skip !== "kind" && v.kind !== "all" && t.kind !== v.kind) return false;
+    if (skip !== "status" && v.status !== "all" && t.status !== v.status) return false;
+    if (skip !== "src" && v.src !== "all" && !(t.quotes || []).some((q) => q.src === v.src)) return false;
+    return true;
+  }
+
+  function theme(t, sources) {
+    const qs = quotesOf(t).slice().sort((a, b) => (b.when || "").localeCompare(a.when || ""));
+    const all = open.has(t.id);
+    const tags = el("div", { className: "tags" },
+      el("span", { className: "pill " + pillClass(t.kind), text: t.kind }),
+      el("span", { className: "pill " + pillClass(t.status), text: t.status }));
+    if (t.roadmap) {
+      const ids = el("span", { className: "ids" });
+      Stats.linkIds(ids, String(t.roadmap), Stats.roadmapHref);
+      tags.append(ids);
+    }
+    const list = el("ul", { className: "quotes" });
+    for (const q of all ? qs : qs.slice(0, QUOTES_SHOWN)) {
+      list.append(el("li", null, el("div", { className: "q", text: "“" + q.text + "”" }),
+        el("div", { className: "by", text: [q.who, sources[q.src] || q.src, q.when ? Stats.day(q.when) : null].filter(Boolean).join(" · ") })));
+    }
+    const card = el("article", { className: "theme", id: "t-" + t.id },
+      el("div", { className: "top" }, el("div", null, el("h3", { text: t.title }), tags),
+        el("div", { className: "n", title: "times this came up" }, el("b", { text: Stats.fmt(t.count) }), el("span", { text: t.count === 1 ? "mention" : "mentions" }))),
+      t.note ? el("p", { className: "note", text: t.note }) : null,
+      qs.length ? list : el("p", { className: "note", text: "No quotes from this source." }));
+    if (qs.length > QUOTES_SHOWN) {
+      card.append(el("div", { className: "more" }, el("button", { type: "button", className: "plain", "aria-expanded": String(all),
+        text: all ? "Show fewer quotes" : "Show all " + qs.length + " quotes",
+        on: { click: () => { all ? open.delete(t.id) : open.add(t.id); draw(); } } })));
+    }
+    return card;
+  }
+
+  function draw() {
+    const d = body.doc;
+    const themes = d.themes || [];
+    const sources = d.sources || {};
+    const v = view.p;
+    $("sub").textContent = "What players say, grouped by theme. Collected by hand from the Discord, YouTube and GameBanana comments; last read " + Stats.when(d.updated) + ".";
+    const count = (skip, f) => themes.filter((t) => matches(t, skip) && f(t)).length;
+    const kindBox = el("div", { className: "chips", role: "group", "aria-label": "Kind" });
+    Stats.seg(kindBox, [["all", "All", count("kind", () => true)]].concat(KINDS.map((k) => [k, k, count("kind", (t) => t.kind === k)])), v.kind,
+      (x) => { v.kind = x; view.save(); draw(); });
+    const statuses = [...new Set(themes.map((t) => t.status))].sort((a, b) => {
+      const i = STATUS_ORDER.indexOf(a), j = STATUS_ORDER.indexOf(b);
+      return (i < 0 ? 99 : i) - (j < 0 ? 99 : j) || a.localeCompare(b);
+    });
+    const statusBox = el("div", { className: "chips", role: "group", "aria-label": "Status" });
+    Stats.seg(statusBox, [["all", "All", count("status", () => true)]].concat(statuses.map((s) => [s, s, count("status", (t) => t.status === s)])), v.status,
+      (x) => { v.status = x; view.save(); draw(); });
+    const srcs = [...new Set(themes.flatMap((t) => (t.quotes || []).map((q) => q.src)))];
+    const srcBox = el("div", { className: "chips", role: "group", "aria-label": "Source" });
+    Stats.seg(srcBox, [["all", "All"]].concat(srcs.map((s) => [s, sources[s] ? sources[s].replace(/ comments$/, "") : s, count("src", (t) => (t.quotes || []).some((q) => q.src === s))])), v.src,
+      (x) => { v.src = x; view.save(); draw(); });
+    const sortBox = el("div", { className: "seg", role: "group", "aria-label": "Sort" });
+    Stats.seg(sortBox, [["count", "Most mentioned"], ["newest", "Newest quote"], ["title", "A to Z"]], v.sort, (x) => { v.sort = x; view.save(); draw(); });
+
+    const shown = themes.filter((t) => matches(t)).sort((a, b) =>
+      v.sort === "title" ? a.title.localeCompare(b.title)
+        : v.sort === "newest" ? newest(b).localeCompare(newest(a)) || (b.count || 0) - (a.count || 0)
+          : (b.count || 0) - (a.count || 0) || newest(b).localeCompare(newest(a)));
+    const quotes = shown.reduce((n, t) => n + quotesOf(t).length, 0);
+    const mentions = shown.reduce((n, t) => n + (t.count || 0), 0);
+    $("main").replaceChildren(
+      el("div", { className: "controls" }, el("span", { className: "lab", text: "Sort" }), sortBox),
+      el("div", { className: "controls" }, el("span", { className: "lab", text: "Kind" }), kindBox, el("span", { className: "lab", text: "Status" }), statusBox),
+      el("div", { className: "controls" }, el("span", { className: "lab", text: "Source" }), srcBox),
+      el("p", { className: "small", text: shown.length + " of " + themes.length + " themes, " + Stats.fmt(mentions) + " mentions, " + quotes + " quotes shown." }),
+      shown.length ? el("div", { className: "themes" }, shown.map((t) => theme(t, sources))) : el("p", { className: "empty", text: "No themes match." }),
+      el("p", { className: "muted small", text: "Mentions count the people who raised it; the quotes are a sample, as written. Status: open, planned (with a roadmap id), in 2.1, done, exists (there but players don't find it), or no. Roadmap ids link to the roadmap page." }));
+  }
+  Stats.start("opinions", (b) => { body = b; draw(); });
+</script>
+</body>
+</html>

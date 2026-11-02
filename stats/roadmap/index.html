@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BoxRun roadmap</title>
+<meta name="theme-color" content="#1b1c2c">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/stats/pages.css">
+<style>
+  .rel { display: grid; grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem 1.25rem; padding: 0.8rem 1rem; border-bottom: 1px solid var(--line); }
+  .rel:last-child { border-bottom: 0; }
+  .rel .name { font-weight: 700; }
+  .rel .lab { display: none; color: var(--muted); font-size: 0.8rem; }
+  .rels { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .rels .headrow { color: var(--muted); font-size: 0.85rem; font-weight: 700; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .track { margin-top: 1.75rem; }
+  .track h3 { font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; margin-bottom: 0.5rem; }
+  .track h3 .tid { color: var(--gold-ink); }
+  .track h3 .n { color: var(--muted); font: 400 0.85rem var(--body); margin-left: 0.4rem; }
+  table.items { min-width: 0; table-layout: fixed; }
+  table.items th:nth-child(1) { width: 6.5rem; }
+  table.items th:nth-child(3) { width: 36%; }
+  table.items th:nth-child(4) { width: 6rem; }
+  table.items th:nth-child(5) { width: 5.5rem; }
+  table.items td { overflow-wrap: anywhere; }
+  table.items td.id { white-space: nowrap; font-weight: 700; }
+  table.items tr.hit td { background: var(--wash); }
+  table.items tr.hit td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
+  @media (max-width: 720px) { table.items tr.hit { background: var(--wash); box-shadow: inset 3px 0 0 var(--gold); } table.items tr.hit td { background: none; box-shadow: none; } }
+  .state .pill { margin-right: 0.4rem; }
+  .state .txt { color: var(--muted); }
+  #search { flex: 0 1 16rem; }
+  @media (max-width: 720px) {
+    .rel { grid-template-columns: minmax(0, 1fr); }
+    .rel .lab { display: inline; }
+    .rels .headrow { display: none; }
+    table.items, table.items tbody, table.items tr, table.items td { display: block; width: auto !important; table-layout: auto; }
+    table.items thead { display: none; }
+    table.items tr { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--line); }
+    table.items tr:last-child { border-bottom: 0; }
+    table.items td { border: 0; padding: 0.1rem 0; white-space: normal !important; }
+    table.items td.id { display: inline-block; margin-right: 0.5rem; }
+    table.items td.who, table.items td.release { display: inline-block; color: var(--muted); font-size: 0.875rem; margin-right: 0.9rem; }
+    table.items td[data-label]::before { content: attr(data-label) " "; color: var(--muted); font-size: 0.8rem; }
+    #search { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="/">BoxRun</a>
+    <span class="live" id="live" hidden><span class="dot" id="dot"></span><span id="updated"></span></span>
+  </header>
+  <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
+  <h1>Roadmap</h1>
+  <p class="muted" id="sub">Releases and every track's items from <code>docs/BOXRUN-ROADMAP.md</code>.</p>
+
+  <section id="ask" hidden>
+    <h2>Stats key</h2>
+    <p>Paste the stats key. It's in <code>work/boxrun-stats/stats-key.txt</code> in the BoxRun project. This browser keeps it.</p>
+    <form id="keyform">
+      <input id="key" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key" required>
+      <button class="go" type="submit">Show the roadmap</button>
+    </form>
+    <p class="error" id="keyerror" role="alert"></p>
+  </section>
+
+  <section id="main" hidden></section>
+  <p class="error" id="error" role="alert"></p>
+  <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
+</div>
+<script src="/stats/pages.js"></script>
+<script>
+  "use strict";
+  const { el, $ } = Stats;
+  const STATES = ["done", "built", "building", "queued", "parked", "idea", "other"];
+  const view = Stats.prefs("boxrunStatsRoadmap", { state: "all", who: "all", q: "" });
+  let body = null, ids = new Set(), searchFocus = false;
+  const href = (id) => (ids.has(id) ? "#" + id : null);
+  const text = (spans) => (spans || []).map((s) => s[1]).join("");
+
+  function matches(it) {
+    const v = view.p;
+    if (v.state !== "all" && it.state_class !== v.state) return false;
+    if (v.who !== "all" && !it.who_set.includes(v.who)) return false;
+    if (v.q) {
+      const hay = (it.id + " " + text(it.item) + " " + text(it.state) + " " + it.who + " " + it.release).toLowerCase();
+      if (!hay.includes(v.q.toLowerCase())) return false;
+    }
+    return true;
+  }
+  // The state's own first word isn't repeated after its pill: "done (10-31)" shows as [done] (10-31).
+  function rest(spansList, cls) {
+    const list = (spansList || []).map((x) => x.slice());
+    if (list.length && list[0][0] === "t") {
+      const m = list[0][1].match(/^\s*([a-z]+)(?![a-z0-9])[\s;,:]*/i);
+      if (m && m[1].toLowerCase() === cls) list[0][1] = list[0][1].slice(m[0].length);
+      if (!list[0][1]) list.shift();
+    }
+    return list;
+  }
+  function stateCell(spansList, cls) {
+    const td = el("td", { className: "state", "data-label": "" });
+    td.append(el("span", { className: "pill " + cls, text: cls }));
+    td.append(Stats.spans(el("span", { className: "txt" }), rest(spansList, cls), href));
+    return td;
+  }
+
+  function draw() {
+    const d = body.doc;
+    ids = new Set(d.ids || []);
+    const main = $("main");
+    const kids = [];
+    $("sub").replaceChildren("Releases and every track's items from ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
+      ". Last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
+    kids.push(Stats.blocks(el("div", { className: "prose muted small" }), d.intro, href));
+
+    for (const key of ["today", "strategy"]) {
+      const s = d[key];
+      if (!s) continue;
+      const det = el("details", { open: true });
+      det.append(el("summary", null, el("h2", { text: s.title })));
+      det.append(Stats.blocks(el("div", { className: "prose" }), s.blocks, href));
+      kids.push(det);
+    }
+
+    kids.push(el("h2", { text: "Releases" }));
+    const rels = el("div", { className: "rels" });
+    rels.append(el("div", { className: "rel headrow" }, el("div", { text: "Release and target" }), el("div", { text: "Contents" }), el("div", { text: "State" })));
+    for (const r of d.releases || []) {
+      const st = el("div", { className: "state" }, el("span", { className: "lab", text: "State " }),
+        el("span", { className: "pill " + r.state_class, text: r.state_class }), " ", Stats.spans(el("span", { className: "txt" }), rest(r.state, r.state_class), href));
+      rels.append(el("div", { className: "rel" },
+        el("div", null, Stats.spans(el("div", { className: "name" }), r.release, href), Stats.spans(el("div", { className: "muted small" }), r.target, href)),
+        el("div", { className: "ids" }, el("span", { className: "lab", text: "Contents " }), Stats.spans(el("span"), r.contents, href)),
+        st));
+    }
+    kids.push(rels);
+
+    // filters with counts over every item
+    const all = (d.tracks || []).flatMap((t) => t.items);
+    const count = (f) => all.filter(f).length;
+    kids.push(el("h2", { text: "Tracks" }));
+    const stateBox = el("div", { className: "chips", role: "group", "aria-label": "State" });
+    const whoBox = el("div", { className: "chips", role: "group", "aria-label": "Who" });
+    const states = STATES.filter((s) => s !== "other" || count((i) => i.state_class === "other"));
+    Stats.seg(stateBox, [["all", "All", all.length]].concat(states.map((s) => [s, s, count((i) => i.state_class === s)])), view.p.state,
+      (v) => { view.p.state = v; view.save(); draw(); });
+    Stats.seg(whoBox, [["all", "Anyone"], ["M", "M", count((i) => i.who_set.includes("M"))], ["C", "C", count((i) => i.who_set.includes("C"))]], view.p.who,
+      (v) => { view.p.who = v; view.save(); draw(); });
+    const search = el("input", { id: "search", type: "search", placeholder: "Search ids and text", "aria-label": "Search items", autocomplete: "off", value: view.p.q });
+    search.addEventListener("input", () => { view.p.q = search.value; view.save(); searchFocus = true; draw(); });
+    kids.push(el("div", { className: "controls" }, el("span", { className: "lab", text: "State" }), stateBox, el("span", { className: "lab", text: "Who" }), whoBox, search));
+    const shown = all.filter(matches).length;
+    kids.push(el("p", { className: "small", text: shown + " of " + all.length + " items. M is Marcus's hands, C the coordinator and workers." }));
+
+    for (const t of d.tracks || []) {
+      const items = t.items.filter(matches);
+      if (!items.length) continue;
+      const sec = el("section", { className: "track" });
+      sec.append(el("h3", null, el("span", { className: "tid", text: t.id }), " " + t.title, el("span", { className: "n", text: items.length + (items.length === t.items.length ? "" : " of " + t.items.length) })));
+      const tb = el("tbody");
+      for (const it of items) {
+        tb.append(el("tr", { id: /^[A-Z]+-\d+$/.test(it.id) ? it.id : null, className: location.hash === "#" + it.id ? "hit" : null },
+          el("td", { className: "id", text: it.id }),
+          Stats.spans(el("td", { className: "item" }), it.item, href),
+          stateCell(it.state, it.state_class),
+          el("td", { className: "who", "data-label": "Who", text: it.who }),
+          el("td", { className: "release", "data-label": "Release", text: it.release })));
+      }
+      sec.append(el("div", { className: "scroll" }, el("table", { className: "items" },
+        el("thead", null, el("tr", null, ["Id", "Item", "State", "Who", "Release"].map((h) => el("th", { scope: "col", text: h })))), tb)));
+      kids.push(sec);
+    }
+    if (!shown) kids.push(el("p", { className: "empty", text: "No items match." }));
+    main.replaceChildren(...kids);
+    if (searchFocus) { const s = $("search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); searchFocus = false; }
+  }
+
+  // A link to an item (#FIND-3) shows it even when the filters hide it.
+  function reveal() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!body || !/^[A-Z]+-\d+$/.test(id)) return;
+    if (!document.getElementById(id)) Object.assign(view.p, { state: "all", who: "all", q: "" }), view.save();
+    draw();
+    const row = document.getElementById(id);
+    if (row) row.scrollIntoView({ block: "center" });
+  }
+  window.addEventListener("hashchange", reveal);
+  Stats.start("roadmap", (b) => { const first = !body; body = b; draw(); if (first) reveal(); });
+</script>
+</body>
+</html>
