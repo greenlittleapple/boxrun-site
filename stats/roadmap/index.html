@@ -47,12 +47,6 @@
   ul.list > li:first-child { border-top: 0; padding-top: 0; }
   ul.list > li > .txt { min-width: 0; overflow-wrap: anywhere; }
   .tag { font: 700 0.8rem var(--body); color: var(--ink); background: var(--wash); border-radius: 4px; padding: 0 0.35rem; white-space: nowrap; }
-  li.c-step > .txt { color: var(--muted); }
-  .sublab { color: var(--muted); font-size: 0.8rem; font-weight: 700; margin: 0.75rem 0 0.3rem; }
-  .mini { display: grid; gap: 0.3rem; }
-  .mini .row { display: flex; gap: 0.5rem; align-items: baseline; min-width: 0; font-size: 0.925rem; }
-  .mini .row .t { min-width: 0; flex: 1; overflow-wrap: anywhere; }
-  .mini .row .pill { flex: none; }
   .donetoday { display: flex; gap: 0.5rem; align-items: baseline; margin: 0.75rem 0 0; color: var(--muted); font-size: 0.9rem; }
   .donetoday .ico { color: var(--st-done); align-self: center; }
   .donetoday b { color: var(--ink); }
@@ -74,6 +68,17 @@
   .bar > span { min-width: 4px; }
   .counts { display: flex; flex-wrap: wrap; gap: 0.15rem 0.9rem; font-size: 0.85rem; margin-top: 0.35rem; color: var(--muted); }
   .counts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .counts .cnt { background: none; border: 0; padding: 0; font: inherit; color: var(--link); cursor: pointer; display: inline-flex; align-items: baseline; gap: 0.25rem; text-decoration: underline; text-underline-offset: 0.2em; }
+  .counts .cnt b { color: inherit; }
+  .counts .cnt[aria-expanded="true"] { color: var(--ink); text-decoration-thickness: 2px; }
+  .counts .cnt .sw { margin-right: 0.1rem; align-self: center; }
+  .counts .alldone { display: inline-flex; align-items: center; color: var(--ink); }
+  ul.rlist { list-style: none; margin: 0.45rem 0 0.2rem; padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 8px; background: var(--wash); }
+  ul.rlist > li { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr); gap: 0.1rem 0.6rem; padding: 0.35rem 0; border-top: 1px solid var(--line); font-size: 0.9rem; }
+  ul.rlist > li:first-child { border-top: 0; }
+  ul.rlist .t { font-weight: 700; overflow-wrap: anywhere; }
+  ul.rlist .d { grid-column: 2; color: var(--muted); font-size: 0.825rem; overflow-wrap: anywhere; }
+  @media (max-width: 480px) { ul.rlist > li { grid-template-columns: auto minmax(0, 1fr); } }
   .rel details { font-size: 0.85rem; margin-top: 0.3rem; }
   .rel details > summary { color: var(--muted); display: inline-block; }
   .rel details > summary::before { content: "\25B8  "; }
@@ -199,9 +204,16 @@
   // A release cell short enough for a card: "2.2 or 2.3 (building from 11-02, ...)" -> "2.2 or 2.3".
   const relLabel = (it) => it.release_id || String(it.release || "").replace(/\s*\(.*$/, "");
 
-  // A row for a short list: id, title, state.
-  function miniRow(it) {
-    return el("div", { className: "row" }, idLink(it.id), el("span", { className: "t", title: it.title, text: it.title }), pill(it.state_class));
+  // One of Today's lists as rows: a bold lead ("w73:") as a tag, then the text.
+  function todayList(list) {
+    return el("ul", { className: "list" }, list.map((inl) => {
+      const li = el("li");
+      const rest = inl.slice();
+      if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
+      if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
+      li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
+      return li;
+    }));
   }
 
   function nowSection(d) {
@@ -210,45 +222,13 @@
     const parts = today.parts || [];
     out.push(el("h2", null, "Now", today.title ? el("span", { className: "aside", text: today.title }) : null));
 
-    // Building now: Today's running part, then items marked building that aren't waiting on Marcus.
+    // The two boxes show Today's "Building now (C)" and "Needs Marcus" lists as written, nothing inferred.
     const run = el("div", { className: "box run" }, el("h3", null, icon("run"), "Building now", el("span", { className: "w C", text: "C" })));
-    const running = parts.filter((p) => p.kind === "running");
-    for (const p of running) {
-      if (p.inl && p.inl.length) run.append(Stats.spans(el("p", { className: "lead" }), p.inl, href));
-      if (p.list.length) {
-        run.append(el("ul", { className: "list" }, p.list.map((inl) => {
-          const li = el("li");
-          const rest = inl.slice();
-          if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
-          if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
-          li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
-          return li;
-        })));
-      }
-    }
-    if (!running.length) run.append(el("p", { className: "lead", text: "Today names nothing running." }));
-    const busy = all.filter((it) => it.state_class === "building" && !it.waits_on_m && trackOf.get(it.id) !== "GOAL");
-    const ongoing = busy.filter((it) => /^\s*ongoing/i.test(text(it.state)));
-    const also = busy.filter((it) => !ongoing.includes(it));
-    if (also.length) run.append(el("div", { className: "sublab", text: "Also building" }), el("div", { className: "mini" }, also.map(miniRow)));
-    if (ongoing.length) run.append(el("div", { className: "sublab", text: "Ongoing" }), el("div", { className: "mini" }, ongoing.map(miniRow)));
-
-    // Waiting on Marcus: Today's coming steps (his in full, the coordinator's between them dimmed), then open items with M.
-    const wait = el("div", { className: "box wait" }, el("h3", null, icon("wait"), "Waiting on Marcus", el("span", { className: "w M", text: "M" })));
-    const mentioned = new Set();
-    for (const p of parts.filter((x) => x.kind === "next" && x.steps.some((s) => s.who.includes("M")))) {
-      wait.append(el("div", { className: "sublab", text: p.label }));
-      wait.append(el("ul", { className: "list" }, p.steps.map((s) => {
-        const mine = s.who.includes("M");
-        for (const m of s.text.matchAll(/\b[A-Z]{3,7}-\d+\b/g)) if (mine) mentioned.add(m[0]);
-        return el("li", { className: mine ? "m-step" : "c-step" },
-          el("span", { className: "whoset" }, s.who.map((w) => el("span", { className: "w " + w, text: w }))),
-          Stats.spans(el("span", { className: "txt" }), [["t", s.text]], href));
-      })));
-    }
-    const mine = all.filter((it) => it.waits_on_m && !mentioned.has(it.id));
-    if (mine.length) wait.append(el("div", { className: "sublab", text: "Open items with M" }), el("div", { className: "mini" }, mine.map(miniRow)));
-    if (wait.childNodes.length === 1) wait.append(el("p", { className: "lead", text: "Nothing waiting on Marcus." }));
+    if (today.building && today.building.length) run.append(todayList(today.building));
+    else run.append(el("p", { className: "lead", text: "Nothing is being built right now." }));
+    const wait = el("div", { className: "box wait" }, el("h3", null, icon("wait"), "Needs Marcus", el("span", { className: "w M", text: "M" })));
+    if (today.needs && today.needs.length) wait.append(todayList(today.needs));
+    else wait.append(el("p", { className: "lead", text: "Nothing needs Marcus right now." }));
     out.push(el("div", { className: "cols" }, run, wait));
 
     for (const p of parts.filter((x) => x.kind === "done")) {
@@ -273,8 +253,29 @@
     for (const s of STATES) if (c[s]) bar.append(el("span", { className: "seg-" + s, style: "flex: " + c[s] + " 1 0" }));
     return bar;
   }
-  function legend(c) {
-    return el("div", { className: "counts" }, STATES.filter((s) => c[s]).map((s) => el("span", null, el("span", { className: "sw " + s }), el("b", { text: c[s] }), " " + s)));
+  // A release's counts. Each opens the list of the release's items in that state: id, title, the state's detail.
+  const openRel = {};
+  function relCounts(r, items, c) {
+    const key = r.id || r.name;
+    const list = el("ul", { className: "rlist", id: "rl-" + String(key).replace(/[^A-Za-z0-9]/g, "_") });
+    const btns = [];
+    function show() {
+      const s = openRel[key];
+      for (const b of btns) b.setAttribute("aria-expanded", String(b.dataset.s === s));
+      list.hidden = !s;
+      list.replaceChildren(...(s ? items.filter((it) => it.state_class === s).map((it) => el("li", null,
+        el("a", { className: "chipid", href: "#" + it.id, text: it.id,
+          on: { click: (e) => { if (location.hash === "#" + it.id) { e.preventDefault(); reveal(); } } } }),
+        el("span", { className: "t", text: it.title }),
+        it.state_line ? el("span", { className: "d", text: it.state_line }) : null)) : []));
+    }
+    for (const s of STATES.filter((x) => c[x])) {
+      btns.push(el("button", { type: "button", className: "cnt", "data-s": s, "aria-controls": list.id,
+        on: { click: () => { openRel[key] = openRel[key] === s ? null : s; show(); } } },
+        el("span", { className: "sw " + s }), el("b", { text: c[s] }), s));
+    }
+    show();
+    return [el("div", { className: "counts" }, btns), list];
   }
 
   function releasesSection(d) {
@@ -287,13 +288,18 @@
         el("div", null, r.id ? el("span", { className: "rid", text: r.id }) : null, el("span", { className: "rname", text: r.name || text(r.release) })),
         el("div", { className: "rtarget", text: r.target_short || text(r.target) }));
       const right = el("div");
-      if (items.length) {
-        right.append(stateBar(c, items.length), legend(c));
+      if (items.length && c.done === items.length) {
+        right.append(el("div", { className: "counts" }, el("span", { className: "alldone" }, el("span", { className: "sw done" }), "all done")));
+      } else if (items.length) {
+        right.append(stateBar(c, items.length), ...relCounts(r, items, c));
       } else {
         // No item ids in its contents: one segment for the release's own state.
         right.append(stateBar({ [r.state_class]: 1 }, 1), el("div", { className: "counts" }, Stats.spans(el("span"), r.contents, href)));
       }
-      right.append(el("div", { className: "rstate" }, pill(r.state_class), " ", el("span", { className: "txt", text: afterWord(r.state_short, r.state_class) })));
+      // An all-done release that's done itself doesn't repeat it: only the state's text, if any.
+      const allDone = items.length && c.done === items.length && r.state_class === "done";
+      const said = afterWord(r.state_short, r.state_class);
+      if (!allDone || said) right.append(el("div", { className: "rstate" }, allDone ? null : pill(r.state_class), allDone ? null : " ", el("span", { className: "txt", text: said })));
       const det = el("details", null, el("summary", { text: "Full contents and state" }),
         el("div", { className: "prose" },
           Stats.spans(el("p"), [["b", "Target: "]].concat(r.target || []), href),
