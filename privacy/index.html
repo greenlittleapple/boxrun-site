@@ -71,6 +71,8 @@
     <li>A scrambled form (a keyed hash) of the internet address that sent a request, never the address itself. It's used to limit how often one player can send requests, to block spam, to handle reports, to count each player who loads a code once, and to count how many players opened the menu each day and how many of them also opened it the day before. Only the daily totals of those menu counts are kept.</li>
     <li>The hourly counters for those limits expire within 4 days. The record that a scrambled address loaded a code, and when it first loaded one, is kept, because it's what "Loaded by N players" and the player counts use. Reports are kept until the route is reviewed.</li>
     <li>Daily totals of the anonymous counts, and each route's totals of runs and players from them.</li>
+    <li>Some codes we post, for example under a video, are extra codes for the same route, so we can see which post brought players; loading one counts you once for that code, the same way loading any code does.</li>
+    <li>Links through api.boxrun.gg/go/, such as the GameBanana link under our videos, add one to that link's click total for the day and send you on; nothing about who clicked is kept beyond the hourly limit counters above.</li>
     <li>Server logs hold no request contents and are deleted after 14 days.</li>
   </ul>
   <p>The server never sees your Steam account, your saves or your best times, and sets no cookies. Scrambled isn't the same as anonymous: whoever holds the server's key could match a hash to an address, and only the server and Marcus hold it.</p>

@@ -157,6 +157,7 @@
   .rname[aria-expanded="true"]::before { content: "\25BE  "; }
   .flag { display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--line); color: var(--muted); }
   .flag.held { border-color: var(--beat); color: var(--beat); }
+  .alias { margin-top: 0.3rem; white-space: normal; }
   tr.held td { background: rgba(255, 125, 125, 0.08); }
   tr.held td:first-child { box-shadow: inset 3px 0 0 var(--beat); }
   .copy { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 0.1rem 0.45rem; font: 700 0.75rem var(--body); cursor: pointer; margin-right: 0.4rem; }
@@ -203,7 +204,7 @@
       Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
 
     <h2>Routes</h2>
-    <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to the Players since launch tile. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red.</p>
+    <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to the Players since launch tile. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red. Alias codes (admin.py alias add) are listed under their route's code with their label and the players who loaded the route through them; those players are in the route's count too.</p>
     <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
     <div id="routes-box" hidden>
       <div class="controls rcontrols">
@@ -233,6 +234,17 @@
     <p class="muted small">A dash means that day's counts expired before they were saved. Menu opened counts the players
       whose game asked for the route of the week (once a session, at the first menu: online, BoxRun 2.0.6 and later).
       Back from the day before is how many of them also opened it the day before.</p>
+
+    <h2>Link clicks per day</h2>
+    <div id="go-missing" class="muted">No /go links yet (admin.py go add).</div>
+    <div class="scroll" id="go-box" hidden>
+      <table>
+        <thead><tr id="gohead"></tr></thead>
+        <tbody id="gobody"></tbody>
+      </table>
+    </div>
+    <p class="muted small">Clicks on api.boxrun.gg/go/&lt;name&gt; per Pacific day, a plain count: link previewers, our PC and
+      more than 30 an hour from one address aren't counted. Nothing about who clicked is kept.</p>
 
     <h2>GameBanana per day</h2>
     <div class="scroll">
@@ -798,6 +810,34 @@
       <td class="${d.day === b.today ? "today" : ""}">${d.day}${d.day === b.today ? " (today)" : ""}</td>
       <td>${fmt(d.downloads)}</td><td>${prev ? fmt(d.downloads - prev.downloads) : "–"}</td>
       <td>${fmt(d.views)}</td><td>${fmt(d.likes)}</td></tr>`).join("");
+    renderGo(b);
+  }
+
+  // ---- /go links: clicks per day per name (names and URLs are ours, still set as text) ----
+  function renderGo(b) {
+    const links = Array.isArray(b.go) ? b.go : [];
+    $("go-missing").hidden = links.length > 0;
+    $("go-box").hidden = links.length === 0;
+    const head = $("gohead"), body = $("gobody");
+    head.textContent = ""; body.textContent = "";
+    if (!links.length) return;
+    const cell = (tr, tag, text, cls) => { const c = document.createElement(tag); c.textContent = text; if (cls) c.className = cls; tr.appendChild(c); return c; };
+    cell(head, "th", "Day");
+    for (const l of links) {
+      const th = cell(head, "th", "/go/" + l.name);
+      th.title = l.url || "removed";
+    }
+    const days = [...new Set(links.flatMap((l) => Object.keys(l.days || {})))].sort().reverse();
+    const total = document.createElement("tr");
+    cell(total, "td", "Total");
+    for (const l of links) cell(total, "td", fmt(l.total));
+    body.appendChild(total);
+    for (const day of days) {
+      const tr = document.createElement("tr");
+      cell(tr, "td", day + (day === b.today ? " (today)" : ""), day === b.today ? "today" : "");
+      for (const l of links) cell(tr, "td", fmt((l.days || {})[day] || 0));
+      body.appendChild(tr);
+    }
   }
 
   // ---- routes: Marcus's list of every shared route (private: behind the key, noindex) ----
@@ -896,6 +936,12 @@
         a.href = "https://r.boxrun.gg/" + encodeURIComponent(r.code); a.rel = "noopener noreferrer"; a.target = "_blank"; a.textContent = r.code;
         code.append(cb, a);
       } else code.textContent = r.code || "–";
+      for (const al of Array.isArray(r.aliases) ? r.aliases : []) {
+        const d = document.createElement("div");
+        d.className = "alias muted small";
+        d.textContent = `${al.code} · ${al.label || "alias"} · ${fmt(al.players)} player${al.players === 1 ? "" : "s"}` + (al.removed ? " (removed)" : "");
+        code.appendChild(d);
+      }
       td(fmt(r.players), "num");
       td((Number.isFinite(+r.checkpoints) ? fmt(r.checkpoints) : "–") + " / " + (Number.isFinite(+r.boxes) ? fmt(r.boxes) : "–") + (r.urn ? " · urn" : ""), "num");
       td(heroName(r.hero));
