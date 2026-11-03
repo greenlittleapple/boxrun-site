@@ -86,6 +86,12 @@
   .tile .n .beside { font: 700 0.95rem/1.2 var(--body); color: var(--muted); white-space: nowrap; }
   .tile .n.pend { font-size: 1.7rem; color: var(--muted); }
   table.cohorts { min-width: 46rem; }
+  #week .scroll { max-width: 40rem; }
+  table.board { min-width: 0; }
+  table.board td, table.board th { text-align: left; padding: 0.5rem 0.6rem; }
+  table.board td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; width: 100%; }
+  table.board td.num, table.board th.num { text-align: right; }
+  #week h3 { margin: 1rem 0 0.4rem; }
   table.cohorts td:first-child, table.cohorts th:first-child { position: sticky; left: 0; z-index: 1; }
   table.cohorts td:first-child { background: var(--night); }
   table.cohorts td .share { display: block; color: var(--muted); font-size: 0.8rem; }
@@ -233,6 +239,11 @@
         count can still grow. The counts are a floor: games with counts off, offline or older than 2.1 send nothing.</p>
     </div>
 
+    <h2 id="weekboard">This week's board</h2>
+    <p class="muted small">From api.boxrun.gg/v1/week, the board the game shows. Times count at default souls and 100% game
+      speed, each with its ghost. The board stays open until the week rolls, so entries still count after its end.</p>
+    <div id="week" class="muted">Loading the board.</div>
+
     <h2>Routes</h2>
     <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to the Players since launch tile. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red. Alias codes (admin.py alias add) are listed under their route's code with their label and the players who loaded the route through them; those players are in the route's count too.</p>
     <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
@@ -295,9 +306,11 @@
   <p class="error" id="error" role="alert"></p>
 </div>
 <script src="/stats/funnel.js"></script>
+<script src="/stats/week.js"></script>
 <script>
   // Local preview (127.0.0.1/localhost) reads /v1/stats from a dev proxy; ?synth=1 asks it for test hours and samples.
   const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  const WEEK = LOCAL ? "/v1/week" : "https://api.boxrun.gg/v1/week";
   const API = LOCAL ? "/v1/stats" + (location.search.includes("synth=1") ? "?synth=1" : "") : "https://api.boxrun.gg/v1/stats";
   // LAST: the last answer this browser got, drawn at once on the next visit while the fresh one loads; dropped with the key
   const STORE = "boxrunStatsKey", PREFS = "boxrunStatsView", LAST = "boxrunStatsLast";
@@ -1115,9 +1128,23 @@
     updatedText();
   }
 
+  // ---- the weekly board (FIND-4): public /v1/week, fetched on its own so a failure leaves the rest; week.js renders it ----
+  async function loadWeek() {
+    let b = null, err = null;
+    try {
+      const r = await fetch(WEEK, { cache: "no-store" });
+      if (!r.ok) throw new Error("the server answered " + r.status);
+      b = await r.json();
+    } catch (e) { err = e.message; }
+    const el = $("week");
+    el.className = "";
+    el.innerHTML = BoxRunWeek.render(b, Date.now(), err);
+  }
+
   async function load() {
     const key = getKey();
     if (!key) return showAsk();
+    loadWeek();
     try {
       const r = await fetch(API, { headers: { authorization: "Bearer " + key }, cache: "no-store" });
       if (r.status === 404 || r.status === 401) { setKey(""); return showAsk("That key didn't work."); }
