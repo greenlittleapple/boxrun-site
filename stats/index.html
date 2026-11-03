@@ -82,6 +82,16 @@
   .tile .k { margin-top: 0.35rem; }
   .tile .s { color: var(--muted); font-size: 0.85rem; }
   .tile svg { display: block; width: 100%; height: 28px; margin-top: 0.5rem; overflow: visible; }
+  .tile .n:has(.beside) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4rem; row-gap: 0.2rem; }
+  .tile .n .beside { font: 700 0.95rem/1.2 var(--body); color: var(--muted); white-space: nowrap; }
+  .tile .n.pend { font-size: 1.7rem; color: var(--muted); }
+  table.cohorts { min-width: 46rem; }
+  table.cohorts td:first-child, table.cohorts th:first-child { position: sticky; left: 0; z-index: 1; }
+  table.cohorts td:first-child { background: var(--night); }
+  table.cohorts td .share { display: block; color: var(--muted); font-size: 0.8rem; }
+  table.cohorts td.pending { color: var(--muted); font-style: italic; }
+  table.cohorts td.pending .share { font-style: normal; }
+  table.cohorts tr.empty td:not(:first-child) { color: var(--muted); }
   .controls { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; margin: 2rem 0 0.5rem; }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
   .seg button { background: none; border: 0; color: var(--ink); font: 700 0.9rem var(--body); padding: 0.45rem 0.8rem; cursor: pointer; }
@@ -203,6 +213,26 @@
     <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.
       Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
 
+    <h2 id="funnel">Funnel</h2>
+    <p class="muted small">From games with counts on (2.1 and later), new installs only. A 2.0.x player who updated to 2.1
+      isn't a new install: it sends no first-time steps and no returns, though its days and runs count in the weekly
+      numbers. An install's first day is the Pacific day of its first map load.</p>
+    <div id="funnel-missing" class="muted">The funnel appears when the server sends it.</div>
+    <div id="funnel-box" hidden>
+      <div class="tiles" id="ftiles"></div>
+      <div class="scroll" style="margin-top: 1rem">
+        <table class="cohorts">
+          <thead><tr><th>First day</th><th>Map loads</th><th>Menu</th><th>Started a run</th><th>Finished a run</th>
+            <th>Counted finish</th><th>Back next day</th><th>Back days 7-13</th></tr></thead>
+          <tbody id="fbody"></tbody>
+        </table>
+      </div>
+      <p class="muted small">Each row is the installs whose first day it was: how many reached each step at least once (on
+        any day; a step on a later day is filed under the first day) and how many came back the next day or on any of days
+        7 to 13. Shares are of that row's map loads. Pending means the window for coming back isn't over yet, so the
+        count can still grow. The counts are a floor: games with counts off, offline or older than 2.1 send nothing.</p>
+    </div>
+
     <h2>Routes</h2>
     <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to the Players since launch tile. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red. Alias codes (admin.py alias add) are listed under their route's code with their label and the players who loaded the route through them; those players are in the route's count too.</p>
     <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
@@ -264,6 +294,7 @@
   </section>
   <p class="error" id="error" role="alert"></p>
 </div>
+<script src="/stats/funnel.js"></script>
 <script>
   // Local preview (127.0.0.1/localhost) reads /v1/stats from a dev proxy; ?synth=1 asks it for test hours and samples.
   const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
@@ -760,11 +791,15 @@
     el("line", { class: "spk-dot", x1: lx, y1: ly, x2: lx, y2: ly, "vector-effect": "non-scaling-stroke" }, svg);
     return svg;
   }
-  function tile(n, label, sub, sp) {
+  // n: a number, or text as it stands ("12%", "Pending"); beside: a smaller count next to it (the players behind a ratio)
+  function tile(n, label, sub, sp, beside) {
     const d = document.createElement("div");
     d.className = "tile";
     d.innerHTML = '<div class="n"></div><div class="k"></div><div class="s"></div>';
-    d.querySelector(".n").textContent = fmt(n);
+    const big = d.querySelector(".n");
+    big.textContent = typeof n === "string" ? n : fmt(n);
+    if (n === "Pending") big.classList.add("pend");
+    if (beside) { const s = document.createElement("span"); s.className = "beside"; s.textContent = beside; big.appendChild(s); }
     d.querySelector(".k").textContent = label;
     d.querySelector(".s").textContent = sub;
     const svg = sp && spark(sp);
@@ -840,6 +875,74 @@
       const tr = document.createElement("tr");
       cell(tr, "td", day + (day === b.today ? " (today)" : ""), day === b.today ? "today" : "");
       for (const l of links) cell(tr, "td", fmt((l.days || {})[day] || 0));
+      body.appendChild(tr);
+    }
+  }
+
+  // ---- the funnel (COUNT-6): the maths are in funnel.js, the same file stats/test/test_funnel.mjs checks ----
+  function renderFunnel(b) {
+    const F = BoxRunFunnel, v = F.view(b);
+    $("funnel-missing").hidden = !!v;
+    $("funnel-box").hidden = !v;
+    if (!v) return;
+    const pct = F.pct, day = F.dayLabel;
+    const plural = (k, one, many) => fmt(k) + " " + (k === 1 ? one : many);
+    // a return tile: the last 7 first days whose window has closed, pooled, with the newest of them named
+    const back = (r, label, what, firstOpens) => {
+      if (!r.cohorts) {
+        const sub = r.open ? `First numbers: ${day(r.open.day)}'s installs, ${fmt(r.open.back)} of ${fmt(r.open.load)} back so far, complete after ${day(r.open.closes)}`
+          : v.rows.length ? `First numbers from ${day(F.addDays(v.rows[0].day, firstOpens))}, for ${day(v.rows[0].day)}'s installs` : "No first loads counted yet";
+        return tile("Pending", label, sub);
+      }
+      const nw = r.newest;
+      return tile(pct(r.share), label, `${what}, of ${plural(r.load, "first load", "first loads")}, first ${r.cohorts > 1 ? "days " + F.spanLabel(r.from, r.to) : "day " + day(r.to)}. ` +
+        `Newest complete, ${day(nw.day)}: ${fmt(nw.back)} of ${fmt(nw.load)} (${pct(nw.share)})`, r.spark.length > 1 ? r.spark : null, fmt(r.back) + " back");
+    };
+    const tw = v.thisWeek, lw = v.lastWeek;
+    const wk = tw ? "week of " + day(tw.week) + " so far" : "";
+    const full = v.weeks.filter((w) => !w.current);             // the sparklines leave out the week still running
+    const wspark = (k) => (full.length > 1 ? full.map((w) => w[k]) : null);
+    const one = (x) => (x === null ? "–" : x.toFixed(1));
+    const c = v.completion;
+    $("ftiles").replaceChildren(
+      tile(v.firstLoads.n, "First loads today", "new installs, " + day(v.today), v.firstLoads.spark),
+      tile(pct(c.share), "First-run completion", `a counted finish, of ${plural(c.load, "first load", "first loads")}, first days ${F.spanLabel(c.from || c.to, c.to)}`,
+        null, fmt(c.count) + " finished"),
+      back(v.nextDay, "Next-day return", "back the next day", 1),
+      back(v.week1, "Week-1 return", "back on days 7-13", 7),
+      tile(tw ? tw.actives : null, "Weekly actives", tw ? `installs that played, ${wk}` + (lw ? `. Last week ${fmt(lw.actives)}` : "") : "no counted play yet", wspark("actives")),
+      tile(tw ? one(tw.perPlayer) : "–", "Runs per player", tw ? `counted runs per weekly active, ${wk} (${one(tw.startedPer)} started, ${one(tw.finishedPer)} finished)` +
+        (lw ? `. Last week ${one(lw.perPlayer)}` : "") : "no counted play yet", wspark("perPlayer"), tw ? plural(tw.actives, "player", "players") : ""),
+      tile(tw ? pct(tw.communityShare) : "–", "Community share of runs", tw ? `on community routes and creator packs, of ${plural(tw.kinds, "counted run", "counted runs")}, ${wk}` +
+        (lw ? `. Last week ${pct(lw.communityShare)}` : "") : "no counted play yet", wspark("communityShare"), tw ? plural(tw.community + tw.pack, "run", "runs") : ""));
+    const body = $("fbody");
+    body.textContent = "";
+    if (!v.rows.length) {
+      const tr = document.createElement("tr"), td = document.createElement("td");
+      td.colSpan = 8; td.className = "muted"; td.textContent = "No first loads counted yet.";
+      tr.appendChild(td); body.appendChild(tr);
+      return;
+    }
+    for (const r of v.rows.slice().reverse()) {
+      const tr = document.createElement("tr");
+      if (r.empty) tr.className = "empty";
+      const td = (main, sub, cls) => {
+        const d = document.createElement("td");
+        d.textContent = main;
+        if (cls) d.className = cls;
+        if (sub) { const s = document.createElement("span"); s.className = "share"; s.textContent = sub; d.appendChild(s); }
+        tr.appendChild(d);
+        return d;
+      };
+      td(F.dowLabel(r.day) + (r.today ? " (today)" : ""), r.empty ? "no first loads" : "", r.today ? "today" : "");
+      td(fmt(r.load));
+      for (const s of F.STEPS.slice(1)) td(fmt(r[s]), pct(r.load ? r[s] / r.load : null));
+      for (const k of ["back_d1", "back_w2"]) {
+        const w = r[k];
+        if (w.state === "closed") td(fmt(w.n), pct(r.load ? w.n / r.load : null));
+        else td("pending", w.state === "open" ? `${fmt(w.n)} so far, until ${day(w.closes)}` : "from " + day(w.opens), "pending")
+          .title = w.state === "open" ? `The window runs to the end of ${day(w.closes)} (Pacific).` : `The window opens on ${day(w.opens)}.`;
+      }
       body.appendChild(tr);
     }
   }
@@ -1006,6 +1109,7 @@
     if (first) buildCards();
     renderTiles(data);
     renderTables(data);
+    renderFunnel(data);
     renderRoutes(data);
     redraw();
     updatedText();
