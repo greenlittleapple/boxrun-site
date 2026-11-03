@@ -268,7 +268,8 @@
   // Local preview (127.0.0.1/localhost) reads /v1/stats from a dev proxy; ?synth=1 asks it for test hours and samples.
   const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
   const API = LOCAL ? "/v1/stats" + (location.search.includes("synth=1") ? "?synth=1" : "") : "https://api.boxrun.gg/v1/stats";
-  const STORE = "boxrunStatsKey", PREFS = "boxrunStatsView";
+  // LAST: the last answer this browser got, drawn at once on the next visit while the fresh one loads; dropped with the key
+  const STORE = "boxrunStatsKey", PREFS = "boxrunStatsView", LAST = "boxrunStatsLast";
   const HOUR = 3600e3, DAY = 86400e3;
   const TZ = "America/Los_Angeles";
   const $ = (id) => document.getElementById(id);
@@ -282,7 +283,10 @@
   if (!["period", "total"].includes(view.mode)) view.mode = "period";
 
   function getKey() { try { return localStorage.getItem(STORE) || sessionKey; } catch (e) { return sessionKey; } }
-  function setKey(k) { sessionKey = k; try { k ? localStorage.setItem(STORE, k) : localStorage.removeItem(STORE); } catch (e) {} }
+  function setKey(k) {
+    sessionKey = k;
+    try { if (k) localStorage.setItem(STORE, k); else { localStorage.removeItem(STORE); localStorage.removeItem(LAST); } } catch (e) {}
+  }
 
   // ---- Pacific time ----
   const offFmt = new Intl.DateTimeFormat("en-US", { timeZone: TZ, timeZoneName: "shortOffset" });
@@ -993,6 +997,20 @@
   }
   function schedule() { clearTimeout(timer); if (!document.hidden) timer = setTimeout(load, 60000); }
 
+  function show(d) {
+    const first = !data;
+    data = d;
+    $("ask").hidden = true;
+    $("stats").hidden = false;
+    $("live").hidden = false;
+    if (first) buildCards();
+    renderTiles(data);
+    renderTables(data);
+    renderRoutes(data);
+    redraw();
+    updatedText();
+  }
+
   async function load() {
     const key = getKey();
     if (!key) return showAsk();
@@ -1000,19 +1018,11 @@
       const r = await fetch(API, { headers: { authorization: "Bearer " + key }, cache: "no-store" });
       if (r.status === 404 || r.status === 401) { setKey(""); return showAsk("That key didn't work."); }
       if (!r.ok) throw new Error("the server answered " + r.status);
-      const first = !data;
-      data = await r.json();
-      $("ask").hidden = true;
-      $("stats").hidden = false;
-      $("live").hidden = false;
-      if (first) buildCards();
-      renderTiles(data);
-      renderTables(data);
-      renderRoutes(data);
-      redraw();
+      const text = await r.text();
+      show(JSON.parse(text));
+      try { localStorage.setItem(LAST, text); } catch (err) {}      // full storage: just not kept
       $("error").textContent = "";
       $("dot").classList.remove("stale");
-      updatedText();
     } catch (e) {
       $("error").textContent = "Couldn't load the stats (" + e.message + "). Trying again in a minute.";
       $("dot").classList.add("stale");
@@ -1027,6 +1037,12 @@
   tick = setInterval(updatedText, 1000);
   $("keyform").addEventListener("submit", (e) => { e.preventDefault(); setKey($("key").value.trim()); $("key").value = ""; load(); });
   $("forget").addEventListener("click", () => { setKey(""); data = null; charts.clear(); showAsk(); });
+  if (getKey()) {
+    try {
+      const last = JSON.parse(localStorage.getItem(LAST) || "null");
+      if (last && last.generated) { show(last); $("dot").classList.add("stale"); }
+    } catch (e) { data = null; }                                      // an unreadable copy: wait for the fresh one
+  }
   load();
 </script>
 </body>
