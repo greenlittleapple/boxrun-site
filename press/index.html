@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BoxRun press kit</title>
-<meta name="description" content="BoxRun press kit: a description, the clip, screenshots, the wordmark and links.">
+<meta name="description" content="BoxRun press kit: a description, a credit line for videos, the clip, screenshots, the wordmark and links.">
 <meta name="theme-color" content="#1b1c2c">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,11 @@
   figure img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
   figcaption { padding: .6rem .8rem .75rem; font-size: .9rem; color: var(--muted); }
   figcaption a { white-space: nowrap; }
+  .credit { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .8rem; max-width: 42rem; margin: 0 0 1.25rem; padding: .8rem 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .credit code { font: 700 1.05rem/1.4 var(--body); color: var(--cyan); }
+  button { font: 700 1rem/1.2 var(--body); background: var(--gold); color: var(--night); border: 0; border-radius: 6px; padding: .4rem .9rem; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+  .clip .soon { display: grid; place-items: center; height: 100%; max-width: none; margin: 0; padding: 1rem; text-align: center; color: var(--muted); }
   .logo { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
   .logo img { width: 160px; height: 160px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
   footer { margin-top: 3.5rem; padding: 2rem 0 3rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted); }
@@ -72,6 +77,20 @@
     <dt>Website</dt><dd><a href="/">boxrun.gg</a></dd>
     <dt>Contact</dt><dd><a href="mailto:contact@boxrun.gg">contact@boxrun.gg</a></dd>
   </dl>
+
+  <h2 id="creators">Making a video about BoxRun?</h2>
+  <p>A credit line for your description:</p>
+  <p class="credit"><code id="credit">Mod: BoxRun, free on GameBanana, boxrun.gg</code><button id="copy" type="button">Copy line</button></p>
+  <p>Every shared route has a short code (like BR-9D5701), shown on its route page in the game. Viewers enter it under ROUTES &gt; IMPORT A CODE to run the same route, so put the code in your description too.</p>
+  <p>Download page: <a href="https://gamebanana.com/mods/733166" rel="noopener">gamebanana.com/mods/733166</a></p>
+
+  <h2>How to install</h2>
+  <!-- INSTALL VIDEO: replace INSTALL_VIDEO_ID below with the install video's 11-character YouTube id.
+       Until then the box says the video is on the way and no embed or link is shown. -->
+  <div class="clip" id="install" data-youtube-id="INSTALL_VIDEO_ID">
+    <p class="soon">The install video is on the way. Until then, the steps are on the GameBanana page.</p>
+  </div>
+  <p class="muted" id="install-link" style="margin-top:.6rem" hidden>On YouTube: <a rel="noopener"></a></p>
 
   <h2>Clip</h2>
   <div class="clip">
@@ -118,6 +137,35 @@
     <p>BoxRun is a fan-made mod. It isn't made by or affiliated with Valve. Deadlock is a trademark of Valve Corporation.</p>
   </div>
 </footer>
+<script>
+// the credit line's Copy button, as on the r.boxrun.gg link pages: "Copied" for 2 s; without clipboard access
+// (an insecure context or a refusal) the line is selected, so Ctrl+C copies it
+(function () {
+  var b = document.getElementById('copy'), c = document.getElementById('credit');
+  function say(t) { b.textContent = t; clearTimeout(b.t); b.t = setTimeout(function () { b.textContent = 'Copy line'; }, 2000); }
+  function pick() { var r = document.createRange(), s = window.getSelection(); r.selectNodeContents(c); s.removeAllRanges(); s.addRange(r); say('Press Ctrl+C'); }
+  b.onclick = function () {
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(c.textContent).then(function () { say('Copied'); }, pick);
+    else pick();
+  };
+})();
+// the install video: embedded only once data-youtube-id holds a real id
+(function () {
+  var box = document.getElementById('install'), id = box.getAttribute('data-youtube-id');
+  if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
+  var f = document.createElement('iframe');
+  f.src = 'https://www.youtube-nocookie.com/embed/' + id;
+  f.title = 'How to install BoxRun';
+  f.allow = 'encrypted-media; picture-in-picture';
+  f.allowFullscreen = true;
+  f.loading = 'lazy';
+  box.replaceChildren(f);
+  var p = document.getElementById('install-link'), a = p.querySelector('a');
+  a.href = 'https://www.youtube.com/watch?v=' + id;
+  a.textContent = 'youtube.com/watch?v=' + id;
+  p.hidden = false;
+})();
+</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3dd07682e35d4e828f72fc3503201532"}'></script>
 </body>
 </html>
