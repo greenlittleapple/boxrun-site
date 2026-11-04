@@ -209,7 +209,8 @@
     return el("ul", { className: "list" }, list.map((inl) => {
       const li = el("li");
       const rest = inl.slice();
-      if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
+      // a tag can't wrap, so only a short bold lead is one; a longer one stays in the text (Marcus's roadmap broke twice)
+      if (rest.length && rest[0][0] === "b" && rest[0][1].length <= 28) li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
       if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
       li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
       return li;
