@@ -75,6 +75,33 @@ const BoxRunFunnel = (() => {
       finishedPer: share(w.finish, w.actives), communityShare: share(w.community + w.pack, w.kinds) }));
   }
 
+  // Back from the day before (the older measure, as tools/growth_snapshot.py's menu_return): a day's menu_back over
+  // the day before's menu_players. Every player by scrambled address, not new installs only. Today is partial and
+  // kept apart from the series.
+  function menuReturn(b) {
+    const days = (Array.isArray(b.days) ? b.days : []).filter((d) => d.day <= b.today);
+    const pairs = [];
+    for (let i = 1; i < days.length; i++) {
+      const d = days[i], prev = days[i - 1], ok = Number.isFinite(d.menu_back) && Number.isFinite(prev.menu_players);
+      pairs.push({ day: d.day, back: ok ? d.menu_back : null, before: ok ? prev.menu_players : null, share: ok ? share(d.menu_back, prev.menu_players) : null });
+    }
+    const full = pairs.filter((p) => p.day !== b.today && p.share !== null);
+    const newest = full[full.length - 1] || { day: null, back: null, before: null, share: null };
+    return { ...newest, spark: full.slice(-14).map((p) => p.share), today: pairs.find((p) => p.day === b.today) || null };
+  }
+
+  // Installs per download since 2.1 (as growth_snapshot.py's install bound): first loads from 2.1's Pacific day on,
+  // over GameBanana's total downloads less PRE_21_DOWNLOADS. That's the total less the listed files' sum read
+  // 2026-11-04 (3,800, then 3,804): the files removed before 2.1, whose downloads stay in the total (removing a file
+  // doesn't lower it, as those removals show). Updates count as downloads, so the share is an upper bound.
+  const PRE_21_DOWNLOADS = 3800, DAY_2_1 = "2026-11-02";
+  function installBound(b) {
+    const gb = b.gamebanana || {};
+    const loads = (Array.isArray(b.funnel) ? b.funnel : []).filter((r) => r.day >= DAY_2_1).reduce((s, r) => s + n(r.load), 0);
+    const downloads = !gb.error && Number.isFinite(gb.downloads) ? gb.downloads - PRE_21_DOWNLOADS : null;
+    return { error: !!gb.error, downloads, loads, share: downloads === null ? null : share(loads, downloads) };
+  }
+
   function view(b) {
     if (!b || !Array.isArray(b.funnel) || !b.today) return null;
     const rows = cohorts(b);
@@ -103,6 +130,6 @@ const BoxRunFunnel = (() => {
   // "Nov 12 to 18", or "Oct 30 to Nov 5" across a month
   const spanLabel = (a, b) => (a === b ? dayLabel(a) : dayLabel(a) + " to " + (a.slice(0, 7) === b.slice(0, 7) ? String(+b.slice(8)) : dayLabel(b)));
 
-  return { view, cohorts, weeks, pooled, windowOf, pct, dayLabel, dowLabel, spanLabel, addDays, monday, STEPS };
+  return { view, cohorts, weeks, pooled, menuReturn, installBound, windowOf, pct, dayLabel, dowLabel, spanLabel, addDays, monday, STEPS };
 })();
 if (typeof module === "object" && module.exports) module.exports = BoxRunFunnel;

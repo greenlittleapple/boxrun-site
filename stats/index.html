@@ -917,12 +917,18 @@
     const wspark = (k) => (full.length > 1 ? full.map((w) => w[k]) : null);
     const one = (x) => (x === null ? "–" : x.toFixed(1));
     const c = v.completion;
+    const ib = F.installBound(b), mr = F.menuReturn(b);
     $("ftiles").replaceChildren(
       tile(v.firstLoads.n, "First loads today", "new installs, " + day(v.today), v.firstLoads.spark),
       tile(pct(c.share), "First-run completion", `a counted finish, of ${plural(c.load, "first load", "first loads")}, first days ${F.spanLabel(c.from || c.to, c.to)}`,
         null, fmt(c.count) + " finished"),
       back(v.nextDay, "Next-day return", "back the next day", 1),
       back(v.week1, "Week-1 return", "back on days 7-13", 7),
+      tile(ib.share === null ? "–" : "≤" + pct(ib.share), "Installs per download", ib.error || ib.downloads === null ? "GameBanana didn't answer"
+        : "at most, first loads per download since 2.1. Updates count as downloads",
+        null, ib.downloads === null ? "" : `${fmt(ib.loads)} of ${fmt(ib.downloads)}`),
+      tile(pct(mr.share), "Back from the day before", mr.day ? `back ${day(mr.day)}, of the day before's menu players. Every player by scrambled address, so it compares to launch` : "no menu counts yet",
+        mr.spark.length > 1 ? mr.spark : null, mr.day ? `${fmt(mr.back)} of ${fmt(mr.before)}` : ""),
       tile(tw ? tw.actives : null, "Weekly actives", tw ? `installs that played, ${wk}` + (lw ? `. Last week ${fmt(lw.actives)}` : "") : "no counted play yet", wspark("actives")),
       tile(tw ? one(tw.perPlayer) : "–", "Runs per player", tw ? `counted runs per weekly active, ${wk} (${one(tw.startedPer)} started, ${one(tw.finishedPer)} finished)` +
         (lw ? `. Last week ${one(lw.perPlayer)}` : "") : "no counted play yet", wspark("perPlayer"), tw ? plural(tw.actives, "player", "players") : ""),
