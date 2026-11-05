@@ -839,7 +839,7 @@
     };
     const runSfx = (k) => (runSpark(k, k === "players_total" ? "new_players" : "new_sharers") ? ", last 24 h" : "");
     $("tiles").replaceChildren(
-      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total" + (samples.length > 1 ? ", last 24 h" : ""), samples),
+      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total, updates included" + (samples.length > 1 ? ", last 24 h" : ""), samples),
       tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
       tile(today.players, "Players active today", "loaded a code, " + (today.day || "") + sfx, hourly("players")),
       tile(Number.isFinite(today.menu_players) ? today.menu_players : null, "Menu opened (online)", "menu_players" in today
@@ -926,7 +926,7 @@
       tile(tw ? tw.actives : null, "Weekly actives", tw ? `installs that played, ${wk}` + (lw ? `. Last week ${fmt(lw.actives)}` : "") : "no counted play yet", wspark("actives")),
       tile(tw ? one(tw.perPlayer) : "–", "Runs per player", tw ? `counted runs per weekly active, ${wk} (${one(tw.startedPer)} started, ${one(tw.finishedPer)} finished)` +
         (lw ? `. Last week ${one(lw.perPlayer)}` : "") : "no counted play yet", wspark("perPlayer"), tw ? plural(tw.actives, "player", "players") : ""),
-      tile(tw ? pct(tw.communityShare) : "–", "Community share of runs", tw ? `on community routes and creator packs, of ${plural(tw.kinds, "counted run", "counted runs")}, ${wk}` +
+      tile(tw ? pct(tw.communityShare) : "–", "Community share of runs", tw ? `on community routes and creator packs, the route of the week included, of ${plural(tw.kinds, "counted run", "counted runs")}, ${wk}` +
         (lw ? `. Last week ${pct(lw.communityShare)}` : "") : "no counted play yet", wspark("communityShare"), tw ? plural(tw.community + tw.pack, "run", "runs") : ""));
     const body = $("fbody");
     body.textContent = "";
