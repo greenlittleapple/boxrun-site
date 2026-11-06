@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BoxRun: practice box routes and speedruns in Deadlock</title>
-<meta name="description" content="BoxRun is a free Deadlock mod: practice box routes and movement lines on the real map against a ghost of the best run, then make your own routes and share them as a short code.">
+<meta name="description" content="BoxRun is a free Deadlock mod with timed box routes and movement lines on the real map. Race a ghost of the best run, share routes by short code, and try for a place on the weekly board. It's a map your mod manager installs, with no app to run and no account to sign in to.">
 <meta property="og:title" content="BoxRun: practice box routes and speedruns in Deadlock">
 <meta property="og:description" content="A free Deadlock mod: practice box routes and movement lines on the real map against a ghost, then make and share your own routes.">
 <meta property="og:url" content="https://boxrun.gg/">
@@ -305,8 +305,8 @@
         <a class="btn quiet" href="https://discord.gg/kMaQcMWdsA" id="hero-discord" rel="noopener">Join the Discord</a>
         <a class="btn quiet" href="#clip" id="watch" hidden>Watch the clip</a>
       </div>
-      <p class="fine" id="soon">Coming soon to GameBanana. Free, a 3 MB download, and it's its own map, so normal matches aren't touched.</p>
-      <p class="fine" id="free" hidden>Free. A 3 MB download. It's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="soon">Coming soon to GameBanana. Free, a 3.5 MB download (44 MB once unpacked), and it's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="free" hidden>Free. A 3.5 MB download (44 MB once unpacked). It's its own map, so normal matches aren't touched.</p>
       <p class="fine" id="hero-discord-line">Routes, times and help are shared in the Discord.</p>
     </div>
   </div>
@@ -441,12 +441,16 @@
         <summary>How do I install it?</summary>
         <p>Install BoxRun from the GameBanana page with a mod manager like Grimoire or Deadlock Mod Manager. Then install <a href="https://gamebanana.com/mods/667277" rel="noopener">MapList</a> the same way, after BoxRun. MapList adds the CUSTOM MAPS list to the Esc menu.</p>
         <p>Start Deadlock from the manager. In the hideout, press Esc and click BoxRun under CUSTOM MAPS, at the bottom of the friends column on the right. If it isn't listed, open the console (F7) and type <code>map boxrun_midtown</code>. Give it up to a minute after you spawn in, while the mod loads and the BoxRun menu appears in front of you. It can take longer on some PCs, so wait for the menu.</p>
-        <p>Give it up to a minute after you spawn in, while the mod loads and the BoxRun menu appears in front of you. It can take longer on some PCs, so wait for the menu. The GameBanana page also has steps for installing by hand.</p>
+        <p>With Deadlock Mod Manager, pick Launch Anyway when it warns that map mods are installed (its main button turns BoxRun off). If you already had MapList and BoxRun isn't listed, turn both off in Mods Library, then turn on BoxRun, then MapList. The GameBanana page also has steps for installing by hand.</p>
         <p>If you close the menu, press 0 to bring it back, or type <code>boxrun</code> in the console. 6 restarts your run. Both keys are on by default, and HELP turns them off.</p>
       </details>
       <details>
-        <summary>What does it change on my PC?</summary>
-        <p>BoxRun is one 42 MB addon file holding a small map you load yourself and play alone. That map loads the Deadlock map from the game files on your PC instead of carrying a copy, and it never changes them. There's no DLL, no injection and no replaced game file, and nothing changes in normal matches. A mod manager adds the addons lines to Deadlock's gameinfo.gi file, as it does for every mod.</p>
+        <summary>Is it safe? What does it change on my PC?</summary>
+        <p>BoxRun is one 44 MB addon file holding a small map you load yourself and play alone. That map loads the Deadlock map from the game files on your PC instead of carrying a copy, and it never changes them. There's no DLL, no injection and no replaced game file, and nothing changes in normal matches. A mod manager adds the addons lines to Deadlock's gameinfo.gi file, as it does for every mod. It sends anonymous counts with no ID, which OPTIONS turns off. The <a href="/privacy/">privacy page</a> lists everything it sends.</p>
+      </details>
+      <details>
+        <summary>Is it made with AI?</summary>
+        <p>BoxRun's code was written with AI coding help, using Claude Code (Anthropic's Claude). That includes the in-game menu and cards, which the code draws. Marcus designed BoxRun, directed the work and tests every release in game. The art, sounds and fonts are Deadlock's own, and the screenshots and clips are his own gameplay.</p>
       </details>
       <details>
         <summary>Do I need to keep anything running beside the game?</summary>
@@ -466,7 +470,7 @@
       </details>
       <details>
         <summary>Are there leaderboards?</summary>
-        <p>Not yet. Each route has three tier times, your best, your splits and a ghost. An online library of community routes, with leaderboards, is on the list for after launch.</p>
+        <p>There's a weekly board for the route of the week, shown under THIS WEEK in the menu. SEND MY BEST puts your time, Steam name and ghost on it. Every route also has three tier times, your best, your splits and a ghost.</p>
       </details>
       <details>
         <summary>Does the hero matter?</summary>
@@ -477,12 +481,12 @@
         <p>In the menu, OPTIONS has RESET THE MAP, which brings back the boxes, the urn and the ghost and puts you at the route's start. OPTIONS &gt; MORE has RELOAD THE MAP, which loads the map again with your routes kept. <code>boxrun_reset</code> in the console does the same as RESET THE MAP.</p>
       </details>
       <details>
-        <summary>What happens when the map changes in a patch?</summary>
-        <p>BoxRun uses the Deadlock map from your installed game, so the world follows Valve's map patches with no BoxRun download. If a patch moves boxes or paths, routes made before it may need adjusting, and any BoxRun update that follows goes up on the GameBanana page.</p>
+        <summary>What happens on patch day?</summary>
+        <p>BoxRun uses the Deadlock map from your installed game, so the world follows Valve's map patches with no BoxRun download. If a patch moves boxes or paths, routes made before it may need adjusting, and any BoxRun update that follows goes up on the GameBanana page. A Deadlock update can also undo the addons lines in gameinfo.gi. Your mod manager puts them back (Grimoire calls it Fix).</p>
       </details>
       <details>
-        <summary>Where do I report a bug or share a route?</summary>
-        <p>In the <a href="#discord">BoxRun Discord</a>. Post route codes in the routes forum, and say what broke and what you were doing when it happened.</p>
+        <summary>It crashed. How do I report it?</summary>
+        <p>In the <a href="#discord">BoxRun Discord</a>. Say what you were doing when it happened, which hero you played and which route, and whether it happens again. BoxRun can't see crashes itself, so a report is the only way we hear about one. Bugs go there too, and route codes go in the routes forum.</p>
       </details>
       <details>
         <summary>How do I remove it?</summary>
