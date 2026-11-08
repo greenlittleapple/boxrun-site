@@ -85,7 +85,7 @@
   .tile .n:has(.beside) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4rem; row-gap: 0.2rem; }
   .tile .n .beside { font: 700 0.95rem/1.2 var(--body); color: var(--muted); white-space: nowrap; }
   .tile .n.pend { font-size: 1.7rem; color: var(--muted); }
-  table.cohorts { min-width: 46rem; }
+  table.cohorts { min-width: 72rem; }
   #week .scroll { max-width: 40rem; }
   table.board { min-width: 0; }
   table.board td, table.board th { text-align: left; padding: 0.5rem 0.6rem; }
@@ -228,7 +228,8 @@
       <div class="tiles" id="ftiles"></div>
       <div class="scroll" style="margin-top: 1rem">
         <table class="cohorts">
-          <thead><tr><th>First day</th><th>Map loads</th><th>Menu</th><th>Started a run</th><th>Finished a run</th>
+          <thead><tr><th>First day</th><th>Map loads</th><th>Menu</th><th>Menu seen</th><th>Shot at it</th><th>Pressed a button</th>
+            <th>Went to a start</th><th>READY</th><th>Started a run</th><th>Finished a run</th>
             <th>Counted finish</th><th>Back next day</th><th>Back days 7-13</th></tr></thead>
           <tbody id="fbody"></tbody>
         </table>
@@ -236,7 +237,11 @@
       <p class="muted small">Each row is the installs whose first day it was: how many reached each step at least once (on
         any day; a step on a later day is filed under the first day) and how many came back the next day or on any of days
         7 to 13. Shares are of that row's map loads. Pending means the window for coming back isn't over yet, so the
-        count can still grow. The counts are a floor: games with counts off, offline or older than 2.1 send nothing.</p>
+        count can still grow. The counts are a floor: games with counts off, offline or older than 2.1 send nothing.
+        Menu is the first menu queued, not seen. Menu seen to READY come from 2.3 on, from installs whose first load was
+        on 2.3, so a day before 2.3 shows a dash: menu seen is the menu placed in front of the player, shot at it the
+        first shot or melee with the menu up, pressed a button the first press on one, went to a start the first PLAY or
+        GO TO START, READY the first start ready to run.</p>
     </div>
 
     <h2 id="weekboard">This week's board</h2>
@@ -826,7 +831,10 @@
     const gb = b.gamebanana || {};
     const now = b.generated ? b.generated * 1000 : Date.now();
     const hours = (b.hours || []).filter((h) => toMs(h.t) > now - 24 * HOUR);
-    const hourly = (k) => (hours.length ? hours.map((h) => h[k]) : null);
+    // per-hour lines end on the last complete hour: the hour still running is a partial count, and as the line's last
+    // point it always read as a drop (Marcus, 11-08), which the charts' bars don't show
+    const doneHours = hours.filter((h) => Math.floor(toMs(h.t) / HOUR) * HOUR + HOUR <= now);
+    const hourly = (k) => (doneHours.length ? doneHours.map((h) => h[k]) : null);
     const samples = (b.gamebanana_samples || []).filter((s) => toMs(s.t) > now - 24 * HOUR).map((s) => s.downloads);
     const sfx = hours.length ? ", last 24 h per hour" : "";
     const once = (k) => (Number.isFinite(b[k]) ? "each counted once" : "the server doesn't send this yet");
@@ -938,7 +946,7 @@
     body.textContent = "";
     if (!v.rows.length) {
       const tr = document.createElement("tr"), td = document.createElement("td");
-      td.colSpan = 8; td.className = "muted"; td.textContent = "No first loads counted yet.";
+      td.colSpan = 13; td.className = "muted"; td.textContent = "No first loads counted yet.";
       tr.appendChild(td); body.appendChild(tr);
       return;
     }
@@ -955,7 +963,11 @@
       };
       td(F.dowLabel(r.day) + (r.today ? " (today)" : ""), r.empty ? "no first loads" : "", r.today ? "today" : "");
       td(fmt(r.load));
-      for (const s of F.STEPS.slice(1)) td(fmt(r[s]), pct(r.load ? r[s] / r.load : null));
+      // the five steps from 2.3 (COUNT-10): a dash for a first day with none of them (before 2.3, or no 2.3 installs)
+      for (const s of F.STEPS.slice(1)) {
+        if (r.firstNone && F.FIRST.includes(s)) td("–").title = "Sent from BoxRun 2.3 on, by new installs only.";
+        else td(fmt(r[s]), pct(r.load ? r[s] / r.load : null));
+      }
       for (const k of ["back_d1", "back_w2"]) {
         const w = r[k];
         if (w.state === "closed") td(fmt(w.n), pct(r.load ? w.n / r.load : null));
