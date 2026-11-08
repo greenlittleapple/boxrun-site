@@ -43,10 +43,13 @@
   .whoset { display: inline-flex; gap: 0.2rem; flex: none; }
   .lead { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
   ul.list { list-style: none; margin: 0; padding: 0; }
-  ul.list > li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0; border-top: 1px solid var(--line); min-width: 0; }
+  /* A row flows as one paragraph: the tag sits inline before the text and the text wraps under it, so no tag, however
+     long, can squeeze the text into a narrow column (Marcus's phone, 11-07: a flex row did, three times). */
+  ul.list > li { display: block; padding: 0.4rem 0; border-top: 1px solid var(--line); min-width: 0; overflow-wrap: anywhere; }
   ul.list > li:first-child { border-top: 0; padding-top: 0; }
-  ul.list > li > .txt { min-width: 0; overflow-wrap: anywhere; }
-  .tag { font: 700 0.8rem var(--body); color: var(--ink); background: var(--wash); border-radius: 4px; padding: 0 0.35rem; white-space: nowrap; }
+  ul.list > li > .txt { overflow-wrap: anywhere; }
+  ul.list > li > .tag { margin-right: 0.45rem; }
+  .tag { font: 700 0.8rem var(--body); color: var(--ink); background: var(--wash); border-radius: 4px; padding: 0 0.35rem; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   .donetoday { display: flex; gap: 0.5rem; align-items: baseline; margin: 0.75rem 0 0; color: var(--muted); font-size: 0.9rem; }
   .donetoday .ico { color: var(--st-done); align-self: center; }
   .donetoday b { color: var(--ink); }
@@ -209,8 +212,8 @@
     return el("ul", { className: "list" }, list.map((inl) => {
       const li = el("li");
       const rest = inl.slice();
-      // a tag can't wrap, so only a short bold lead is one; a longer one stays in the text (Marcus's roadmap broke twice)
-      if (rest.length && rest[0][0] === "b" && rest[0][1].length <= 28) li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
+      // the tag sits inline and wraps with the text (the CSS above), so a bold lead of any length is a tag
+      if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
       if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
       li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
       return li;
