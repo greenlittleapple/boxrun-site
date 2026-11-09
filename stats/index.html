@@ -852,9 +852,10 @@
     $("tiles").replaceChildren(
       tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total, updates included" + (samples.length > 1 ? ", last 24 h" : ""), samples),
       tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
-      tile(today.players, "Addresses active today", "scrambled addresses that loaded a code, every version, " + (today.day || "") + sfx, hourly("players")),
-      tile(Number.isFinite(today.active) ? today.active : null, "Players today (counts)", "active" in today
-        ? "installs with counts on (2.1+) that opened the menu, " + (today.day || "") : "the server doesn't send this yet"),
+      tile(Number.isFinite(today.active) ? today.active : null, "Players today", "active" in today
+        ? "installs with counts on (2.1+) that opened the menu, " + (today.day || "")
+          + (Number.isFinite(today.players) ? ". " + fmt(today.players) + " addresses loaded a code" : "")
+        : "the server doesn't send this yet"),
       tile(Number.isFinite(today.menu_players) ? today.menu_players : null, "Menu opened (online)", "menu_players" in today
         ? "players today" + (Number.isFinite(today.menu_back) ? ", " + fmt(today.menu_back) + " back from yesterday" : "") + sfx
         : "the server doesn't send this yet", hourly("menu_players")),
