@@ -9,6 +9,9 @@ const BoxRunFunnel = (() => {
   // was on 2.3 or later, so a first day before 2.3 has none of them (FIRST_NONE: drawn as a dash, not 0)
   const FIRST = ["seen", "shot", "press", "go", "ready"];
   const STEPS = ["load", "menu", ...FIRST, "start", "finish", "count"];
+  // V23 (COUNT-11): the same steps for installs whose step came from 2.3 or later, so FIRST reads against 2.3 loads.
+  // The server sends a row's v23 (load, menu, start, finish, count) from 11-09; a row without 2.3 loads has v23 null.
+  const V23 = ["load", "menu", ...FIRST, "start", "finish", "count"];
   const ms = (day) => Date.parse(day + "T12:00:00Z");
   const addDays = (day, n) => new Date(ms(day) + n * DAY).toISOString().slice(0, 10);
   const daysBetween = (a, b) => Math.round((ms(b) - ms(a)) / DAY);
@@ -35,6 +38,8 @@ const BoxRunFunnel = (() => {
       const c = { day, age: daysBetween(day, today), today: day === today, empty: !rows.has(day) };
       for (const s of STEPS) c[s] = n(r[s]);
       c.firstNone = FIRST.every((s) => !n(r[s]));
+      const v = r.v23 || {};
+      c.v23 = n(v.load) ? Object.fromEntries(V23.map((s) => [s, n(FIRST.includes(s) ? r[s] : v[s])])) : null;
       for (const k of Object.keys(WINDOWS)) c[k] = { n: n(r[k]), ...windowOf(k, day, today) };
       out.push(c);
     }
@@ -134,6 +139,6 @@ const BoxRunFunnel = (() => {
   // "Nov 12 to 18", or "Oct 30 to Nov 5" across a month
   const spanLabel = (a, b) => (a === b ? dayLabel(a) : dayLabel(a) + " to " + (a.slice(0, 7) === b.slice(0, 7) ? String(+b.slice(8)) : dayLabel(b)));
 
-  return { view, cohorts, weeks, pooled, menuReturn, installBound, windowOf, pct, dayLabel, dowLabel, spanLabel, addDays, monday, STEPS, FIRST };
+  return { view, cohorts, weeks, pooled, menuReturn, installBound, windowOf, pct, dayLabel, dowLabel, spanLabel, addDays, monday, STEPS, FIRST, V23 };
 })();
 if (typeof module === "object" && module.exports) module.exports = BoxRunFunnel;

@@ -85,7 +85,10 @@
   .tile .n:has(.beside) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4rem; row-gap: 0.2rem; }
   .tile .n .beside { font: 700 0.95rem/1.2 var(--body); color: var(--muted); white-space: nowrap; }
   .tile .n.pend { font-size: 1.7rem; color: var(--muted); }
-  table.cohorts { min-width: 72rem; }
+  table.cohorts { min-width: 90rem; }
+  table.cohorts thead tr + tr th:first-child { position: static; }
+  table.cohorts th.group { text-align: left; border-bottom: 1px solid var(--muted); }
+  table.cohorts td.first, table.cohorts th.group + th.group { border-left: 1px solid var(--muted); }
   #week .scroll { max-width: 40rem; }
   table.board { min-width: 0; }
   table.board td, table.board th { text-align: left; padding: 0.5rem 0.6rem; }
@@ -228,20 +231,20 @@
       <div class="tiles" id="ftiles"></div>
       <div class="scroll" style="margin-top: 1rem">
         <table class="cohorts">
-          <thead><tr><th>First day</th><th>Map loads</th><th>Menu</th><th>Menu seen</th><th>Shot at it</th><th>Pressed a button</th>
-            <th>Went to a start</th><th>READY</th><th>Started a run</th><th>Finished a run</th>
-            <th>Counted finish</th><th>Back next day</th><th>Back days 7-13</th></tr></thead>
+          <thead><tr><th rowspan="2">First day</th><th colspan="7" class="group">All versions</th><th colspan="10" class="group">2.3 and later</th></tr>
+            <tr><th>Map loads</th><th>Menu</th><th>Started a run</th><th>Finished a run</th><th>Counted finish</th>
+            <th>Back next day</th><th>Back days 7-13</th>
+            <th>Map loads</th><th>Menu</th><th>Menu seen</th><th>Shot at it</th><th>Pressed a button</th><th>Went to a start</th>
+            <th>READY</th><th>Started a run</th><th>Finished a run</th><th>Counted finish</th></tr></thead>
           <tbody id="fbody"></tbody>
         </table>
       </div>
-      <p class="muted small">Each row is the installs whose first day it was: how many reached each step at least once (on
-        any day; a step on a later day is filed under the first day) and how many came back the next day or on any of days
-        7 to 13. Shares are of that row's map loads. Pending means the window for coming back isn't over yet, so the
-        count can still grow. The counts are a floor: games with counts off, offline or older than 2.1 send nothing.
-        Menu is the first menu queued, not seen. Menu seen to READY come from 2.3 on, from installs whose first load was
-        on 2.3, so a day before 2.3 shows a dash: menu seen is the menu placed in front of the player, shot at it the
-        first shot or melee with the menu up, pressed a button the first press on one, went to a start the first PLAY or
-        GO TO START, READY the first start ready to run.</p>
+      <p class="muted small">Rows: installs by first day. Steps: at least once, any day, filed under the first day.
+        All versions: 2.1 and later, shares of the row's map loads. Back next day, back days 7-13: shares of all map loads;
+        pending until the window closes. 2.3 and later: steps sent from 2.3 on (from 11-09), shares of the 2.3 map loads;
+        "–" before then. Floor: counts off, offline and pre-2.1 games send nothing. Menu: queued, not seen. Duplicates: a
+        lost answer can count a step twice (under 1%). Shot at it: no Menu seen needed. READY: no GO TO START needed (a
+        walk-in gate start).</p>
     </div>
 
     <h2 id="weekboard">This week's board</h2>
@@ -849,7 +852,9 @@
     $("tiles").replaceChildren(
       tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total, updates included" + (samples.length > 1 ? ", last 24 h" : ""), samples),
       tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
-      tile(today.players, "Players active today", "loaded a code, " + (today.day || "") + sfx, hourly("players")),
+      tile(today.players, "Addresses active today", "scrambled addresses that loaded a code, every version, " + (today.day || "") + sfx, hourly("players")),
+      tile(Number.isFinite(today.active) ? today.active : null, "Players today (counts)", "active" in today
+        ? "installs with counts on (2.1+) that opened the menu, " + (today.day || "") : "the server doesn't send this yet"),
       tile(Number.isFinite(today.menu_players) ? today.menu_players : null, "Menu opened (online)", "menu_players" in today
         ? "players today" + (Number.isFinite(today.menu_back) ? ", " + fmt(today.menu_back) + " back from yesterday" : "") + sfx
         : "the server doesn't send this yet", hourly("menu_players")),
@@ -946,7 +951,7 @@
     body.textContent = "";
     if (!v.rows.length) {
       const tr = document.createElement("tr"), td = document.createElement("td");
-      td.colSpan = 13; td.className = "muted"; td.textContent = "No first loads counted yet.";
+      td.colSpan = 18; td.className = "muted"; td.textContent = "No first loads counted yet.";
       tr.appendChild(td); body.appendChild(tr);
       return;
     }
@@ -962,17 +967,18 @@
         return d;
       };
       td(F.dowLabel(r.day) + (r.today ? " (today)" : ""), r.empty ? "no first loads" : "", r.today ? "today" : "");
-      td(fmt(r.load));
-      // the five steps from 2.3 (COUNT-10): a dash for a first day with none of them (before 2.3, or no 2.3 installs)
-      for (const s of F.STEPS.slice(1)) {
-        if (r.firstNone && F.FIRST.includes(s)) td("–").title = "Sent from BoxRun 2.3 on, by new installs only.";
-        else td(fmt(r[s]), pct(r.load ? r[s] / r.load : null));
-      }
+      for (const k of ["load", "menu", "start", "finish", "count"]) td(fmt(r[k]), k === "load" ? "" : pct(r.load ? r[k] / r.load : null));
       for (const k of ["back_d1", "back_w2"]) {
         const w = r[k];
         if (w.state === "closed") td(fmt(w.n), pct(r.load ? w.n / r.load : null));
         else td("pending", w.state === "open" ? `${fmt(w.n)} so far, until ${day(w.closes)}` : "from " + day(w.opens), "pending")
           .title = w.state === "open" ? `The window runs to the end of ${day(w.closes)} (Pacific).` : `The window opens on ${day(w.opens)}.`;
+      }
+      // the 2.3 cohort (COUNT-11): shares of the 2.3 loads; a dash for a first day with none counted (before 11-09)
+      const v23 = r.v23;
+      for (const s of F.V23) {
+        if (!v23) td("–", "", s === "load" ? "first" : "").title = "Counted per version from 11-09, for steps sent from BoxRun 2.3 on.";
+        else td(fmt(v23[s]), s === "load" ? "" : pct(v23[s] / v23.load), s === "load" ? "first" : "");
       }
       body.appendChild(tr);
     }
