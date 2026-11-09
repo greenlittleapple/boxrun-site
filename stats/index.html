@@ -977,7 +977,7 @@
       // the 2.3 cohort (COUNT-11): shares of the 2.3 loads; a dash for a first day with none counted (before 11-09)
       const v23 = r.v23;
       for (const s of F.V23) {
-        if (!v23) td("–", "", s === "load" ? "first" : "").title = "Counted per version from 11-09, for steps sent from BoxRun 2.3 on.";
+        if (!v23) td("–", "", s === "load" ? "first" : "").title = "Counted per version from 11-10, for steps sent from BoxRun 2.3 on.";
         else td(fmt(v23[s]), s === "load" ? "" : pct(v23[s] / v23.load), s === "load" ? "first" : "");
       }
       body.appendChild(tr);

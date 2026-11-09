@@ -12,6 +12,7 @@ const BoxRunFunnel = (() => {
   // V23 (COUNT-11): the same steps for installs whose step came from 2.3 or later, so FIRST reads against 2.3 loads.
   // The server sends a row's v23 (load, menu, start, finish, count) from 11-09; a row without 2.3 loads has v23 null.
   const V23 = ["load", "menu", ...FIRST, "start", "finish", "count"];
+  const V23_FROM = "2026-11-10";      // the first whole day of the 2.3 cohort (the API counted it from 11-09 ~14:00 PST)
   const ms = (day) => Date.parse(day + "T12:00:00Z");
   const addDays = (day, n) => new Date(ms(day) + n * DAY).toISOString().slice(0, 10);
   const daysBetween = (a, b) => Math.round((ms(b) - ms(a)) / DAY);
@@ -39,7 +40,8 @@ const BoxRunFunnel = (() => {
       for (const s of STEPS) c[s] = n(r[s]);
       c.firstNone = FIRST.every((s) => !n(r[s]));
       const v = r.v23 || {};
-      c.v23 = n(v.load) ? Object.fromEntries(V23.map((s) => [s, n(FIRST.includes(s) ? r[s] : v[s])])) : null;
+      // V23_FROM: the cohort was deployed partway through 11-09, so that day's 2.3 loads are a fraction of its 2.3 steps
+      c.v23 = n(v.load) && day >= V23_FROM ? Object.fromEntries(V23.map((s) => [s, n(FIRST.includes(s) ? r[s] : v[s])])) : null;
       for (const k of Object.keys(WINDOWS)) c[k] = { n: n(r[k]), ...windowOf(k, day, today) };
       out.push(c);
     }
