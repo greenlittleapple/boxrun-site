@@ -1553,8 +1553,8 @@
     $("jump-strategy").hidden = !d.strategy;
     // Today and Next up first (Marcus 11-11), then the Map and the Big picture; what records the past (the finished
     // releases, the players chart, Strategy) sits under them in closed folds
-    // Today, then Releases (Marcus 11-11: "put Releases ... below Today"), then Next up, the Map and the Big picture
-    const kids = [].concat(nowSection(d), releasesSection(d), nextAndGoal(d), mapSection(d), bigPicture(d), areasSection(d), boardSection(d));
+    // Today and Next up, then Releases (Marcus 11-11), then the Map and the Big picture
+    const kids = [].concat(nowSection(d), nextAndGoal(d), releasesSection(d), mapSection(d), bigPicture(d), areasSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
     const hist = historyFold(d.picture);
     if (hist) closing.append(hist);
