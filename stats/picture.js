@@ -1,4 +1,4 @@
-// The roadmap page's Big picture: the maths behind its four pictures, from the roadmap document's `picture`
+// The roadmap page's Big picture: the maths behind its pictures, from the roadmap document's `picture`
 // (tools/stats_docs.py). No DOM here, so stats/test/test_picture.mjs checks the same code the page runs.
 // Days are calendar days as "YYYY-MM-DD", read at noon UTC so they stay the same day in Pacific time.
 "use strict";
@@ -103,47 +103,7 @@ const BoxRunPicture = (() => {
     return { fill: at(row.now), pace: at(row.pace) };
   }
 
-  // "65% of runs on the 7 samples" -> ["65%", "of runs on the 7 samples"]: the number in the display font, the rest small.
-  function splitNumber(text) {
-    const m = String(text || "").match(/^(\d[\d,.]*%?K?M?)(?:\s+(.*))?$/);
-    return m ? [m[1], m[2] || ""] : [null, String(text || "")];
-  }
-
-  // The engine's layout: a column per flow stage, Releases and Valve (work, goal) in a row under them. Within a column
-  // a part fed from a later column (the weekly board feeding Own Shorts) comes first, so the arc over the top reaches it;
-  // the rest follow their Feeds to each other (a part fed by another in its column comes after it), else table order.
-  const FLOW = ["find", "install", "play", "stay"];
-  function engine(parts) {
-    const stageOf = new Map(parts.map((p) => [p.id, FLOW.indexOf(p.stage)]));
-    const fedBack = new Set(parts.flatMap((p) => p.feeds.filter((f) => stageOf.get(f) >= 0 && stageOf.get(f) < stageOf.get(p.id))));
-    const cols = FLOW.map((s) => {
-      const all = parts.filter((p) => p.stage === s);
-      const first = all.filter((p) => fedBack.has(p.id));
-      const here = all.filter((p) => !fedBack.has(p.id)), ids = new Set(here.map((p) => p.id));
-      const indeg = new Map(here.map((p) => [p.id, 0]));
-      for (const p of here) for (const f of p.feeds) if (ids.has(f) && f !== p.id) indeg.set(f, indeg.get(f) + 1);
-      const out = first.slice(), left = here.slice();
-      while (left.length) {
-        let i = left.findIndex((p) => indeg.get(p.id) === 0);
-        if (i < 0) i = 0;                               // a loop: take the first left
-        const [p] = left.splice(i, 1);
-        out.push(p);
-        for (const f of p.feeds) if (indeg.has(f)) indeg.set(f, indeg.get(f) - 1);
-      }
-      return { stage: s, parts: out };
-    });
-    const col = new Map();
-    cols.forEach((c, i) => c.parts.forEach((p, j) => col.set(p.id, [i, j])));
-    const edges = [];
-    for (const p of parts) for (const f of p.feeds) {
-      if (!col.has(p.id) || !col.has(f)) continue;
-      const [a, ai] = col.get(p.id), [b, bi] = col.get(f);
-      edges.push({ from: p.id, to: f, kind: b > a ? "forward" : b < a ? "back" : bi - ai === 1 ? "down" : "side" });
-    }
-    return { cols, below: parts.filter((p) => !FLOW.includes(p.stage)), edges };
-  }
-
-  return { stretchPos, packLanes, dateChip, sortDecisions, radius, groupShorts, deltaLabel, splitBar, splitNumber, engine,
-           dowDay, monthDay, daysBetween, addDays, fmt, FLOW };
+  return { stretchPos, packLanes, dateChip, sortDecisions, radius, groupShorts, deltaLabel, splitBar,
+           dowDay, monthDay, daysBetween, addDays, fmt };
 })();
 if (typeof module === "object" && module.exports) module.exports = BoxRunPicture;
