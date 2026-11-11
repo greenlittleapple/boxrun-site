@@ -302,11 +302,13 @@
       <div class="actions">
         <!-- Filled from SITE in the script at the bottom: the GameBanana link and the clip. -->
         <a class="btn primary" href="https://gamebanana.com/" id="download" hidden>Download on GameBanana</a>
+        <a class="btn quiet" href="https://deadlockmods.app/" id="dmm" hidden>Install with Mod Manager</a>
         <a class="btn quiet" href="https://discord.gg/kMaQcMWdsA" id="hero-discord" rel="noopener">Join the Discord</a>
         <a class="btn quiet" href="#clip" id="watch" hidden>Watch the clip</a>
       </div>
       <p class="fine" id="soon">Coming soon to GameBanana. Free, a 3.6 MB download (44 MB once unpacked), and it's its own map, so normal matches aren't touched.</p>
       <p class="fine" id="free" hidden>Free. A 3.6 MB download (44 MB once unpacked). It's its own map, so normal matches aren't touched.</p>
+      <p class="fine" id="dmm-line" hidden>Install with Mod Manager opens <a href="https://deadlockmods.app/" rel="noopener">Deadlock Mod Manager</a> and installs BoxRun. Then install <a href="https://gamebanana.com/mods/667277" rel="noopener">MapList</a> the same way, after BoxRun.</p>
       <p class="fine" id="hero-discord-line">Routes, times and help are shared in the Discord.</p>
     </div>
   </div>
@@ -513,7 +515,8 @@
 const SITE = {
   gamebanana: "https://gamebanana.com/mods/733166",   // the GameBanana page, e.g. "https://gamebanana.com/mods/123456"
   clipId: "_umRSrqrFrg",       // the YouTube video id of the clip, e.g. "dQw4w9WgXcQ"
-  cfBeacon: "3dd07682e35d4e828f72fc3503201532",  // the Cloudflare Web Analytics token, the "token" value in its snippet's data-cf-beacon
+  cfBeacon: "3dd07682e35d4e828f72fc3503201532",
+  dmmFile: "1883423",   // GameBanana's file id of the current release (2.3.2), for the Mod Manager button: update at every upload
 };
 
 (() => {
@@ -616,6 +619,15 @@ const SITE = {
     dl.href = SITE.gamebanana; dl.hidden = false;
     document.getElementById("soon").hidden = true;
     document.getElementById("free").hidden = false;
+  }
+  // Deadlock Mod Manager's 1-click link, as on GameBanana's Files list (tested 2026-11-05).
+  // It names one file: SITE.dmmFile, set to the new file's id at every GameBanana upload (the release's PUBLISH steps).
+  // No request to GameBanana from the page: the privacy page names only Cloudflare's visit count (C, 11-11).
+  const mod = (SITE.gamebanana.match(/\/mods\/(\d+)/) || [])[1];
+  if (mod && SITE.dmmFile) {
+    const dmm = document.getElementById("dmm");
+    dmm.href = "deadlock-mod-manager:https://gamebanana.com/mmdl/" + SITE.dmmFile + ",Mod," + mod; dmm.hidden = false;
+    document.getElementById("dmm-line").hidden = false;
   }
   if (SITE.clipId) {
     const f = document.createElement("iframe");
