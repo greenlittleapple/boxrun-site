@@ -104,7 +104,8 @@ const BoxRunFunnel = (() => {
   // Installs per download since 2.1 (as growth_snapshot.py's install bound): first loads from 2.1's Pacific day on,
   // over GameBanana's total downloads less PRE_21_DOWNLOADS. That's the total less the listed files' sum read
   // 2026-11-04 (3,800, then 3,804): the files removed before 2.1, whose downloads stay in the total (removing a file
-  // doesn't lower it, as those removals show). Updates count as downloads, so the share is an upper bound.
+  // doesn't lower it, as those removals show). It's a lower bound on installs per download (review 11-10): update
+  // downloads inflate the downloads, and games with counts off or offline send no first load.
   const PRE_21_DOWNLOADS = 3800, DAY_2_1 = "2026-11-02";
   function installBound(b) {
     const gb = b.gamebanana || {};
@@ -132,6 +133,82 @@ const BoxRunFunnel = (() => {
     };
   }
 
+  // ---- the funnel as a picture (11-10): one bar per step on one scale, first loads = 1 ----
+  // MAIN: every 2.1+ install, first loads to the next day. Week-1 return is its own row on other first days (its
+  // window closes 13 days later). F23: the first minute, only installs first loaded on 2.3 (their own scale).
+  const MAIN = [["load", "First loads"], ["start", "Started a run"], ["finish", "Finished a run"], ["count", "Counted finish"],
+    ["back_d1", "Back the next day"]];
+  const F23 = [["load", "Map load"], ["seen", "Menu seen"], ["shot", "Shot at it"], ["press", "Pressed a button"],
+    ["go", "Went to a start"], ["ready", "READY"], ["start", "Started"]];
+  // the first session (load to counted finish): the biggest loss is marked only among these
+  const SESSION = ["start", "finish", "count"];
+  // steps that don't need the one before (a shot needs no Menu seen, READY no GO TO START): no loss line into them
+  const NO_LOSS = ["shot", "ready"];
+  const LOST = { start: "didn't start", finish: "didn't finish", count: "finished, not counted", back_d1: "not back the next day",
+    seen: "menu not seen", press: "pressed nothing", go: "didn't go to a start" };
+  // The first days a picture covers, by age (days before today): the main bars 2 to 8 days ago, so every next-day
+  // window has closed; week-1 return 14 to 20 days ago. The 7 days before each set are what a row's change is against.
+  const MAIN_AGES = [2, 8], W1_AGES = [14, 20];
+  const inAges = (rows, [a, b]) => rows.filter((r) => r.age >= a && r.age <= b);
+
+  // Steps as bars: n, share of the first step (the bar's width, capped at 1), the loss from the step before (count and
+  // points of the first step), and the change against `prev` (the same steps on the 7 first days before), in points.
+  function bars(rows, steps, get, prev) {
+    const sum = (rs, key) => rs.reduce((a, r) => a + n(get(r, key)), 0);
+    const base = sum(rows, "load"), pbase = prev ? sum(prev, "load") : 0;
+    const out = steps.map(([key, label]) => {
+      const c = sum(rows, key), sh = share(c, base);
+      return { key, label, n: c, share: sh, width: sh === null ? 0 : Math.min(1, sh), loss: null, lossN: null, biggest: false,
+               change: key !== "load" && pbase ? (sh === null ? null : sh - share(sum(prev, key), pbase)) : null };
+    });
+    let worst = null;
+    for (let i = 1; i < out.length; i++) {
+      const a = out[i - 1], c = out[i];
+      if (a.share === null || c.share === null || NO_LOSS.includes(c.key)) continue;
+      c.loss = a.share - c.share; c.lossN = a.n - c.n; c.lost = LOST[c.key] || "lost";
+      if (c.loss > 0 && (steps === MAIN ? SESSION.includes(c.key) : true) && (!worst || c.loss > worst.loss)) worst = c;
+    }
+    if (worst) worst.biggest = true;
+    return out;
+  }
+  // Week-1 return as its own row: first days 14 to 20 days ago (or the one chosen day once its window has closed); none
+  // closed yet: pending, with the count so far and the day the first numbers are complete.
+  function week1(rows, day) {
+    const pick = day ? rows.filter((r) => r.day === day && r.back_w2.state === "closed") : inAges(rows, W1_AGES);
+    const load = pick.reduce((a, r) => a + r.load, 0), back = pick.reduce((a, r) => a + r.back_w2.n, 0);
+    if (pick.length && load) {
+      const prev = day ? [] : inAges(rows, [W1_AGES[0] + 7, W1_AGES[1] + 7]);
+      const pl = prev.reduce((a, r) => a + r.load, 0), pb = prev.reduce((a, r) => a + r.back_w2.n, 0);
+      const sh = share(back, load);
+      return { key: "back_w2", label: "Back days 7-13", state: "closed", n: back, load, share: sh, width: Math.min(1, sh || 0),
+               from: pick[0].day, to: pick[pick.length - 1].day, change: pl ? sh - share(pb, pl) : null };
+    }
+    const mine = day ? rows.filter((r) => r.day === day) : rows;
+    const first = mine.length ? mine[0] : null;
+    return { key: "back_w2", label: "Back days 7-13", state: "pending", n: mine.filter((r) => r.back_w2.state !== "later").reduce((a, r) => a + r.back_w2.n, 0),
+             share: null, width: 0, ready: first ? addDays(first.back_w2.closes, 1) : null };
+  }
+  // The main picture, week-1 return and the 2.3 first minute, for the standard first days or one first day (`day`).
+  function picture(b, day) {
+    const rows = cohorts(b);
+    const pick = day ? rows.filter((r) => r.day === day) : inAges(rows, MAIN_AGES);
+    const prev = day ? null : inAges(rows, [MAIN_AGES[0] + 7, MAIN_AGES[1] + 7]);
+    const load = pick.reduce((a, r) => a + r.load, 0);
+    const span = (rs) => ({ rows: rs.length, from: rs.length ? rs[0].day : null, to: rs.length ? rs[rs.length - 1].day : null });
+    const main = { ...span(pick), load, steps: load ? bars(pick, MAIN, (r, k) => (k === "back_d1" ? (r.back_d1.state === "closed" ? r.back_d1.n : 0) : r[k]), prev && prev.length ? prev : null) : [] };
+    // a chosen first day whose next day isn't over yet: its return is pending, not 0
+    if (day && pick.length && pick[0].back_d1.state !== "closed" && main.steps.length) {
+      const s = main.steps[main.steps.length - 1];
+      Object.assign(s, { state: "pending", share: null, width: 0, loss: null, lossN: null, biggest: false, n: pick[0].back_d1.n, ready: addDays(pick[0].back_d1.closes, 1) });
+    }
+    // the 2.3 first minute is over within minutes of a first load, so today's 2.3 installs count here: the last 7
+    // first days with 2.3 counts, today included (they start on V23_FROM)
+    const p23 = day ? pick.filter((r) => r.v23) : rows.filter((r) => r.v23 && r.age <= 6);
+    const load23 = p23.reduce((a, r) => a + r.v23.load, 0);
+    const first = { ...span(p23), today: p23.some((r) => r.today), load: load23, steps: load23 ? bars(p23, F23, (r, k) => r.v23[k], null) : [] };
+    return { main, week1: week1(rows, day), first, days: rows.filter((r) => !r.empty).map((r) => r.day).reverse(), install: installBound(b) };
+  }
+
   // 8.3% under 10%, else a whole percent; "–" when there's nothing to divide by.
   const pct = (x) => (x === null || x === undefined ? "–" : x > 0 && x < 0.1 ? (x * 100).toFixed(1) + "%" : Math.round(x * 100) + "%");
   const fDay = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
@@ -141,6 +218,7 @@ const BoxRunFunnel = (() => {
   // "Nov 12 to 18", or "Oct 30 to Nov 5" across a month
   const spanLabel = (a, b) => (a === b ? dayLabel(a) : dayLabel(a) + " to " + (a.slice(0, 7) === b.slice(0, 7) ? String(+b.slice(8)) : dayLabel(b)));
 
-  return { view, cohorts, weeks, pooled, menuReturn, installBound, windowOf, pct, dayLabel, dowLabel, spanLabel, addDays, monday, STEPS, FIRST, V23 };
+  return { view, cohorts, weeks, pooled, menuReturn, installBound, windowOf, picture, pct, dayLabel, dowLabel, spanLabel, addDays, monday,
+           STEPS, FIRST, V23, MAIN, F23 };
 })();
 if (typeof module === "object" && module.exports) module.exports = BoxRunFunnel;

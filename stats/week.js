@@ -56,8 +56,10 @@ const BoxRunWeek = (() => {
       "No runs yet.");
   }
 
-  // The section's HTML for a /v1/week answer at `now` (ms); `error` (a message) when the fetch failed.
-  function render(b, now, error) {
+  // The section's HTML for a /v1/week answer at `now` (ms); `error` (a message) when the fetch failed. opts.compact (the
+  // stats page since 11-10): the route, entries and the fastest five, then most runs and last week on one line each.
+  function render(b, now, error, opts) {
+    const compact = !!(opts && opts.compact);
     if (error) return `<p class="muted">Couldn't load the week's board (${esc(error)}).</p>`;
     if (!b || typeof b !== "object") return `<p class="muted">Couldn't load the week's board (no answer).</p>`;
     const out = [];
@@ -68,9 +70,18 @@ const BoxRunWeek = (() => {
       out.push(route(w),
         `<p class="small">${ends === null ? "No end set" : "Ends " + endsLabel(ends) + ", " + leftLabel(ends, now)}. ` +
         `${plural(num(w.entries) ?? 0, "entry", "entries")}.</p>`,
-        `<h3>Fastest</h3>`, fastest(list(w.fastest)), `<h3>Most runs</h3>`, most(list(w.most)));
+        ...(compact ? [fastest(list(w.fastest).slice(0, 5))] : [`<h3>Fastest</h3>`, fastest(list(w.fastest)), `<h3>Most runs</h3>`, most(list(w.most))]));
+      const top = list(w.most)[0];
+      if (compact && top) out.push(`<p class="small wline">Most runs: ${esc(top.runner)}, ${num(top.runs) === null ? "–" : top.runs.toLocaleString("en-US")}</p>`);
     }
     const l = b.last;
+    if (compact) {
+      if (l && typeof l === "object") {
+        const f = l.fastest && typeof l.fastest === "object" ? l.fastest : null;
+        out.push(`<p class="small muted wline">Last week: ${esc(l.name || "(no name)")}` + (f ? `, fastest ${esc(f.runner)} ${time(f.time)} (${esc(hero(f.hero))})` : "") + "</p>");
+      }
+      return out.join("\n");
+    }
     if (l && typeof l === "object") {
       // last_line keeps the first of each list only, so its place is 1
       const f = l.fastest && typeof l.fastest === "object" ? [{ place: 1, ...l.fastest }] : [];

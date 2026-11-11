@@ -7,7 +7,7 @@ const Stats = (() => {
   const STORE = "boxrunStatsKey";
   const TZ = "America/Los_Angeles";
   const REFRESH = 5 * 60e3;
-  const ID = /\b((?:SHOW|FIND|EASE|LOOK|COUNT|SAFE|MAKE|PLAY|REACH|LISTEN|GOAL)-\d+)\b/g;
+  const ID = /\b((?:SHOW|FIND|EASE|LOOK|COUNT|SAFE|MAKE|PLAY|REACH|LISTEN|GOAL|DEV|VALVE)-\d+)\b/g;
   let sessionKey = "";
   const $ = (id) => document.getElementById(id);
 

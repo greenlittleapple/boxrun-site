@@ -96,6 +96,67 @@
   ol.next li::before { content: counter(n); font: 800 1.05rem/1 var(--display); color: var(--muted); min-width: 0.9rem; }
   ol.next .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
   ol.next .r { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+  /* Today's "Next (C), in order": the bold lead as the title, the rest on one muted line, all of it on open */
+  ol.prio > li { display: block; padding-left: 1.45rem; position: relative; }
+  ol.prio > li::before { position: absolute; left: 0; top: 0.4rem; }
+  ol.prio > li:first-child::before { top: 0; }
+  .prio details > summary { display: block; }
+  .prio .pt { font-weight: 700; }
+  .prio .pd { display: block; color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+  .prio details[open] .pd { display: none; }
+  .prio .full { font-size: 0.9rem; margin-top: 0.2rem; overflow-wrap: anywhere; }
+  ul.pnotes { list-style: none; margin: 0.5rem 0 0; padding: 0.4rem 0 0; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
+  ul.pnotes li { padding: 0.15rem 0; overflow-wrap: anywhere; }
+  ul.pnotes strong { color: var(--ink); }
+
+  ol.prio.plain > li { padding-left: 0; }
+  ol.prio.plain > li::before, ul.prio.plain > li::before { content: none; }
+  ul.next.prio.plain { list-style: none; margin: 0; padding: 0; }
+  ul.prio.plain > li { display: block; padding: 0.35rem 0; border-top: 1px solid var(--line); }
+  ul.prio.plain > li:first-child { border-top: 0; padding-top: 0; }
+  .atag { margin-left: 0.45rem; color: var(--muted); font-size: 0.75rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 0.3rem; white-space: nowrap; vertical-align: 0.1em; }
+
+  .areas { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .area { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: 0.5rem 1.5rem; padding: 0.9rem 1rem; border-top: 1px solid var(--line); }
+  .area:first-child { border-top: 0; }
+  .area .an { font: 800 1.35rem/1.1 var(--display); color: var(--gold-ink); letter-spacing: 0.02em; }
+  .area .as { display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.45rem; }
+  .ameasure { overflow-wrap: anywhere; }
+  .abig { display: block; font: 800 2.1rem/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .arest { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 0.2rem; line-height: 1.35; }
+  .adue { font-size: 0.825rem; margin: 0.5rem 0 0; overflow-wrap: anywhere; }
+  .lplan { margin: 0 0 0.6rem; font-size: 0.925rem; max-width: 52rem; overflow-wrap: anywhere; }
+  .lcols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1rem; }
+  .lcols h4, .later h4 { margin: 0 0 0.25rem; font: 700 0.8rem var(--body); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  /* the id and title flow as one line of text that wraps under itself; the swatch hangs in the margin */
+  ul.litems { list-style: none; margin: 0; padding: 0; font-size: 0.875rem; }
+  ul.litems li { position: relative; padding: 0.15rem 0 0.15rem 1.05rem; overflow-wrap: anywhere; }
+  ul.litems .sw { position: absolute; left: 0; top: 0.45em; margin: 0; }
+  ul.litems .chipid { margin-right: 0.35rem; }
+  ul.litems .w, ul.litems .rl { margin-left: 0.35rem; font-size: 0.7rem; vertical-align: 0.1em; }
+  .rl { color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 0.25rem; white-space: nowrap; }
+  .later { margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+  .later h4 { margin: 0; }
+  .lline { display: inline-flex; flex-wrap: wrap; gap: 0.15rem 0.7rem; font-size: 0.85rem; }
+  .lid { white-space: nowrap; }
+  .areas .none { color: var(--muted); font-size: 0.85rem; margin: 0; }
+  details.area { display: block; padding: 0; }
+  details.area > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.6rem; padding: 0.65rem 0.85rem; }
+  details.area > summary::before { content: "\25B8"; color: var(--muted); }
+  details.area[open] > summary::before { content: "\25BE"; }
+  details.area > summary .abig { display: inline; font-size: 1.4rem; }
+  details.area > summary .snow { flex-basis: 100%; padding-left: 1.1rem; color: var(--muted); font-size: 0.8rem; }
+  details.area .aopen { padding: 0 0.85rem 0.8rem; }
+  @media (max-width: 760px) { .lcols { grid-template-columns: minmax(0, 1fr); } }
+
+  details.relfold > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; padding: 0.7rem 1rem; }
+  details.relfold > summary::before { content: "\25B8"; color: var(--muted); }
+  details.relfold[open] > summary::before { content: "\25BE"; }
+  details.relfold > summary .sw { align-self: center; margin-right: 0; }
+  details.relfold > summary b { font-weight: 700; }
+  details.relfold > summary .muted { font-size: 0.875rem; }
+  details.relfold[open] > summary { border-bottom: 1px solid var(--line); }
+  .rels > .rel + details.relfold, .rels > details.relfold + .rel { border-top: 1px solid var(--line); }
   .meter { margin-top: 0.7rem; }
   .meter .top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
   .meter .big { font: 800 2rem/1 var(--display); }
@@ -207,24 +268,16 @@
   // A release cell short enough for a card: "2.2 or 2.3 (building from 11-02, ...)" -> "2.2 or 2.3".
   const relLabel = (it) => it.release_id || String(it.release || "").replace(/\s*\(.*$/, "");
 
-  // One of Today's lists as rows: a bold lead ("w73:") as a tag, then the text.
+  // One of Today's lists as Next up's rows (11-10 review): the bold lead as the title, one muted line, all of it on open.
   function todayList(list) {
-    return el("ul", { className: "list" }, list.map((inl) => {
-      const li = el("li");
-      const rest = inl.slice();
-      // the tag sits inline and wraps with the text (the CSS above), so a bold lead of any length is a tag
-      if (rest.length && rest[0][0] === "b") li.append(el("span", { className: "tag", text: rest.shift()[1].replace(/:\s*$/, "") }));
-      if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
-      li.append(Stats.spans(el("span", { className: "txt" }), rest, href));
-      return li;
-    }));
+    return el("ul", { className: "next prio plain" }, list.map((inl) => prioRow(inl)));
   }
 
   function nowSection(d) {
     const out = [];
     const today = d.today || {};
     const parts = today.parts || [];
-    out.push(el("h2", null, "Now", today.title ? el("span", { className: "aside", text: today.title }) : null));
+    out.push(el("h2", null, "Today", today.title ? el("span", { className: "aside", text: today.title.replace(/^Today\s*\(?/, "").replace(/\)$/, "") }) : null));
 
     // The two boxes show Today's "Building now (C)" and "Needs Marcus" lists as written, nothing inferred.
     const run = el("div", { className: "box run" }, el("h3", null, icon("run"), "Building now", el("span", { className: "w C", text: "C" })));
@@ -282,10 +335,32 @@
     return [el("div", { className: "counts" }, btns), list];
   }
 
+  // The day a release went out, from its Target ("released Mon 11-09 ~15:45 PST" -> "Mon 11-09").
+  const relDay = (r) => { const m = text(r.target).match(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{1,2}-\d{1,2}\b/); return m ? m[0] : ""; };
   function releasesSection(d) {
     const out = [el("h2", { text: "Releases" })];
     const box = el("div", { className: "rels" });
-    for (const r of d.releases || []) {
+    const rels = d.releases || [];
+    const done = rels.filter((r) => r.state_class === "done");
+    // Every finished release in one fold, closed by default: "10 done", then the newest by date.
+    if (done.length) {
+      // the newest by the date in its Target (the table is in date order since 11-10, but don't rely on it)
+      const md = (r) => { const m = relDay(r).match(/(\d{1,2})-(\d{1,2})$/); return m ? +m[1] * 100 + +m[2] : -1; };
+      const newest = done.reduce((a, r) => (md(r) > md(a) ? r : a), done[0]);
+      const fold = el("details", { className: "relfold" }, el("summary", null, el("span", { className: "sw done" }),
+        el("b", { text: done.length + " done" }),
+        md(newest) >= 0 ? el("span", { className: "muted", text: "· newest " + [newest.id, newest.name].filter(Boolean).join(" ") + ", " + relDay(newest) } ) : null));
+      fold.open = !!openRel["__fold"];
+      fold.addEventListener("toggle", () => { openRel["__fold"] = fold.open; });
+      fold.append(...done.map((r) => relRow(r)));
+      box.append(fold);
+    }
+    for (const r of rels.filter((x) => x.state_class !== "done")) box.append(relRow(r));
+    out.push(box);
+    return out;
+  }
+  function relRow(r) {
+    {
       const items = (r.items || []).map((i) => byId.get(i)).filter(Boolean);
       const c = counts(items);
       const left = el("div", null,
@@ -310,16 +385,125 @@
           Stats.spans(el("p", { className: "ids" }), [["b", "Contents: "]].concat(r.contents || []), href),
           Stats.spans(el("p"), [["b", "State: "]].concat(r.state || []), href)));
       right.append(det);
-      box.append(el("div", { className: "rel" }, left, right));
+      return el("div", { className: "rel" }, left, right);
     }
-    out.push(box);
+  }
+
+  // Today's "Next (C), in order", numbered: the bold lead as the title, the rest cut at a word, all of it on open.
+  let showAllPrio = false;
+  function cutAt(s, n) {
+    s = s.replace(/\s+/g, " ").trim();
+    if (s.length <= n) return s;
+    const c = s.lastIndexOf(" ", n);
+    return s.slice(0, c > 20 ? c : n).replace(/[\s,;:(-]+$/, "") + "\u2026";
+  }
+  function prioRow(inl, tag) {
+    const rest = inl.slice();
+    const title = rest.length && rest[0][0] === "b" ? rest.shift()[1].replace(/[:.]\s*$/, "") : "";
+    if (rest.length && rest[0][0] === "t") rest[0] = ["t", rest[0][1].replace(/^\s+/, "")];
+    if (title) rest.splice(0, rest.length, ...capFirst(rest));
+    const said = text(rest);
+    if (!title) return el("li", null, Stats.spans(el("span", { className: "t" }), rest, href));
+    const det = el("details", null, el("summary", null, el("span", { className: "pt", text: title }), tag ? el("span", { className: "atag", text: tag }) : null,
+      said ? el("span", { className: "pd", text: cutAt(said, 110) }) : null));
+    if (said) det.append(Stats.spans(el("div", { className: "full" }), rest, href));
+    return el("li", null, det);
+  }
+  function prioBox(pr) {
+    const nb = el("div", { className: "box" }, el("h3", null, icon("next"), "Next up", el("span", { className: "w C", text: "C" })));
+    const items = pr.items || [];
+    if (!items.length) { nb.append(el("p", { className: "lead", text: "Nothing listed under " + pr.label + "." })); return nb; }
+    const list = el("ol", { className: "next prio" });
+    const foot = el("p", { className: "small muted", style: "margin: 0.6rem 0 0" });
+    function draw() {
+      const all = showAllPrio || items.length <= 6;
+      list.replaceChildren(...(all ? items : items.slice(0, 6)).map((inl) => prioRow(inl, areaTag(inl))));
+      const kids = [];
+      const line = ["From Today's \u201c" + pr.label + "\u201d. "];
+      if (items.length > 6) line.push(el("button", { className: "linkbtn", type: "button", text: all ? "Show the first 6" : "Show all " + items.length,
+        on: { click: () => { showAllPrio = !showAllPrio; draw(); } } }));
+      foot.replaceChildren(...line);
+      notes.replaceChildren(...kids);
+    }
+    const notes = el("div");
+    draw();
+    nb.append(list, notes, foot);
+    return nb;
+  }
+
+  // ---- areas: the plan by area (Marcus 11-10; "lanes" also means Deadlock's map lanes) ----
+  let areaMap = new Map();
+  function indexAreas(d) {
+    areaMap = new Map();
+    for (const a of (d.areas && d.areas.areas) || []) for (const k of ["now", "next", "later"]) for (const i of a[k] || []) areaMap.set(i, a.name);
+  }
+  // the areas a Next up row's ids belong to ("Retention · Makers"), from the areas' Now, Next and Later lists
+  function areaTag(inl) {
+    const names = [];
+    for (const m of text(inl).matchAll(/\b([A-Z]{3,7}-\d+)\b/g)) {
+      const a = areaMap.get(m[1]);
+      if (a && !names.includes(a)) names.push(a);
+    }
+    return names.join(" · ");
+  }
+  const phone = matchMedia("(max-width: 760px)");
+  phone.addEventListener("change", () => { if (body) drawAll(); });
+  // Now and Next: swatch, id, title, M where Marcus's hands are needed, the release
+  function areaItems(ids) {
+    const known = ids.filter((i) => byId.has(i));
+    if (!known.length) return el("p", { className: "none", text: "Nothing here." });
+    return el("ul", { className: "litems" }, known.map((i) => {
+      const it = byId.get(i);
+      return el("li", null, el("span", { className: "sw " + it.state_class, title: it.state_class }), idLink(it.id), el("span", { className: "t", text: it.title }),
+        it.who_set.includes("M") ? el("span", { className: "w M", title: "Marcus's hands", text: "M" }) : null,
+        it.release_id ? el("span", { className: "rl", text: it.release_id }) : null);
+    }));
+  }
+  // Later: one line of ids with their swatches, no titles
+  function laterLine(ids) {
+    const known = ids.filter((i) => byId.has(i));
+    if (!known.length) return el("span", { className: "none", text: "nothing" });
+    return el("span", { className: "lline" }, known.map((i) => el("span", { className: "lid" }, el("span", { className: "sw " + byId.get(i).state_class, title: byId.get(i).state_class }), idLink(i))));
+  }
+  // "Mon 11-23, the Shorts' pace." -> as written, after a "Due" label
+  function areasSection(d) {
+    const A = d.areas;
+    if (!A || !(A.areas || []).length) return [];
+    const box = el("div", { className: "areas" });
+    for (const a of A.areas) {
+      const head = el("div", { className: "ahead" },
+        el("div", { className: "aname" }, el("span", { className: "an", text: a.name }), a.scope ? el("span", { className: "as", text: a.scope }) : null),
+        el("div", { className: "ameasure" }, a.headline ? el("span", { className: "abig", text: a.headline }) : null,
+          (a.measure_rest || []).length ? Stats.spans(el("span", { className: "arest" }), a.measure_rest, href) : null));
+      const due = (a.due || []).length ? Stats.spans(el("p", { className: "adue" }), [["b", "Due: "]].concat(a.due), href) : null;
+      const right = el("div", { className: "abody" }, (a.plan || []).length ? Stats.spans(el("p", { className: "lplan" }), capFirst(a.plan), href) : null,
+        el("div", { className: "lcols" }, [["Now", a.now], ["Next", a.next]].map(([h, ids]) => el("div", null, el("h4", { text: h }), areaItems(ids || [])))),
+        el("div", { className: "later" }, el("h4", { text: "Later" }), laterLine(a.later || [])));
+      if (phone.matches) {
+        // a phone: closed, the summary is the name, the big number and the Now ids, so all six fit one screen
+        const sum = el("summary", null, el("span", { className: "an", text: a.name }), a.headline ? el("span", { className: "abig", text: a.headline }) : null,
+          el("span", { className: "snow" }, (a.now || []).length ? (a.now || []).join(", ") : "nothing now"));
+        const det = el("details", { className: "area" }, sum, el("div", { className: "aopen" }, el("div", { className: "as", text: a.scope }),
+          (a.measure_rest || []).length ? Stats.spans(el("p", { className: "arest" }), a.measure_rest, href) : null, due, right));
+        box.append(det);
+      } else box.append(el("div", { className: "area" }, el("div", null, head, due), right));
+    }
+    const when = d.updated ? Stats.when(d.updated) : "";
+    return [el("h2", null, "Areas", el("span", { className: "aside", text: "by area" + (when ? ", updated " + when : "") })), box];
+  }
+  // “a board” -> “A board”: the Plan follows its bold label, so it starts lower-case
+  function capFirst(inl) {
+    const out = (inl || []).map((x) => x.slice());
+    if (out.length && out[0][0] === "t") out[0][1] = out[0][1].replace(/^\s*([a-z])/, (m, c) => c.toUpperCase());
     return out;
   }
 
   function nextAndGoal(d) {
     const nextIds = (d.next || []).filter((i) => byId.has(i));
-    const nb = el("div", { className: "box" }, el("h3", null, icon("next"), "Next up"));
-    if (nextIds.length) {
+    const nb = d.priorities ? prioBox(d.priorities) : el("div", { className: "box" }, el("h3", null, icon("next"), "Next up"));
+    if (d.priorities) {
+      // the order Today writes (a document without it falls back to the queued items below)
+    } else if (nextIds.length) {
       nb.append(el("ol", { className: "next" }, nextIds.slice(0, 6).map((i) => {
         const it = byId.get(i);
         return el("li", null, idLink(it.id), el("span", { className: "t", text: it.title }), el("span", { className: "whoset" }, whoTags(it)), el("span", { className: "r", text: relLabel(it) }));
@@ -334,40 +518,33 @@
     const gb = el("div", { className: "box" });
     if (g) {
       const it = byId.get(g.id);
-      gb.append(el("h3", null, icon("goal"), g.id, g.by ? el("span", { className: "aside muted", style: "font: 400 0.9rem var(--body)", text: "by " + g.by }) : null));
+      const by = g.avg_by || g.by;
+      gb.append(el("h3", null, icon("goal"), g.id, by ? el("span", { className: "aside muted", style: "font: 400 0.9rem var(--body)", text: "by " + by }) : null));
       if (it) gb.append(el("p", { className: "lead", style: "margin: 0" }, it.title + ". ", el("a", { href: "#" + g.id, text: "Full text and guardrails" })));
-      const rets = g.returns || [];
-      const done = rets.filter((x) => !x.partial);
-      const last = done[done.length - 1], part = rets.find((x) => x.partial);
-      if (last || g.return_target) {
-        const m = el("div", { className: "meter" });
-        const scale = Math.max(g.return_target || 0, last ? last.rate : 0) * 1.25 || 0.2;
-        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: last ? pct(last.rate) : "–" }), " next-day return"),
-          g.return_target ? el("span", { className: "of", text: "target " + pct(g.return_target) + (g.return_from ? ", from about " + pct(g.return_from) : "") }) : null));
-        const tb = el("div", { className: "track-bar", role: "img", "aria-label": (last ? pct(last.rate) : "no reading") + (g.return_target ? " of a " + pct(g.return_target) + " target" : "") });
-        if (last) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, last.rate / scale * 100).toFixed(1) + "%" }));
-        if (g.return_from) tb.append(el("span", { className: "mark from", style: "left: " + (g.return_from / scale * 100).toFixed(1) + "%" }));
-        if (g.return_target) tb.append(el("span", { className: "mark", style: "left: " + (g.return_target / scale * 100).toFixed(1) + "%" }));
-        m.append(tb);
-        m.append(el("div", { className: "note", text: (last ? shortDay(last.day) + ": " + last.back + " of the day before's " + Stats.fmt(last.of) + " came back." : "")
-          + (part ? " " + shortDay(part.day) + " so far: " + pct(part.rate) + "." : "") }));
-        gb.append(m);
-      }
-      if (g.weekly || g.weekly_target) {
-        const w = g.weekly, m = el("div", { className: "meter" });
-        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: w ? Stats.fmt(w.players) : "–" }), " menu players"),
-          g.weekly_target ? el("span", { className: "of", text: "target " + Stats.fmt(g.weekly_target) + " a week" }) : null));
-        if (g.weekly_target) {
-          const tb = el("div", { className: "track-bar", role: "img", "aria-label": (w ? Stats.fmt(w.players) : "none") + " of " + Stats.fmt(g.weekly_target) });
-          if (w) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, w.players / g.weekly_target * 100).toFixed(1) + "%" }));
+      // The sign since review 6 (11-09): a 7-day average of daily menu players against its target (complete days from
+      // social's daily counts). Return: week-1 return of new installs, from its first day; nothing shown before then.
+      if (g.avg7 || g.avg_target) {
+        const a = g.avg7, m = el("div", { className: "meter" });
+        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: a ? Stats.fmt(Math.round(a.value)) : "–" }), " players a day, 7-day average"),
+          g.avg_target ? el("span", { className: "of", text: "target " + Stats.fmt(g.avg_target) + (g.avg_by ? " by " + g.avg_by : "") }) : null));
+        if (g.avg_target) {
+          const tb = el("div", { className: "track-bar", role: "img", "aria-label": (a ? Stats.fmt(Math.round(a.value)) : "none") + " of " + Stats.fmt(g.avg_target) });
+          if (a) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, a.value / g.avg_target * 100).toFixed(1) + "%" }));
           m.append(tb);
         }
-        if (w) m.append(el("div", { className: "note", text: "Daily counts added up over the last " + (w.days === 1 ? "day" : w.days + " complete days") + " (" + shortDay(w.from) + " to " + shortDay(w.to) + ")." }));
+        if (a) m.append(el("div", { className: "note", text: "Daily menu players over the last " + (a.days === 1 ? "complete day" : a.days + " complete days") + " (" + shortDay(a.from) + " to " + shortDay(a.to) + ")." }));
         gb.append(m);
+      }
+      if (g.week1_first) {
+        const yr = String(d.updated || "").slice(0, 4) || "2026";
+        const wd = new Date(yr + "-" + g.week1_first + "T12:00:00Z");
+        const dow = isNaN(wd) ? "" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][wd.getUTCDay()] + " ";
+        gb.append(el("div", { className: "meter" }, el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: "–" }), " week-1 return"),
+          el("span", { className: "of", text: "first number " + dow + g.week1_first }))));
       }
       gb.append(el("p", { className: "small muted", style: "margin: 0.6rem 0 0" }, "From ", el("code", { text: g.source }), "."));
     } else gb.append(el("h3", null, icon("goal"), "Goal"), el("p", { className: "lead", text: "No adopted goal in the roadmap." }));
-    return [el("div", { className: "cols", style: "margin-top: 2.25rem" }, nb, gb)];
+    return [el("div", { className: "cols", style: "margin-top: 1.25rem" }, nb, gb)];
   }
 
   // ---- the board ----
@@ -405,6 +582,20 @@
     const T = new Map(tracks.map((t) => [t.id, t]));
     const pairs = tracks.flatMap((t) => t.items.map((it) => [it, t]));
     const g = view.p.group;
+    if (g === "area") {
+      const areas = (d.areas && d.areas.areas) || [], seen = new Set();
+      const out = areas.map((a) => {
+        const order = [].concat(a.now || [], a.next || [], a.later || []);
+        const ps = order.map((i) => pairs.find(([it]) => it.id === i)).filter(Boolean);
+        ps.forEach(([it]) => seen.add(it.id));
+        return { key: "a:" + a.name, title: a.name, sub: a.scope, pairs: ps, open: true };
+      });
+      const rest = pairs.filter(([it]) => !seen.has(it.id));
+      const closed = (it) => it.state_class === "done" || it.state_class === "parked";
+      out.push({ key: "a:done", title: "Done", sub: "and parked", pairs: rest.filter(([it]) => closed(it)), open: false });
+      out.push({ key: "a:none", title: "Not in an area", sub: "open items no area lists", pairs: rest.filter(([it]) => !closed(it)), open: true });
+      return out;
+    }
     if (g === "track") return tracks.map((t) => ({ key: "t:" + t.id, title: t.id, sub: t.title, pairs: t.items.map((it) => [it, t]), open: true }));
     if (g === "release") {
       const seen = new Set(), out = [];
@@ -446,7 +637,7 @@
     const stateBox = box("State"), whoBox = box("Who"), trackBox = box("Track");
     const repick = (fn) => (v) => { fn(v); view.save(); paint(); drawBoard(); };
     function paint() {
-      Stats.seg(groupBox, [["state", "State"], ["track", "Track"], ["release", "Release"]], view.p.group, repick((v) => { view.p.group = v; }));
+      Stats.seg(groupBox, [["state", "State"], ["area", "Area"], ["track", "Track"], ["release", "Release"]], view.p.group, repick((v) => { view.p.group = v; }));
       const states = STATES.filter((s) => count((i) => i.state_class === s));
       Stats.seg(stateBox, [["all", "All", all.length]].concat(states.map((s) => [s, s, count((i) => i.state_class === s)])), view.p.state, repick((v) => { view.p.state = v; }));
       for (const b of stateBox.querySelectorAll("button")) if (b.dataset.v !== "all") b.prepend(el("span", { className: "sw " + b.dataset.v }));
@@ -472,9 +663,10 @@
       if (!it.title) it.title = text(it.item).split(/ \(|[:.](?=\s|$)/)[0].slice(0, 60);
       all.push(it); byId.set(it.id, it); trackOf.set(it.id, t.id);
     }
+    indexAreas(d);
     $("sub").replaceChildren("From ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
       ", last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
-    const kids = [].concat(nowSection(d), releasesSection(d), nextAndGoal(d), boardSection(d));
+    const kids = [].concat(nowSection(d), nextAndGoal(d), areasSection(d), releasesSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
     if (d.strategy) {
       const det = el("details", null, el("summary", null, el("h2", { text: d.strategy.title })));

@@ -182,6 +182,113 @@
   .copy { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 0.1rem 0.45rem; font: 700 0.75rem var(--body); cursor: pointer; margin-right: 0.4rem; }
   tr.desc td { text-align: left; white-space: normal; color: var(--muted); background: var(--night); }
   .num { font-variant-numeric: tabular-nums; }
+  /* ---- 11-10 redesign: headline, funnel picture, play cards, trends, folds ---- */
+  h2 .aside { font: 400 0.9rem var(--body); color: var(--muted); letter-spacing: 0; margin-left: 0.4rem; }
+  .hl4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
+  @media (max-width: 860px) { .hl4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; } }
+  .hl { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem 0.7rem; min-width: 0; position: relative; }
+  .hl .n { font: 800 3rem/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .hl .n.pend { font-size: 1.8rem; color: var(--muted); }
+  .hl .k { font-weight: 700; margin-top: 0.3rem; }
+  .hl .s { color: var(--muted); font-size: 0.825rem; line-height: 1.35; margin-top: 0.15rem; }
+  @media (max-width: 480px) { .hl { padding: 0.7rem 0.75rem 0.55rem; } .hl .n { font-size: 2.3rem; } .hl .s { font-size: 0.78rem; } }
+  .sk { position: relative; margin-top: 0.5rem; touch-action: pan-y; }
+  .sk svg { display: block; width: 100%; height: 30px; overflow: visible; }
+  .sk .sl { fill: none; stroke: var(--spark); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .sk .sd { fill: var(--bar); }
+  .sk .sh { stroke: var(--muted); stroke-width: 1; }
+  .sk .skl { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.7rem; margin-top: 0.1rem; }
+  .tip.small { font-size: 0.75rem; top: auto; bottom: 100%; }
+
+  .fcontrols { margin: 0 0 0.6rem; gap: 0.5rem 0.9rem; }
+  select { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font: inherit; }
+  .fpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem; position: relative; }
+  .fpic { display: grid; gap: 0; }
+  .frow { display: grid; grid-template-columns: 11rem minmax(0, 1fr) 7.5rem 4.2rem; gap: 0 0.8rem; align-items: center; min-height: 2rem; }
+  .frow .fc { color: var(--muted); font-size: 0.8rem; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .fdash { position: absolute; top: 0; bottom: 0; right: 0; border: 1.5px dashed var(--muted); border-left: 0; border-radius: 0 4px 4px 0; overflow: hidden; }
+  .fdash span { position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.75rem; white-space: nowrap; }
+  .frule { grid-column: 1 / -1; border-top: 1px solid var(--line); margin: 0.55rem 0 0.4rem; }
+  .frow .fl { font-weight: 700; font-size: 0.925rem; }
+  .frow .fv { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .frow .fv b { font-size: 1rem; }
+  .frow .fv .sh { color: var(--muted); font-size: 0.85rem; margin-left: 0.35rem; }
+  .ftrack { position: relative; height: 1.35rem; }
+  .ffill { position: absolute; inset: 0 auto 0 0; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .frow.on .ffill { background: var(--bar-on); }
+  .frow.pending .ftrack { border: 1.5px dashed var(--muted); border-radius: 0 4px 4px 0; }
+  .frow.pending .ftrack span, .frow.install .ftrack span { position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+  .frow.install .fl { font-weight: 400; color: var(--muted); }
+  .floss { grid-column: 2 / -1; color: var(--muted); font-size: 0.8rem; padding: 0.1rem 0 0.15rem; }
+  .floss.big { color: var(--beat); font-weight: 700; }
+  @media (prefers-color-scheme: light) { .floss.big { color: #b42318; } .floss .flag { border-color: #b42318; color: #b42318; } }
+  .floss .flag { margin-left: 0.4rem; border-color: var(--beat); color: var(--beat); }
+  .fnote { grid-column: 2 / -1; color: var(--muted); font-size: 0.8rem; margin: 0 0 0.2rem; }
+  .fgap { height: 0.5rem; }
+  @media (max-width: 640px) {
+    .frow { grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.1rem 0.5rem; padding-top: 0.25rem; }
+    .frow .ftrack { grid-column: 1 / -1; grid-row: 2; }
+    .fdash span { font-size: 0.68rem; }
+    .floss, .fnote { grid-column: 1 / -1; }
+  }
+  details.fold { margin-top: 0.75rem; }
+  details.fold > summary { color: var(--link); font-weight: 700; display: inline-block; padding: 0.2rem 0; }
+  details.fold > summary::before { content: "\25B8  "; color: var(--muted); }
+  details.fold[open] > summary::before { content: "\25BE  "; }
+  details.fold[open] > summary { margin-bottom: 0.5rem; }
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details.sect > summary { display: flex; align-items: baseline; gap: 0.25rem 0.75rem; flex-wrap: wrap; margin: 2.25rem 0 0.75rem; }
+  details.sect > summary h2 { margin: 0; }
+  details.sect > summary h2::before { content: "\25B8  "; color: var(--muted); font-size: 0.9em; }
+  details.sect[open] > summary h2::before { content: "\25BE  "; }
+  .th3 { font: 700 1rem var(--body); margin: 1rem 0 0.4rem; }
+  table.heat { min-width: 0; width: auto; }
+  table.heat td, table.heat th { padding: 0.35rem 0.6rem; font-size: 0.85rem; }
+  table.heat th:first-child, table.heat td:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); }
+  table.heat td.h0 { background: transparent; }
+  /* one-hue gold steps (OKLCH hue 85), checked with the dataviz validator's ordinal mode on the panel colour in both
+     schemes; the text flips where the step is light or dark enough to need it */
+  table.heat td.h1 { background: #6f571e; } table.heat td.h2 { background: #8c6c1f; }
+  table.heat td.h3 { background: #aa821e; color: #1b1c2c; } table.heat td.h4 { background: #c79a2f; color: #1b1c2c; }
+  table.heat td.h5 { background: #eab532; color: #1b1c2c; }
+  @media (prefers-color-scheme: light) {
+    table.heat td.h1 { background: #dbb155; } table.heat td.h2 { background: #c79a2f; }
+    table.heat td.h3 { background: #b08505; color: #1e1d2b; } table.heat td.h4 { background: #987000; color: #ffffff; }
+    table.heat td.h5 { background: #805d00; color: #ffffff; }
+  }
+  table.heat td.pending, table.heat td.none { color: var(--muted); font-style: italic; }
+  table.heat td.today { color: var(--cyan); }
+
+  .mini { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.6rem; }
+  @media (max-width: 960px) { .mini { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .mini { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .mc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.8rem; min-width: 0; }
+  .mc .n { font: 800 1.7rem/1.05 var(--display); font-variant-numeric: tabular-nums; }
+  .mc .n .was { font: 400 0.85rem var(--body); color: var(--muted); margin-left: 0.35rem; white-space: nowrap; }
+  .mc .k { font-weight: 700; font-size: 0.875rem; margin-top: 0.2rem; }
+  .mc .s { color: var(--muted); font-size: 0.775rem; line-height: 1.3; }
+
+  .trends { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  @media (max-width: 860px) { .trends { grid-template-columns: minmax(0, 1fr); } }
+  .spk-dot.hollow { stroke: var(--spark); stroke-width: 7; }
+  .spk-dot.hole { stroke: var(--panel); stroke-width: 3.5; }
+  .pt.hollow { fill: var(--panel); stroke-width: 2; }
+  .pt.hollow.s1 { stroke: var(--s1); } .pt.hollow.s2 { stroke: var(--s2); }
+  .ln.part { stroke-dasharray: 2 3; }
+  .target { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 5 4; }
+  .rel { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 2 3; }
+  .plot text.relt { fill: var(--muted); font-size: 10px; }
+  .tcontrols { margin: 0 0 0.6rem; }
+  .tc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem 0.9rem 0.55rem; min-width: 0; }
+  .tc h3 { font: 700 1rem var(--body); margin: 0; }
+  .tc .sub { color: var(--muted); font-size: 0.8rem; display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin: 0.1rem 0 0.35rem; }
+  .tc .plot { cursor: crosshair; }
+  .plot text.dl { fill: var(--ink); font: 700 11px var(--body); }
+  #week .scroll { max-width: 40rem; }
+  .wline { margin: 0.4rem 0 0; }
+  ul.how { max-width: 52rem; padding-left: 1.2rem; color: var(--muted); }
+  ul.how li { margin: 0.35rem 0; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -193,8 +300,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/" aria-current="page">Stats</a><a href="/stats/roadmap/">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Usage</h1>
-  <p class="muted">Short codes and menu opens from api.boxrun.gg, and the GameBanana page. Times are Pacific. Our own
-    PC and test routes are left out.</p>
+  <p class="muted">From api.boxrun.gg and the GameBanana page. Times are Pacific; our PC and test routes are left out.</p>
 
   <section id="ask" hidden>
     <h2>Stats key</h2>
@@ -207,113 +313,141 @@
   </section>
 
   <section id="stats" hidden>
-    <div class="tiles" id="tiles"></div>
+    <div class="hl4" id="headline"></div>
 
-    <div class="controls">
-      <div class="seg" role="group" aria-label="Range" id="range">
-        <button type="button" data-v="24h">24 h</button><button type="button" data-v="48h">48 h</button><button type="button" data-v="7d">7 d</button><button type="button" data-v="all">All</button>
-      </div>
-      <div class="seg" role="group" aria-label="Values" id="mode">
-        <button type="button" data-v="period">Per period</button><button type="button" data-v="total">Running total</button>
-      </div>
-    </div>
-    <p class="muted small" id="note"></p>
-    <div class="grid" id="grid"></div>
-    <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.
-      Players are counted by scrambled internet address, so a household can count once and a player on two networks twice.</p>
-
-    <h2 id="funnel">Funnel</h2>
-    <p class="muted small">From games with counts on (2.1 and later), new installs only. A 2.0.x player who updated to 2.1
-      isn't a new install: it sends no first-time steps and no returns, though its days and runs count in the weekly
-      numbers. An install's first day is the Pacific day of its first map load.</p>
+    <h2 id="funnel">Funnel <span class="aside">new installs, 2.1 and later</span></h2>
     <div id="funnel-missing" class="muted">The funnel appears when the server sends it.</div>
     <div id="funnel-box" hidden>
-      <div class="tiles" id="ftiles"></div>
-      <div class="scroll" style="margin-top: 1rem">
-        <table class="cohorts">
-          <thead><tr><th rowspan="2">First day</th><th colspan="7" class="group">All versions</th><th colspan="10" class="group">2.3 and later</th></tr>
-            <tr><th>Map loads</th><th>Menu</th><th>Started a run</th><th>Finished a run</th><th>Counted finish</th>
-            <th>Back next day</th><th>Back days 7-13</th>
-            <th>Map loads</th><th>Menu</th><th>Menu seen</th><th>Shot at it</th><th>Pressed a button</th><th>Went to a start</th>
-            <th>READY</th><th>Started a run</th><th>Finished a run</th><th>Counted finish</th></tr></thead>
-          <tbody id="fbody"></tbody>
-        </table>
+      <div class="controls fcontrols">
+        <div class="seg" role="group" aria-label="Which first days" id="fmode">
+          <button type="button" data-v="7d">Last 7 days</button><button type="button" data-v="day">One day</button>
+        </div>
+        <select id="fday" aria-label="First day" hidden></select>
+        <span class="muted small" id="fspan"></span>
       </div>
-      <p class="muted small">Rows: installs by first day. Steps: at least once, any day, filed under the first day.
-        All versions: 2.1 and later, shares of the row's map loads. Back next day, back days 7-13: shares of all map loads;
-        pending until the window closes. 2.3 and later: steps sent from 2.3 on (from 11-09), shares of the 2.3 map loads;
-        "–" before then. Floor: counts off, offline and pre-2.1 games send nothing. Menu: queued, not seen. Duplicates: a
-        lost answer can count a step twice (under 1%). Shot at it: no Menu seen needed. READY: no GO TO START needed (a
-        walk-in gate start).</p>
+      <div class="fpanel">
+        <div class="fpic" id="fpic"></div>
+      </div>
+      <details class="fold" id="f23">
+        <summary>First minute, 2.3 installs</summary>
+        <div class="fpanel"><p class="small"><b>Share of 2.3 map loads reaching each step.</b> <span class="muted" id="f23span"></span></p><div class="fpic" id="fpic23"></div></div>
+      </details>
+      <details class="fold" id="fcohorts">
+        <summary>Cohort tables</summary>
+        <h3 class="th3">All versions (2.1 and later)</h3>
+        <div class="scroll"><table class="heat" id="heat-all"></table></div>
+        <h3 class="th3">2.3 installs</h3>
+        <div class="scroll"><table class="heat" id="heat-23"></table></div>
+          <p class="muted small">Shares of each row's map loads; hover a cell for the count. Shaded within each column: a stronger gold is a higher share for that step than on the other first days.</p>
+      </details>
     </div>
 
-    <h2 id="weekboard">This week's board</h2>
-    <p class="muted small">From api.boxrun.gg/v1/week, the board the game shows. Times count at default souls and 100% game
-      speed, each with its ghost. The board stays open until the week rolls, so entries still count after its end.</p>
-    <div id="week" class="muted">Loading the board.</div>
+    <h2>Play and return <span class="aside">this week, last week through the same day beside it</span></h2>
+    <div class="mini" id="mini"></div>
 
-    <h2>Routes</h2>
-    <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to the Players since launch tile. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red. Alias codes (admin.py alias add) are listed under their route's code with their label and the players who loaded the route through them; those players are in the route's count too.</p>
-    <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
-    <div id="routes-box" hidden>
-      <div class="controls rcontrols">
-        <input id="rsearch" type="search" placeholder="Search name, creator or code" aria-label="Search routes" autocomplete="off">
-        <div class="seg" role="group" aria-label="Which routes" id="rfilter">
-          <button type="button" data-v="all">All</button><button type="button" data-v="players">Players' routes</button><button type="button" data-v="ours">Samples</button><button type="button" data-v="held">Held</button>
+    <h2>Trends</h2>
+    <div class="controls tcontrols">
+      <div class="seg" role="group" aria-label="Trend range" id="trange">
+        <button type="button" data-v="days">30 days</button><button type="button" data-v="hours">48 hours</button>
+      </div>
+    </div>
+    <div class="trends" id="trends"></div>
+    <details class="fold" id="more">
+      <summary>More charts</summary>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Range" id="range">
+          <button type="button" data-v="24h">24 h</button><button type="button" data-v="48h">48 h</button><button type="button" data-v="7d">7 d</button><button type="button" data-v="all">All</button>
+        </div>
+        <div class="seg" role="group" aria-label="Values" id="mode">
+          <button type="button" data-v="period">Per period</button><button type="button" data-v="total">Running total</button>
         </div>
       </div>
-      <p class="small" id="rcount"></p>
+      <p class="muted small" id="note"></p>
+      <div class="grid" id="grid"></div>
+      <p class="muted small">Hover a chart (or tap and hold) to read every chart at that time. Click a chart to open it full width; Esc closes it.</p>
+    </details>
+
+    <h2 id="weekboard">This week's board</h2>
+    <div id="week" class="muted">Loading the board.</div>
+
+    <details class="sect" id="routesfold">
+      <summary><h2>Routes</h2> <span class="muted small" id="rsum"></span></summary>
+      <p class="muted small">Every route shared as a short code. A route's players count each player once per route, not counting its maker, so the column doesn't add up to Players since launch. Our PC isn't counted, so a sample can show one fewer than "Raced by N" in game. Held routes are marked red. Alias codes (admin.py alias add) are listed under their route's code with their label and the players who loaded the route through them; those players are in the route's count too.</p>
+      <div id="routes-missing" class="muted">The route list appears when the server sends it.</div>
+      <div id="routes-box" hidden>
+        <div class="controls rcontrols">
+          <input id="rsearch" type="search" placeholder="Search name, creator or code" aria-label="Search routes" autocomplete="off">
+          <div class="seg" role="group" aria-label="Which routes" id="rfilter">
+            <button type="button" data-v="all">All</button><button type="button" data-v="players">Players' routes</button><button type="button" data-v="ours">Samples</button><button type="button" data-v="held">Held</button>
+          </div>
+        </div>
+        <p class="small" id="rcount"></p>
+        <div class="scroll">
+          <table class="routes">
+            <thead><tr id="rhead"></tr></thead>
+            <tbody id="rbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="sect" id="dailyfold">
+      <summary><h2>Daily tables</h2> <span class="muted small">short codes, link clicks, GameBanana</span></summary>
+      <h3 class="th3">Short codes per day</h3>
       <div class="scroll">
-        <table class="routes">
-          <thead><tr id="rhead"></tr></thead>
-          <tbody id="rbody"></tbody>
+        <table>
+          <thead><tr><th>Day</th><th>Codes shared</th><th>Route updates</th><th>Ghosts uploaded</th><th>Code lookups</th>
+            <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th><th>Menu opened (online)</th>
+            <th>Back from the day before</th></tr></thead>
+          <tbody id="days"></tbody>
         </table>
       </div>
-    </div>
+      <p class="muted small">A dash means that day's counts expired before they were saved. Menu opened counts the players
+        whose game asked for the route of the week (once a session, at the first menu: online, BoxRun 2.0.6 and later).
+        Back from the day before is how many of them also opened it the day before.</p>
 
-    <h2>Short codes per day</h2>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>Day</th><th>Codes shared</th><th>Route updates</th><th>Ghosts uploaded</th><th>Code lookups</th>
-          <th>Players who loaded a code</th><th>Players who shared</th><th>Reports</th><th>Menu opened (online)</th>
-          <th>Back from the day before</th></tr></thead>
-        <tbody id="days"></tbody>
-      </table>
-    </div>
-    <p class="muted small">A dash means that day's counts expired before they were saved. Menu opened counts the players
-      whose game asked for the route of the week (once a session, at the first menu: online, BoxRun 2.0.6 and later).
-      Back from the day before is how many of them also opened it the day before.</p>
+      <h3 class="th3">Link clicks per day</h3>
+      <div id="go-missing" class="muted">No /go links yet (admin.py go add).</div>
+      <div class="scroll" id="go-box" hidden>
+        <table>
+          <thead><tr id="gohead"></tr></thead>
+          <tbody id="gobody"></tbody>
+        </table>
+      </div>
+      <p class="muted small">Clicks on api.boxrun.gg/go/&lt;name&gt; per Pacific day, a plain count: link previewers, our PC and
+        more than 30 an hour from one address aren't counted. Nothing about who clicked is kept.</p>
 
-    <h2>Link clicks per day</h2>
-    <div id="go-missing" class="muted">No /go links yet (admin.py go add).</div>
-    <div class="scroll" id="go-box" hidden>
-      <table>
-        <thead><tr id="gohead"></tr></thead>
-        <tbody id="gobody"></tbody>
-      </table>
-    </div>
-    <p class="muted small">Clicks on api.boxrun.gg/go/&lt;name&gt; per Pacific day, a plain count: link previewers, our PC and
-      more than 30 an hour from one address aren't counted. Nothing about who clicked is kept.</p>
+      <h3 class="th3">GameBanana per day</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Day</th><th>Downloads (total)</th><th>New downloads</th><th>Views (total)</th><th>Likes (total)</th></tr></thead>
+          <tbody id="gb"></tbody>
+        </table>
+      </div>
+      <p class="muted small">Totals as of the end of each day, read from GameBanana by the server. Today's row is live.</p>
 
-    <h2>GameBanana per day</h2>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>Day</th><th>Downloads (total)</th><th>New downloads</th><th>Views (total)</th><th>Likes (total)</th></tr></thead>
-        <tbody id="gb"></tbody>
-      </table>
-    </div>
-    <p class="muted small">Totals as of the end of each day, read from GameBanana by the server. Today's row is live.</p>
+    </details>
 
-    <h2>Discord</h2>
-    <p>Discord doesn't share join numbers without a bot. Joins per invite are under the server's Server Settings &gt;
-      Invites, and member growth under Server Insights. A bot that reads them would need setting up from Marcus's
-      Discord account, so it's left for later.</p>
+    <details class="sect" id="howcounted">
+      <summary><h2>How it's counted</h2></summary>
+      <ul class="small how">
+        <li>Times are Pacific. Our own PC and test routes are left out.</li>
+        <li>Players by address (addresses that loaded a code, menu players, back from the day before) are counted by scrambled internet address, so a household can count once and a player on two networks twice. Menu players: every online game asks for the route of the week once a session, at its first menu (BoxRun 2.0.6 and later).</li>
+        <li>Installs (players today, the funnel, weekly actives, runs) come from games with counts on, 2.1 and later. New installs only in the funnel: a 2.0.x player who updated sends no first-time steps or returns, though its days and runs count in the weekly numbers. An install's first day is the Pacific day of its first map load.</li>
+        <li>Funnel steps: at least once, any day, filed under the first day. Floor: counts off, offline and pre-2.1 games send nothing. Menu: queued, not seen. A lost answer can count a step twice (under 1%).</li>
+        <li>The main bars use first days 2 to 8 days ago, so every next-day window has closed. Week-1 return (back on days 7 to 13) uses first days 14 to 20 days ago. Each row's change is against the 7 first days before. The biggest loss is marked within the first session (first load to counted finish).</li>
+        <li>Downloads → first load: first loads since 2.1 over GameBanana downloads since 2.1 (the total less 3,800 from files removed before 2.1). A lower bound on installs: update downloads inflate the downloads, and games with counts off or offline send no first load.</li>
+        <li>2.3 installs: the steps between the first load and the first run, sent only by installs first loaded on 2.3 (counted from Nov 10), as shares of the 2.3 map loads. Shot at it needs no Menu seen and READY no GO TO START (a walk-in gate start), so there's no loss line into them.</li>
+        <li>This week against last week: this week's complete days (Monday so far on a Monday) against last week's same days. Weekly actives add up each install's first play day of the week, so they're distinct installs.</li>
+      </ul>
+    </details>
 
     <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
   </section>
   <p class="error" id="error" role="alert"></p>
 </div>
 <script src="/stats/funnel.js"></script>
+<script src="/stats/overview.js"></script>
 <script src="/stats/week.js"></script>
 <script>
   // Local preview (127.0.0.1/localhost) reads /v1/stats from a dev proxy; ?synth=1 asks it for test hours and samples.
@@ -779,7 +913,7 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") collapse(); });
 
   function redraw() {
-    if (!data) return;
+    if (!data || !$("more").open || !charts.size) return;   // the More charts fold draws when opened
     const f = frame(data);
     for (const ch of charts.values()) draw(ch, f);
     const notes = [];
@@ -798,71 +932,6 @@
     redraw();
   });
   new ResizeObserver(() => { if (data) redraw(); }).observe($("grid"));
-
-  // ---- tiles ----
-  function spark(values) {
-    const v = values.filter((x) => x !== null && x !== undefined);
-    if (v.length < 2) return null;
-    const svg = el("svg", { viewBox: "0 0 100 28", preserveAspectRatio: "none", "aria-hidden": "true" });
-    const max = Math.max(...v, 1), min = Math.min(...v, 0);
-    const P = (x, i) => `${(i / (v.length - 1)) * 100},${26 - ((x - min) / (max - min || 1)) * 24}`;
-    el("polyline", { class: "spk", points: v.map(P).join(" "), "vector-effect": "non-scaling-stroke" }, svg);
-    const [lx, ly] = P(v[v.length - 1], v.length - 1).split(",");
-    // a zero-length round-capped line stays a circle when the sparkline stretches
-    el("line", { class: "spk-dot", x1: lx, y1: ly, x2: lx, y2: ly, "vector-effect": "non-scaling-stroke" }, svg);
-    return svg;
-  }
-  // n: a number, or text as it stands ("12%", "Pending"); beside: a smaller count next to it (the players behind a ratio)
-  function tile(n, label, sub, sp, beside) {
-    const d = document.createElement("div");
-    d.className = "tile";
-    d.innerHTML = '<div class="n"></div><div class="k"></div><div class="s"></div>';
-    const big = d.querySelector(".n");
-    big.textContent = typeof n === "string" ? n : fmt(n);
-    if (n === "Pending") big.classList.add("pend");
-    if (beside) { const s = document.createElement("span"); s.className = "beside"; s.textContent = beside; big.appendChild(s); }
-    d.querySelector(".k").textContent = label;
-    d.querySelector(".s").textContent = sub;
-    const svg = sp && spark(sp);
-    if (svg) d.appendChild(svg);
-    return d;
-  }
-  function renderTiles(b) {
-    const days = b.days || [];
-    const today = days[days.length - 1] || {};
-    const total = (k) => days.reduce((s, d) => s + (d[k] || 0), 0);
-    const gb = b.gamebanana || {};
-    const now = b.generated ? b.generated * 1000 : Date.now();
-    const hours = (b.hours || []).filter((h) => toMs(h.t) > now - 24 * HOUR);
-    // per-hour lines end on the last complete hour: the hour still running is a partial count, and as the line's last
-    // point it always read as a drop (Marcus, 11-08), which the charts' bars don't show
-    const doneHours = hours.filter((h) => Math.floor(toMs(h.t) / HOUR) * HOUR + HOUR <= now);
-    const hourly = (k) => (doneHours.length ? doneHours.map((h) => h[k]) : null);
-    const samples = (b.gamebanana_samples || []).filter((s) => toMs(s.t) > now - 24 * HOUR).map((s) => s.downloads);
-    const sfx = hours.length ? ", last 24 h per hour" : "";
-    const once = (k) => (Number.isFinite(b[k]) ? "each counted once" : "the server doesn't send this yet");
-    // The running total since launch over the last 24 hours, as the Players chart draws it: start at the total minus
-    // the first-time players in those hours, add each hour's first-timers, end on the total.
-    const runSpark = (totalKey, newKey) => {
-      if (!Number.isFinite(b[totalKey]) || !hours.length || !hours.every((h) => Number.isFinite(h[newKey]))) return null;
-      let run = b[totalKey] - hours.reduce((s, h) => s + h[newKey], 0);
-      return [run].concat(hours.map((h) => (run += h[newKey])));
-    };
-    const runSfx = (k) => (runSpark(k, k === "players_total" ? "new_players" : "new_sharers") ? ", last 24 h" : "");
-    $("tiles").replaceChildren(
-      tile(gb.error ? null : gb.downloads, "GameBanana downloads", gb.error ? "GameBanana didn't answer" : "total, updates included" + (samples.length > 1 ? ", last 24 h" : ""), samples),
-      tile(Number.isFinite(b.players_total) ? b.players_total : null, "Players since launch", Number.isFinite(b.players_total) ? "loaded a code since launch, each counted once" + runSfx("players_total") : once("players_total"), runSpark("players_total", "new_players")),
-      tile(Number.isFinite(today.active) ? today.active : null, "Players today", "active" in today
-        ? "installs with counts on (2.1+) that opened the menu, " + (today.day || "")
-          + (Number.isFinite(today.players) ? ". " + fmt(today.players) + " addresses loaded a code" : "")
-        : "the server doesn't send this yet"),
-      tile(Number.isFinite(today.menu_players) ? today.menu_players : null, "Menu opened (online)", "menu_players" in today
-        ? "players today" + (Number.isFinite(today.menu_back) ? ", " + fmt(today.menu_back) + " back from yesterday" : "") + sfx
-        : "the server doesn't send this yet", hourly("menu_players")),
-      tile(total("codes"), "Codes shared since launch", "since " + (days[0] ? days[0].day : "launch") + sfx, hourly("codes")),
-      tile(Number.isFinite(b.sharers_total) ? b.sharers_total : null, "Players who shared since launch", once("sharers_total") + runSfx("sharers_total"), runSpark("sharers_total", "new_sharers")),
-      tile(today.sharers, "Players who shared today", (today.day || "") + sfx, hourly("sharers")));
-  }
 
   function renderTables(b) {
     const days = b.days || [];
@@ -906,83 +975,467 @@
     }
   }
 
-  // ---- the funnel (COUNT-6): the maths are in funnel.js, the same file stats/test/test_funnel.mjs checks ----
+  // ---- headline: four numbers (11-10, Marcus: "at a glance, the important numbers"); overview.js has the maths ----
+  const O = BoxRunOverview, FN = BoxRunFunnel;
+  const pctTxt = (x) => FN.pct(x);
+  const dShort = (day) => FN.dayLabel(day);
+  // GOAL-1's sign since review 6 (11-09, docs/BOXRUN-ROADMAP.md): a 7-day average of daily menu players by 11-30
+  const GOAL = { avg: 2000, by: "11-30" };
+  // Releases as ticks on the daily trends (GameBanana updates, Pacific days)
+  const RELEASES = [["2.1", "2026-11-02"], ["2.1.1", "2026-11-02"], ["2.1.2", "2026-11-03"], ["2.2", "2026-11-03"], ["2.2.1", "2026-11-05"],
+    ["2.3", "2026-11-08"], ["2.3.1", "2026-11-08"], ["2.3.2", "2026-11-09"]];
+  // A small line of complete days' values with a hover readout; today (partial) as a separate hollow point, not joined
+  // (a partial last point reads as a drop, Marcus 11-08). days: YYYY-MM-DD; fmtV formats a value for the tip.
+  function sparkline(days, vals, fmtV, todayV) {
+    const pts = vals.map((v, i) => [days[i], v, false]).filter(([d, v]) => d && v !== null && v !== undefined);
+    if (todayV !== null && todayV !== undefined && pts.length) pts.push([null, todayV, true]);
+    if (pts.length < 2) return null;
+    const box = document.createElement("div");
+    box.className = "sk";
+    const svg = el("svg", { viewBox: "0 0 100 30", preserveAspectRatio: "none", "aria-hidden": "true" });
+    const max = Math.max(...pts.map((p) => p[1]), 0), min = Math.min(...pts.map((p) => p[1]), 0);
+    const end = pts.length - 1, X = (i) => (i / end) * 100, Y = (v) => 28 - ((v - min) / (max - min || 1)) * 26;
+    const full = pts.filter((p) => !p[2]);
+    el("polyline", { class: "sl", points: full.map((p, i) => X(i) + "," + Y(p[1])).join(" "), "vector-effect": "non-scaling-stroke" }, svg);
+    const hair = el("line", { class: "sh", y1: 0, y2: 30, visibility: "hidden", "vector-effect": "non-scaling-stroke" }, svg);
+    const last = full.length - 1;
+    el("line", { class: "spk-dot", x1: X(last), y1: Y(full[last][1]), x2: X(last), y2: Y(full[last][1]), "vector-effect": "non-scaling-stroke" }, svg);
+    if (pts[end][2]) {
+      el("line", { class: "spk-dot hollow", x1: X(end), y1: Y(pts[end][1]), x2: X(end), y2: Y(pts[end][1]), "vector-effect": "non-scaling-stroke" }, svg);
+      el("line", { class: "spk-dot hole", x1: X(end), y1: Y(pts[end][1]), x2: X(end), y2: Y(pts[end][1]), "vector-effect": "non-scaling-stroke" }, svg);
+    }
+    const lab = document.createElement("div");
+    lab.className = "skl";
+    lab.append(el("span", { }), el("span", { }));
+    lab.children[0].textContent = dShort(full[0][0]);
+    lab.children[1].textContent = pts[end][2] ? "today" : dShort(full[last][0]);
+    const tip = document.createElement("div");
+    tip.className = "tip small"; tip.hidden = true;
+    box.append(svg, lab, tip);
+    box.addEventListener("pointermove", (e) => {
+      const r = svg.getBoundingClientRect();
+      const i = Math.max(0, Math.min(end, Math.round(((e.clientX - r.left) / r.width) * end)));
+      hair.setAttribute("x1", X(i)); hair.setAttribute("x2", X(i)); hair.setAttribute("visibility", "visible");
+      tip.textContent = (pts[i][2] ? "Today so far" : dShort(pts[i][0])) + ": " + fmtV(pts[i][1]);
+      tip.hidden = false;
+      tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, (X(i) / 100) * r.width - tip.offsetWidth / 2)) + "px";
+    });
+    box.addEventListener("pointerleave", () => { hair.setAttribute("visibility", "hidden"); tip.hidden = true; });
+    return box;
+  }
+  function hl(n, label, sub, sk) {
+    const d = document.createElement("div");
+    d.className = "hl";
+    const big = document.createElement("div");
+    big.className = "n";
+    big.textContent = n === null || n === undefined ? "–" : typeof n === "string" ? n : fmt(n);
+    const k = document.createElement("div"); k.className = "k"; k.textContent = label;
+    const s = document.createElement("div"); s.className = "s"; s.textContent = sub;
+    d.append(big, k, s);
+    if (sk) d.appendChild(sk);
+    return d;
+  }
+  const completeDays = (b, n) => (b.days || []).map((d) => d.day).filter((d) => d < b.today).slice(-n);
+  function renderHeadline(b) {
+    const dl = O.downloads(b), pl = O.players(b), pt = O.playersToday(b), p7 = O.players7(b);
+    const gdays = (b.gamebanana_days || []).map((d) => d.day).filter((d) => d < b.today).slice(1).slice(-14);
+    const plus = (x) => (x === null ? "–" : "+" + fmt(Math.round(x)));
+    const dots = (...a) => a.filter(Boolean).join(" · ");
+    $("headline").replaceChildren(
+      hl(dl.total, "GameBanana downloads", dl.total === null ? "GameBanana didn't answer"
+        : dots(plus(dl.today) + " today", dl.sameHour !== null ? "7-day average by this hour " + plus(dl.sameHour) : "", "updates count"),
+        sparkline(gdays, dl.spark, (v) => "+" + fmt(v) + " downloads", dl.sparkToday)),
+      hl(pl.total, "Addresses that loaded a code", pl.total === null ? "the server doesn't send this yet"
+        : dots("since launch, each once", pl.today !== null ? "+" + fmt(pl.today) + " first time today" : ""),
+        sparkline(completeDays(b, pl.spark.length), pl.spark, (v) => fmt(v) + " in all", pl.sparkToday)),
+      hl(pt.active, "Players today", pt.active === null ? "the server doesn't send this yet"
+        : dots("installs (2.1+) that opened the menu", pt.menu !== null ? fmt(pt.menu) + " menu players" : "",
+          pt.addresses !== null ? fmt(pt.addresses) + " addresses loaded a code" : "", pt.yesterday !== null ? "yesterday " + fmt(pt.yesterday) : ""),
+        sparkline(completeDays(b, pt.spark.length), pt.spark, (v) => fmt(v) + " players", pt.sparkToday)),
+      hl(p7.avg === null ? null : Math.round(p7.avg), "Players, 7-day average", p7.avg === null ? "needs 7 complete days of menu counts"
+        : dots("of " + fmt(GOAL.avg) + " by " + GOAL.by, "daily menu players " + FN.spanLabel(p7.from, p7.to)),
+        sparkline(p7.days, p7.spark, (v) => fmt(Math.round(v)) + " a day, 7-day average")));
+  }
+
+  // ---- the funnel as a picture: one bar per step on one scale (funnel.js picture) ----
+  let fview = { mode: "7d", day: null };
+  function fRow(cls, label, value, share, width, inner, title, change) {
+    const row = document.createElement("div");
+    row.className = "frow " + (cls || "");
+    const l = document.createElement("div"); l.className = "fl"; l.textContent = label;
+    const track = document.createElement("div"); track.className = "ftrack";
+    if (width !== null) { const f = document.createElement("div"); f.className = "ffill"; f.style.width = (width * 100).toFixed(2) + "%"; track.appendChild(f); }
+    if (inner) { const s = document.createElement("span"); s.textContent = inner; track.appendChild(s); }
+    const v = document.createElement("div"); v.className = "fv";
+    const bn = document.createElement("b"); bn.textContent = value;
+    v.appendChild(bn);
+    if (share) { const s = document.createElement("span"); s.className = "sh"; s.textContent = share; v.appendChild(s); }
+    const c = document.createElement("div"); c.className = "fc";
+    if (change !== null && change !== undefined) {
+      const pts = Math.round(change * 100);
+      c.textContent = pts > 0 ? "▲" + pts + " pts" : pts < 0 ? "▼" + -pts + " pts" : "±0";
+      c.title = "Against the 7 first days before";
+    }
+    if (title) row.title = title;
+    row.addEventListener("pointerenter", () => row.classList.add("on"));
+    row.addEventListener("pointerleave", () => row.classList.remove("on"));
+    row.append(l, track, v, c);
+    return row;
+  }
+  function line(cls, text, flag) {
+    const d = document.createElement("div");
+    d.className = cls;
+    d.textContent = text;
+    if (flag) { const f = document.createElement("span"); f.className = "flag"; f.textContent = flag; d.appendChild(f); }
+    return d;
+  }
+  // steps: funnel.js bars; base: what the shares are of ("first loads")
+  function drawSteps(out, steps, base, firstNote, bigLabel) {
+    steps.forEach((s, i) => {
+      if (i && s.loss !== null && s.lossN > 0) {
+        out.push(line("floss" + (s.biggest ? " big" : ""), `−${fmt(s.lossN)} ${s.lost} (${pctTxt(s.loss)} of ${base})`, s.biggest ? bigLabel || "Biggest loss" : ""));
+      } else if (i) { const g = document.createElement("div"); g.className = "fgap"; out.push(g); }
+      if (s.state === "pending") {
+        out.push(fRow("pending", s.label, s.n ? fmt(s.n) + " so far" : "–", "", null, s.ready ? "complete from " + dShort(s.ready) : "pending",
+          `${s.label}: the window is still open`));
+        return;
+      }
+      out.push(fRow(s.biggest ? "big" : "", s.label, fmt(s.n), pctTxt(s.share), s.width, "", `${s.label}: ${fmt(s.n)}, ${pctTxt(s.share)} of ${base}`, s.change));
+      if (!i && firstNote) out.push(line("fnote", firstNote));
+    });
+    return out;
+  }
+  const span = (a, b) => (a === b ? dShort(a) : FN.spanLabel(a, b));
   function renderFunnel(b) {
-    const F = BoxRunFunnel, v = F.view(b);
+    const v = FN.view(b);
     $("funnel-missing").hidden = !!v;
     $("funnel-box").hidden = !v;
     if (!v) return;
-    const pct = F.pct, day = F.dayLabel;
-    const plural = (k, one, many) => fmt(k) + " " + (k === 1 ? one : many);
-    // a return tile: the last 7 first days whose window has closed, pooled, with the newest of them named
-    const back = (r, label, what, firstOpens) => {
-      if (!r.cohorts) {
-        const sub = r.open ? `First numbers: ${day(r.open.day)}'s installs, ${fmt(r.open.back)} of ${fmt(r.open.load)} back so far, complete after ${day(r.open.closes)}`
-          : v.rows.length ? `First numbers from ${day(F.addDays(v.rows[0].day, firstOpens))}, for ${day(v.rows[0].day)}'s installs` : "No first loads counted yet";
-        return tile("Pending", label, sub);
-      }
-      const nw = r.newest;
-      return tile(pct(r.share), label, `${what}, of ${plural(r.load, "first load", "first loads")}, first ${r.cohorts > 1 ? "days " + F.spanLabel(r.from, r.to) : "day " + day(r.to)}. ` +
-        `Newest complete, ${day(nw.day)}: ${fmt(nw.back)} of ${fmt(nw.load)} (${pct(nw.share)})`, r.spark.length > 1 ? r.spark : null, fmt(r.back) + " back");
+    const p0 = FN.picture(b);
+    if (fview.mode === "day" && !p0.days.includes(fview.day)) fview.day = p0.days.find((d) => d < FN.addDays(b.today, -1)) || p0.days[0] || null;
+    const p = fview.mode === "day" ? FN.picture(b, fview.day) : p0;
+    for (const btn of $("fmode").querySelectorAll("button")) btn.setAttribute("aria-pressed", String(btn.dataset.v === fview.mode));
+    const sel = $("fday");
+    sel.hidden = fview.mode !== "day";
+    sel.replaceChildren(...p0.days.map((d) => { const o = document.createElement("option"); o.value = d; o.textContent = FN.dowLabel(d) + (d === b.today ? " (today)" : ""); o.selected = d === fview.day; return o; }));
+    const m = p.main, out = [];
+    $("fspan").textContent = !m.rows ? "" : (m.rows > 1 ? "First days " : "First day ") + span(m.from, m.to) + ", " + fmt(m.load) + " first loads"
+      + (fview.mode === "7d" ? " (2 to 8 days ago: every next-day window closed)" : "");
+    if (fview.mode === "7d" && p.install.share !== null) {
+      // the install step on its own scale: downloads since 2.1 full width, first loads solid inside, the rest dashed
+      const ib = p.install, rest = 1 - Math.min(1, ib.share);
+      const row = fRow("install", "Downloads → first load", "≥" + pctTxt(ib.share), "", Math.min(1, ib.share), "",
+        `Since Nov 2: ${fmt(ib.loads)} first loads of ${fmt(ib.downloads)} GameBanana downloads`, null);
+      const dash = document.createElement("div"); dash.className = "fdash"; dash.style.left = (Math.min(1, ib.share) * 100).toFixed(2) + "%";
+      const ds = document.createElement("span"); ds.textContent = "up to " + pctTxt(rest);
+      dash.appendChild(ds);
+      row.querySelector(".ftrack").appendChild(dash);
+      out.push(row, line("fnote", `Since Nov 2, its own scale: at least ${pctTxt(ib.share)} of ${fmt(ib.downloads)} downloads reached a first load (${fmt(ib.loads)}). The dashed rest, up to ${pctTxt(rest)}, is update downloads and lost installs, which can't be split; games with counts off send nothing.`),
+        line("frule", ""));
+    }
+    if (!m.load) out.push(line("muted", "No first loads on these days."));
+    else drawSteps(out, m.steps, "first loads", "Floor: games with counts off, offline and before 2.1 send nothing.", "Biggest loss in the first session");
+    const w = p.week1;
+    out.push(line("frule", ""));
+    if (w.state === "pending") {
+      out.push(fRow("pending", w.label, w.n ? fmt(w.n) + " so far" : "–", "", null, w.ready ? "complete from " + dShort(w.ready) : "pending",
+        "Week-1 return: back on days 7-13; no first day's window has closed yet"));
+      out.push(line("fnote", "Week-1 return: installs back on days 7 to 13, its own first days (14 to 20 days ago)."));
+    } else {
+      out.push(fRow("", w.label, fmt(w.n), pctTxt(w.share), w.width, "", `Back on days 7 to 13: ${fmt(w.n)} of ${fmt(w.load)} first loads`, w.change));
+      out.push(line("fnote", `Week-1 return, its own first days: ${span(w.from, w.to)}, ${fmt(w.n)} of ${fmt(w.load)} first loads.`));
+    }
+    $("fpic").replaceChildren(...out);
+    const f = p.first;
+    $("f23span").textContent = !f.load ? "No 2.3 installs counted on these first days (counted from Nov 10)."
+      : (f.rows > 1 ? "First days " : "First day ") + span(f.from, f.to) + (f.today ? " (today so far)" : "") + ", " + fmt(f.load) + " map loads on 2.3. Not every step needs the one before.";
+    $("fpic23").replaceChildren(...(f.load ? drawSteps([], f.steps, "2.3 map loads") : []));
+    renderHeat(v);
+  }
+  $("fmode").addEventListener("click", (e) => { const btn = e.target.closest("button"); if (!btn) return; fview.mode = btn.dataset.v; if (data) renderFunnel(data); });
+  $("fday").addEventListener("change", (e) => { fview.day = e.target.value; if (data) renderFunnel(data); });
+
+  // The cohort tables as heat tables: the share in each cell, its background one hue stepping with the value, shaded
+  // within each column (a stronger gold is a higher share for that step than on the other first days).
+  function heatTable(t, cols, rows) {
+    const head = document.createElement("thead"), tr = document.createElement("tr");
+    for (const c of ["First day"].concat(cols.map((c) => c[1]))) { const th = document.createElement("th"); th.textContent = c; tr.appendChild(th); }
+    head.appendChild(tr);
+    const cells = rows.map((r) => cols.map((c) => c[2](r)));
+    const range = cols.map((c, j) => {
+      const v = cells.map((row) => row[j].share).filter((x) => x !== null && x !== undefined);
+      return v.length ? [Math.min(...v), Math.max(...v)] : null;
+    });
+    const body = document.createElement("tbody");
+    rows.forEach((r, i) => {
+      const row = document.createElement("tr");
+      const d0 = document.createElement("td"); d0.textContent = FN.dowLabel(r.day) + (r.today ? " (today)" : ""); if (r.today) d0.className = "today";
+      row.appendChild(d0);
+      cols.forEach((c, j) => {
+        const td = document.createElement("td"), cell = cells[i][j];
+        td.textContent = cell.text;
+        if (cell.cls) td.className = cell.cls;
+        else if (cell.share !== null && cell.share !== undefined && range[j]) {
+          // one value in the column (or all equal): nothing to compare, so no shade
+          const [lo, hi] = range[j];
+          td.className = hi > lo ? "h" + (1 + Math.min(4, Math.floor(((cell.share - lo) / (hi - lo)) * 5))) : "h0";
+        }
+        if (cell.title) td.title = cell.title;
+        row.appendChild(td);
+      });
+      body.appendChild(row);
+    });
+    t.replaceChildren(head, body);
+  }
+  function renderHeat(v) {
+    const rows = v.rows.slice().reverse();
+    const ret = (k) => (r) => {
+      const w = r[k];
+      if (!r.load) return { text: "–", cls: "none" };
+      if (w.state === "closed") return { text: pctTxt(w.n / r.load), share: w.n / r.load, title: fmt(w.n) + " of " + fmt(r.load) };
+      return { text: "pending", cls: "pending", title: w.state === "open" ? `${fmt(w.n)} so far, the window runs to the end of ${dShort(w.closes)}` : `opens ${dShort(w.opens)}` };
     };
-    const tw = v.thisWeek, lw = v.lastWeek;
-    const wk = tw ? "week of " + day(tw.week) + " so far" : "";
-    const full = v.weeks.filter((w) => !w.current);             // the sparklines leave out the week still running
-    const wspark = (k) => (full.length > 1 ? full.map((w) => w[k]) : null);
-    const one = (x) => (x === null ? "–" : x.toFixed(1));
-    const c = v.completion;
-    const ib = F.installBound(b), mr = F.menuReturn(b);
-    $("ftiles").replaceChildren(
-      tile(v.firstLoads.n, "First loads today", "new installs, " + day(v.today), v.firstLoads.spark),
-      tile(pct(c.share), "First-run completion", `a counted finish, of ${plural(c.load, "first load", "first loads")}, first days ${F.spanLabel(c.from || c.to, c.to)}`,
-        null, fmt(c.count) + " finished"),
-      back(v.nextDay, "Next-day return", "back the next day", 1),
-      back(v.week1, "Week-1 return", "back on days 7-13", 7),
-      tile(ib.share === null ? "–" : "≤" + pct(ib.share), "Installs per download", ib.error || ib.downloads === null ? "GameBanana didn't answer"
-        : "at most, first loads per download since 2.1. Updates count as downloads",
-        null, ib.downloads === null ? "" : `${fmt(ib.loads)} of ${fmt(ib.downloads)}`),
-      tile(pct(mr.share), "Back from the day before", mr.day ? `back ${day(mr.day)}, of the day before's menu players. Every player by scrambled address, so it compares to launch` : "no menu counts yet",
-        mr.spark.length > 1 ? mr.spark : null, mr.day ? `${fmt(mr.back)} of ${fmt(mr.before)}` : ""),
-      tile(tw ? tw.actives : null, "Weekly actives", tw ? `installs that played, ${wk}` + (lw ? `. Last week ${fmt(lw.actives)}` : "") : "no counted play yet", wspark("actives")),
-      tile(tw ? one(tw.perPlayer) : "–", "Runs per player", tw ? `counted runs per weekly active, ${wk} (${one(tw.startedPer)} started, ${one(tw.finishedPer)} finished)` +
-        (lw ? `. Last week ${one(lw.perPlayer)}` : "") : "no counted play yet", wspark("perPlayer"), tw ? plural(tw.actives, "player", "players") : ""),
-      tile(tw ? pct(tw.communityShare) : "–", "Community share of runs", tw ? `on community routes and creator packs, the route of the week included, of ${plural(tw.kinds, "counted run", "counted runs")}, ${wk}` +
-        (lw ? `. Last week ${pct(lw.communityShare)}` : "") : "no counted play yet", wspark("communityShare"), tw ? plural(tw.community + tw.pack, "run", "runs") : ""));
-    const body = $("fbody");
-    body.textContent = "";
-    if (!v.rows.length) {
-      const tr = document.createElement("tr"), td = document.createElement("td");
-      td.colSpan = 18; td.className = "muted"; td.textContent = "No first loads counted yet.";
-      tr.appendChild(td); body.appendChild(tr);
-      return;
-    }
-    for (const r of v.rows.slice().reverse()) {
-      const tr = document.createElement("tr");
-      if (r.empty) tr.className = "empty";
-      const td = (main, sub, cls) => {
-        const d = document.createElement("td");
-        d.textContent = main;
-        if (cls) d.className = cls;
-        if (sub) { const s = document.createElement("span"); s.className = "share"; s.textContent = sub; d.appendChild(s); }
-        tr.appendChild(d);
-        return d;
-      };
-      td(F.dowLabel(r.day) + (r.today ? " (today)" : ""), r.empty ? "no first loads" : "", r.today ? "today" : "");
-      for (const k of ["load", "menu", "start", "finish", "count"]) td(fmt(r[k]), k === "load" ? "" : pct(r.load ? r[k] / r.load : null));
-      for (const k of ["back_d1", "back_w2"]) {
-        const w = r[k];
-        if (w.state === "closed") td(fmt(w.n), pct(r.load ? w.n / r.load : null));
-        else td("pending", w.state === "open" ? `${fmt(w.n)} so far, until ${day(w.closes)}` : "from " + day(w.opens), "pending")
-          .title = w.state === "open" ? `The window runs to the end of ${day(w.closes)} (Pacific).` : `The window opens on ${day(w.opens)}.`;
+    const pick = (k) => (r) => {
+      if (!r.load) return { text: "–", cls: "none" };
+      const n = k === "load" ? r.load : r[k];
+      return k === "load" ? { text: fmt(n), cls: "h0", title: fmt(n) + " first loads" } : { text: pctTxt(n / r.load), share: n / r.load, title: fmt(n) + " of " + fmt(r.load) };
+    };
+    heatTable($("heat-all"), [["load", "Map loads", pick("load")], ["menu", "Menu", pick("menu")], ["start", "Started", pick("start")],
+      ["finish", "Finished", pick("finish")], ["count", "Counted finish", pick("count")], ["d1", "Back next day", ret("back_d1")], ["w2", "Back days 7-13", ret("back_w2")]], rows);
+    const v23 = (k) => (r) => {
+      const n = r.v23[k], load = r.v23.load;
+      return k === "load" ? { text: fmt(n), cls: "h0", title: fmt(n) + " map loads on 2.3" } : { text: pctTxt(n / load), share: n / load, title: fmt(n) + " of " + fmt(load) };
+    };
+    heatTable($("heat-23"), [["load", "Map loads", v23("load")], ["menu", "Menu", v23("menu")], ["seen", "Menu seen", v23("seen")], ["shot", "Shot at it", v23("shot")],
+      ["press", "Pressed a button", v23("press")], ["go", "Went to a start", v23("go")], ["ready", "READY", v23("ready")], ["start", "Started", v23("start")],
+      ["finish", "Finished", v23("finish")], ["count", "Counted finish", v23("count")]], rows.filter((r) => r.v23));
+  }
+
+  // ---- play and return: small cards, last week through the same weekday beside each ----
+  let weekData = null;
+  function renderMini(b) {
+    const P = O.play(b, weekData), one = (x) => (x === null || x === undefined ? "–" : x.toFixed(1));
+    const card = (now, was, label, sub) => {
+      const d = document.createElement("div"); d.className = "mc";
+      const n = document.createElement("div"); n.className = "n"; n.textContent = now;
+      if (was !== null) { const w = document.createElement("span"); w.className = "was"; w.textContent = was; n.appendChild(w); }
+      const k = document.createElement("div"); k.className = "k"; k.textContent = label;
+      const s = document.createElement("div"); s.className = "s"; s.textContent = sub;
+      d.append(n, k, s);
+      return d;
+    };
+    const dow = (day) => FN.dowLabel(day).split(",")[0];
+    const thru = P.through ? (P.partial ? "Monday so far" : "this week through " + dow(P.through)) : "";
+    const lw = (x) => (x === null ? null : "last week " + x);
+    $("mini").replaceChildren(
+      card(P.actives.now === null ? "–" : fmt(P.actives.now), lw(P.actives.last === null ? null : fmt(P.actives.last)), "Weekly actives", "installs that played, " + thru),
+      card(one(P.perPlayer.now), lw(P.perPlayer.last === null ? null : one(P.perPlayer.last)), "Runs per player", "counted runs per weekly active, " + thru),
+      card(pctTxt(P.community.now), lw(P.community.last === null ? null : pctTxt(P.community.last)), "Community share", "of counted runs: community routes and creator packs, " + thru),
+      card(pctTxt(P.back.now), P.back.last === null ? null : "day before " + pctTxt(P.back.last), "Back from the day before",
+        P.back.day ? `all players, by address: ${fmt(P.back.n)} of ${fmt(P.back.of)} on ${dShort(P.back.day)}` : "no menu counts yet"),
+      card(P.board.now === null ? "–" : fmt(P.board.now), null, "Board entries", P.board.name ? "this week, " + P.board.name : "the board didn't answer"));
+  }
+
+  // ---- trends: players a day against the goal, and downloads with first loads; 30 days, or 48 hours as a switch ----
+  let trange = view.trange === "hours" ? "hours" : "days";
+  function trendData(b, which) {
+    const now = b.generated ? b.generated * 1000 : Date.now();
+    if (trange === "hours") {
+      const end = Math.floor(now / HOUR) * HOUR + HOUR, bk = [];
+      for (let t = end - 48 * HOUR; t < end; t += HOUR) bk.push({ t0: t, t1: t + HOUR, label: fDay.format(new Date(t)) + ", " + fHour.format(new Date(t)) + " to " + fHour.format(new Date(t + HOUR)) + " PT" });
+      if (which === "players") {
+        const rows = new Map((b.hours || []).map((h) => [Math.floor(toMs(h.t) / HOUR) * HOUR, h]));
+        return { bk, gran: "hour", kind: "bars", series: [{ name: "menu players", cls: "", vals: bk.map((x) => { const r = rows.get(x.t0); return r && Number.isFinite(r.menu_players) ? r.menu_players : x.t0 < now ? 0 : null; }) }] };
       }
-      // the 2.3 cohort (COUNT-11): shares of the 2.3 loads; a dash for a first day with none counted (before 11-09)
-      const v23 = r.v23;
-      for (const s of F.V23) {
-        if (!v23) td("–", "", s === "load" ? "first" : "").title = "Counted per version from 11-10, for steps sent from BoxRun 2.3 on.";
-        else td(fmt(v23[s]), s === "load" ? "" : pct(v23[s] / v23.load), s === "load" ? "first" : "");
-      }
-      body.appendChild(tr);
+      const pts = (b.gamebanana_samples || []).map((s) => ({ t: toMs(s.t), v: s.downloads })).sort((a, c) => a.t - c.t);
+      const at = (t) => { let v = null; for (const p of pts) { if (p.t <= t) v = p.v; else break; } return v; };
+      return { bk, gran: "hour", kind: "bars", series: [{ name: "downloads", cls: "", vals: bk.map((x) => {
+        if (x.t0 >= now || !pts.length || pts[0].t > x.t0) return null;
+        const a = at(x.t0), c = at(Math.min(x.t1, now)); return a === null || c === null ? null : Math.max(0, c - a); }) }] };
     }
+    const today = b.today, first = addDays(today, -29), bk = [];
+    for (let d = first; d <= today; d = nextDay(d)) bk.push({ t0: dayStart(d), t1: dayStart(nextDay(d)), day: d, label: fDay.format(new Date(dayStart(d) + 12 * HOUR)) + (d === today ? " (so far)" : "") });
+    const byDay = (list, k) => { const m = new Map((list || []).map((r) => [r.day, r])); return bk.map((x) => { const r = m.get(x.day); return r && Number.isFinite(r[k]) ? r[k] : null; }); };
+    if (which === "players") {
+      const mp = byDay(b.days, "menu_players");
+      const avg7 = mp.map((v, i) => { const w = mp.slice(Math.max(0, i - 6), i + 1); return i < bk.length - 1 && w.length === 7 && w.every((x) => x !== null) ? Math.round(w.reduce((s, x) => s + x, 0) / 7) : null; });
+      return { bk, gran: "day", kind: "lines", target: { v: GOAL.avg, label: "target " + fmt(GOAL.avg) + " by " + GOAL.by },
+        series: [{ name: "menu players", cls: "s1", vals: mp }, { name: "7-day average", cls: "s2", vals: avg7 }] };
+    }
+    const gd = b.gamebanana_days || [], m = new Map();
+    gd.forEach((d, i) => { if (i) m.set(d.day, d.downloads - gd[i - 1].downloads); });
+    const f0 = ((b.funnel || [])[0] || {}).day;
+    return { bk, gran: "day", kind: "lines", series: [{ name: "downloads", cls: "s1", vals: bk.map((x) => (m.has(x.day) ? m.get(x.day) : null)) },
+      { name: "first loads", cls: "s2", vals: byDay(b.funnel, "load").map((v, i) => (v === null && f0 && bk[i].day >= f0 ? 0 : v)) }] };
+  }
+  const TRENDS = [
+    { id: "players", title: "Players a day", sub: { day: "daily menu players (every online player, by address), today so far", hour: "menu players per hour" } },
+    { id: "downloads", title: "Downloads and first loads", sub: { day: "new GameBanana downloads and first loads (2.1+) per day", hour: "new downloads per hour, from 15-minute samples (first loads come by day)" } },
+  ];
+  const tcharts = new Map();
+  function buildTrends() {
+    $("trends").replaceChildren(...TRENDS.map((c) => {
+      const card = document.createElement("div");
+      card.className = "tc";
+      card.innerHTML = '<h3></h3><div class="sub"><span class="what"></span><span class="legend"></span></div><div class="plot" tabindex="0" role="img"></div>';
+      card.querySelector("h3").textContent = c.title;
+      const plot = card.querySelector(".plot");
+      const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; plot.appendChild(tip);
+      const ch = { c, card, plot, tip, svg: null };
+      tcharts.set(c.id, ch);
+      plot.addEventListener("pointermove", (e) => trendHover(ch, e.clientX));
+      plot.addEventListener("pointerleave", () => trendHover(ch, null));
+      plot.addEventListener("blur", () => trendHover(ch, null));
+      plot.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" || !ch.d) return;
+        e.preventDefault();
+        const n = ch.d.bk.length;
+        ch.i = ch.i === undefined || ch.i === null ? (e.key === "ArrowLeft" ? n - 1 : 0) : Math.max(0, Math.min(n - 1, ch.i + (e.key === "ArrowLeft" ? -1 : 1)));
+        showTrend(ch, ch.i);
+      });
+      return card;
+    }));
+  }
+  function drawTrend(ch) {
+    const d = trendData(data, ch.c.id);
+    ch.d = d;
+    ch.card.querySelector(".what").textContent = ch.c.sub[d.gran];
+    const lg = ch.card.querySelector(".legend");
+    lg.textContent = "";
+    if (d.series.length > 1) for (const s of d.series) {
+      const span = document.createElement("span"), key = document.createElement("span");
+      key.className = "key"; key.style.background = `var(--${s.cls})`;
+      span.append(key, document.createTextNode(s.name.charAt(0).toUpperCase() + s.name.slice(1)));
+      lg.appendChild(span);
+    }
+    const W = Math.max(200, ch.plot.clientWidth), H = 190, ml = 36, mr = d.kind === "lines" ? 84 : 6, mt = 14, mb = 20, pw = W - ml - mr, ph = H - mt - mb;
+    let max = d.target ? d.target.v : 0;
+    for (const s of d.series) for (const v of s.vals) if (v > max) max = v;
+    const y = nice(max), n = d.bk.length, slot = pw / n;
+    const X = (i) => ml + slot * (i + 0.5), Y = (v) => mt + ph - (v / y.top) * ph;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, "aria-hidden": "true" });
+    for (let v = 0; v <= y.top + 1e-9; v += y.step) {
+      el("line", { class: v === 0 ? "base" : "gl", x1: ml, x2: W - mr, y1: Y(v), y2: Y(v) }, svg);
+      el("text", { x: ml - 6, y: Y(v) + 4, "text-anchor": "end" }, svg).textContent = compact(v);
+    }
+    const every = Math.ceil(n / 6);
+    d.bk.forEach((x, i) => {
+      const lab = d.gran === "hour" ? (ptHour(x.t0) % 12 === 0 ? (ptHour(x.t0) === 0 ? fDay.format(new Date(x.t0)) : fHour.format(new Date(x.t0))) : null)
+        : ((n - 1 - i) % every === 0 ? fDay.format(new Date(x.t0 + 12 * HOUR)) : null);
+      if (lab) el("text", { x: X(i), y: H - 4, "text-anchor": X(i) < ml + 20 ? "start" : X(i) > W - mr - 20 ? "end" : "middle" }, svg).textContent = lab;
+    });
+    // releases as ticks (days only): one per day, the versions of that day together
+    if (d.gran === "day") {
+      const byDay = new Map();
+      for (const [v, day] of RELEASES) byDay.set(day, (byDay.get(day) ? byDay.get(day) + ", " : "") + v);
+      let lastX = -Infinity;
+      for (const [day, vs] of byDay) {
+        const i = d.bk.findIndex((x) => x.day === day);
+        if (i < 0) continue;
+        el("line", { class: "rel", x1: X(i), x2: X(i), y1: mt, y2: mt + ph }, svg);
+        // a label per day (its last version), skipped when it would touch the one before; the tooltip names them all
+        if (X(i) - lastX < 30) continue;
+        lastX = X(i);
+        el("text", { class: "relt", x: X(i), y: mt - 3, "text-anchor": "middle" }, svg).textContent = vs.split(", ").pop();
+      }
+    }
+    if (d.target) {
+      el("line", { class: "target", x1: ml, x2: W - mr, y1: Y(d.target.v), y2: Y(d.target.v) }, svg);
+      el("text", { class: "dl", x: W - mr + 6, y: Y(d.target.v) + 4 }, svg).textContent = "target";
+    }
+    const marks = el("g", {}, svg);
+    ch.bars = null;
+    if (d.kind === "bars") {
+      const bw = Math.max(1, Math.min(22, slot - 2));
+      ch.bars = d.series[0].vals.map((v, i) => {
+        if (!v) return null;
+        const x0 = X(i) - bw / 2, y0 = Y(0), y1 = Y(v), r = Math.min(4, bw / 2, y0 - y1);
+        return el("path", { class: "bar", d: `M${x0},${y0}V${y1 + r}Q${x0},${y1} ${x0 + r},${y1}H${x0 + bw - r}Q${x0 + bw},${y1} ${x0 + bw},${y1 + r}V${y0}Z` }, marks);
+      });
+    } else {
+      const labs = [];
+      for (const s of d.series) {
+        // a line, broken where a value is missing; today's partial point hollow and joined by a dotted step
+        const full = s.vals.map((v, i) => (i === n - 1 ? null : v));
+        let path = "", pen = false;
+        full.forEach((v, i) => { if (v === null) { pen = false; return; } path += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
+        el("path", { class: "ln " + s.cls, d: path }, marks);
+        const tv = s.vals[n - 1], pv = full[n - 2];
+        if (tv !== null && tv !== undefined) {
+          if (pv !== null && pv !== undefined) el("path", { class: "ln part " + s.cls, d: `M${X(n - 2)},${Y(pv)}L${X(n - 1)},${Y(tv)}` }, marks);
+          el("circle", { class: "pt hollow " + s.cls, cx: X(n - 1), cy: Y(tv), r: 3.5 }, marks);
+        }
+        let li = -1; full.forEach((v, i) => { if (v !== null) li = i; });
+        if (li >= 0) labs.push(el("text", { class: "dl", x: W - mr + 6, y: Y(full[li]) + 4 }, marks));
+        if (li >= 0) labs[labs.length - 1].textContent = s.name;
+      }
+      // keep the end labels apart
+      labs.sort((a, c) => +a.getAttribute("y") - +c.getAttribute("y"));
+      for (let k = 1; k < labs.length; k++) { const a = +labs[k - 1].getAttribute("y"); if (+labs[k].getAttribute("y") - a < 13) labs[k].setAttribute("y", a + 13); }
+    }
+    ch.xh = el("line", { class: "xh", y1: mt, y2: mt + ph, visibility: "hidden" }, svg);
+    ch.dots = el("g", {}, svg);
+    ch.geo = { W, X, Y, ml, pw, slot, mt };
+    if (ch.svg) ch.svg.replaceWith(svg); else ch.plot.insertBefore(svg, ch.tip);
+    ch.svg = svg;
+    const last = d.series.map((s) => { const v = s.vals.filter((x) => x !== null); return s.name + " " + fmt(v[v.length - 1]); }).join(", ");
+    ch.plot.setAttribute("aria-label", `${ch.c.title}, ${ch.card.querySelector(".what").textContent}: latest ${last}`);
+  }
+  function trendHover(ch, clientX) {
+    if (!ch.svg || !ch.d) return;
+    if (clientX === null) { ch.i = null; showTrend(ch, null); return; }
+    const r = ch.svg.getBoundingClientRect(), xs = ((clientX - r.left) / r.width) * ch.geo.W;
+    ch.i = Math.max(0, Math.min(ch.d.bk.length - 1, Math.floor((xs - ch.geo.ml) / ch.geo.slot)));
+    showTrend(ch, ch.i);
+  }
+  function showTrend(ch, i) {
+    (ch.bars || []).forEach((b) => b && b.classList.remove("on"));
+    ch.dots.textContent = "";
+    if (i === null || i === undefined) { ch.xh.setAttribute("visibility", "hidden"); ch.tip.hidden = true; return; }
+    const { X, Y, W } = ch.geo, x = X(i);
+    if (ch.d.kind === "lines") {
+      ch.xh.setAttribute("x1", x); ch.xh.setAttribute("x2", x); ch.xh.setAttribute("visibility", "visible");
+      for (const s of ch.d.series) if (s.vals[i] !== null) el("circle", { class: "pt " + s.cls, cx: x, cy: Y(s.vals[i]), r: 4 }, ch.dots);
+    } else if (ch.bars && ch.bars[i]) ch.bars[i].classList.add("on");
+    ch.tip.textContent = "";
+    for (const s of ch.d.series) {
+      const row = document.createElement("div");
+      if (ch.d.series.length > 1) { const k = document.createElement("span"); k.className = "key"; k.style.background = `var(--${s.cls})`; row.appendChild(k); }
+      const bb = document.createElement("b"); bb.textContent = s.vals[i] === null ? "–" : fmt(s.vals[i]);
+      row.append(bb, document.createTextNode(" " + s.name));
+      ch.tip.appendChild(row);
+    }
+    const rel = ch.d.gran === "day" ? RELEASES.filter(([, day]) => day === ch.d.bk[i].day).map(([v]) => v) : [];
+    const when = document.createElement("div"); when.className = "t"; when.textContent = ch.d.bk[i].label + (rel.length ? " · released " + rel.join(", ") : ""); ch.tip.appendChild(when);
+    ch.tip.hidden = false;
+    const cw = ch.plot.clientWidth, px = cw * (x / W), tw = ch.tip.offsetWidth;
+    ch.tip.style.left = Math.max(0, Math.min(cw - tw, px + 10 + tw > cw ? px - tw - 10 : px + 10)) + "px";
+    ch.tip.style.top = ch.geo.mt + "px";
+  }
+  function renderTrends() {
+    if (!data) return;
+    if (!tcharts.size) buildTrends();
+    for (const btn of $("trange").querySelectorAll("button")) btn.setAttribute("aria-pressed", String(btn.dataset.v === trange));
+    for (const ch of tcharts.values()) drawTrend(ch);
+  }
+  $("trange").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    trange = btn.dataset.v;
+    view.trange = trange;
+    try { localStorage.setItem(PREFS, JSON.stringify(view)); } catch (err) {}
+    renderTrends();
+  });
+  new ResizeObserver(() => renderTrends()).observe($("trends"));
+  $("more").addEventListener("toggle", () => { if ($("more").open && data) { if (!charts.size) buildCards(); redraw(); } });
+
+  // The routes fold's line: counts only (the table opens under it)
+  function routeSummary(b) {
+    const all = Array.isArray(b.routes) ? b.routes : [];
+    const creators = new Set(all.map((r) => (r.creator || "").trim().toLowerCase()).filter(Boolean));
+    const ghosts = all.filter((r) => r.ghost).length, held = all.filter((r) => r.status === "held").length;
+    $("rsum").textContent = all.length ? `${fmt(all.length)} routes from ${fmt(creators.size)} creators · ${fmt(ghosts)} with a ghost · ${fmt(held)} held`
+      + (Number.isFinite(b.sharers_total) ? ` · ${fmt(b.sharers_total)} players have shared` : "") : "";
   }
 
   // ---- routes: Marcus's list of every shared route (private: behind the key, noindex) ----
@@ -1139,15 +1592,16 @@
   function schedule() { clearTimeout(timer); if (!document.hidden) timer = setTimeout(load, 60000); }
 
   function show(d) {
-    const first = !data;
     data = d;
     $("ask").hidden = true;
     $("stats").hidden = false;
     $("live").hidden = false;
-    if (first) buildCards();
-    renderTiles(data);
-    renderTables(data);
+    renderHeadline(data);
     renderFunnel(data);
+    renderMini(data);
+    renderTrends();
+    renderTables(data);
+    routeSummary(data);
     renderRoutes(data);
     redraw();
     updatedText();
@@ -1163,7 +1617,9 @@
     } catch (e) { err = e.message; }
     const el = $("week");
     el.className = "";
-    el.innerHTML = BoxRunWeek.render(b, Date.now(), err);
+    el.innerHTML = BoxRunWeek.render(b, Date.now(), err, { compact: true });
+    weekData = b;
+    if (data) renderMini(data);
   }
 
   async function load() {
