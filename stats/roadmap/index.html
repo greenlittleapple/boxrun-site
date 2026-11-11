@@ -416,7 +416,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Roadmap</h1>
-  <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#releases">Releases</a><a href="#board">All items</a><a href="#history" id="jump-history" hidden>Players and posts</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
+  <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#releases">Releases</a><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#board">All items</a><a href="#history" id="jump-history" hidden>Players and posts</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
   <p class="muted" id="sub">From <code>docs/BOXRUN-ROADMAP.md</code>.</p>
 
   <section id="ask" hidden>
@@ -1553,7 +1553,8 @@
     $("jump-strategy").hidden = !d.strategy;
     // Today and Next up first (Marcus 11-11), then the Map and the Big picture; what records the past (the finished
     // releases, the players chart, Strategy) sits under them in closed folds
-    const kids = [].concat(nowSection(d), nextAndGoal(d), mapSection(d), bigPicture(d), areasSection(d), releasesSection(d), boardSection(d));
+    // Today, then Releases (Marcus 11-11: "put Releases ... below Today"), then Next up, the Map and the Big picture
+    const kids = [].concat(nowSection(d), releasesSection(d), nextAndGoal(d), mapSection(d), bigPicture(d), areasSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
     const hist = historyFold(d.picture);
     if (hist) closing.append(hist);
