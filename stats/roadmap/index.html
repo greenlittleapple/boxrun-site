@@ -114,7 +114,7 @@
   ul.next.prio.plain { list-style: none; margin: 0; padding: 0; }
   ul.prio.plain > li { display: block; padding: 0.35rem 0; border-top: 1px solid var(--line); }
   ul.prio.plain > li:first-child { border-top: 0; padding-top: 0; }
-  .atag { margin-left: 0.45rem; color: var(--muted); font-size: 0.75rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 0.3rem; white-space: nowrap; vertical-align: 0.1em; }
+  .atag { margin-left: 0.45rem; color: var(--muted); font-size: 0.75rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 0.3rem; vertical-align: 0.1em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 
   .areas { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
   .area { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: 0.5rem 1.5rem; padding: 0.9rem 1rem; border-top: 1px solid var(--line); }
@@ -157,15 +157,6 @@
   details.relfold > summary .muted { font-size: 0.875rem; }
   details.relfold[open] > summary { border-bottom: 1px solid var(--line); }
   .rels > .rel + details.relfold, .rels > details.relfold + .rel { border-top: 1px solid var(--line); }
-  .meter { margin-top: 0.7rem; }
-  .meter .top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-  .meter .big { font: 800 2rem/1 var(--display); }
-  .meter .of { color: var(--muted); font-size: 0.875rem; }
-  .track-bar { position: relative; height: 0.7rem; border-radius: 4px; background: var(--grid); margin: 0.4rem 0 0.25rem; }
-  .track-bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--bar); }
-  .track-bar .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
-  .track-bar .mark.from { background: var(--muted); }
-  .meter .note { color: var(--muted); font-size: 0.8rem; }
   .linkbtn { background: none; border: 0; padding: 0; color: var(--link); font: inherit; font-size: 0.875rem; text-decoration: underline; cursor: pointer; }
 
   .controls { margin: 0.75rem 0 0.4rem; gap: 0.5rem 0.9rem; }
@@ -197,6 +188,153 @@
   .card .body dd { margin: 0; max-width: 52rem; }
   @media (max-width: 480px) { .card .body dl { grid-template-columns: minmax(0, 1fr); gap: 0 0; } .card .body dd { margin-bottom: 0.4rem; } }
   section.closing > details { margin-top: 1.5rem; }
+  /* ---- the Big picture (growth review 7, 11-11): five parts above Today; the maths in /stats/picture.js ---- */
+  nav.jump { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin: 0.35rem 0 0.1rem; font-size: 0.9rem; }
+  .bp h3.bph { font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; margin: 1.6rem 0 0.6rem; }
+  .bp > .bpart:first-of-type h3.bph { margin-top: 0.4rem; }
+  .bp .panel { min-width: 0; }
+  .bpline { color: var(--muted); font-size: 0.9rem; margin: 0 0 0.35rem; max-width: 62rem; overflow-wrap: anywhere; }
+  .bpline strong { color: var(--ink); font-weight: 700; }
+  .rt { position: relative; margin: 0.5rem 0 0.35rem; }
+  .rt > * { position: absolute; }
+  .rline, .rdone { border-radius: 2px; }
+  .rline { background: var(--line); }
+  .rdone { background: var(--bar); box-shadow: 0 0 8px var(--wash); }
+  .ring { width: 26px; height: 26px; border-radius: 50%; border: 4px solid var(--line); background: var(--panel); }
+  .ring.passed { border-color: var(--bar); }
+  .rnow { width: 14px; height: 14px; border-radius: 50%; background: var(--bar); box-shadow: 0 0 0 3px var(--panel), 0 0 10px var(--bar); }
+  .rnowlab { font: 700 0.8rem/18px var(--body); color: var(--gold-ink); white-space: nowrap; }
+  .rtick { background: var(--muted); }
+  .rplan { font-size: 0.75rem; line-height: 16px; color: var(--muted); white-space: nowrap; }
+  .rstem { width: 1px; background: var(--muted); opacity: 0.55; }
+  .rlab { overflow-wrap: anywhere; }
+  .rlab .rd { display: block; font: 800 1.25rem/1.1 var(--display); letter-spacing: 0.02em; }
+  .rlab .rn { display: block; font-weight: 700; font-size: 0.9rem; line-height: 1.3; }
+  .rlab .rx { display: block; color: var(--muted); font-size: 0.8rem; line-height: 1.35; margin-top: 0.1rem; }
+  .rlab.mid { text-align: center; }
+  .rlab.end { text-align: right; }
+  .pin { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--gold-ink); background: var(--panel); color: var(--ink);
+         font: 700 0.72rem/1 var(--body); padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+         font-variant-numeric: tabular-nums; vertical-align: middle; }
+  button.pin:hover, .pin.on { background: var(--bar); border-color: var(--bar); color: var(--night); }
+  span.pin { cursor: default; }
+  .rread { min-height: 1.5em; margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
+  .rread b { color: var(--ink); }
+
+  .splits { margin-top: 0.9rem; border-top: 1px solid var(--line); }
+  .sp { display: grid; grid-template-columns: minmax(10rem, 15rem) minmax(8rem, 1fr) 5rem 11.5rem 10rem; gap: 0.15rem 1rem;
+        align-items: center; padding: 0.55rem 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+  .sp:last-child { border-bottom: 0; }
+  .sp.head { color: var(--muted); font-size: 0.78rem; padding: 0.4rem 0; }
+  .spm { font-weight: 700; line-height: 1.3; }
+  .spbar { position: relative; height: 0.65rem; background: var(--grid); border-radius: 3px; margin-top: 0.7rem; }
+  .spfill { position: absolute; inset: 0 auto 0 0; background: var(--bar); border-radius: 3px; }
+  .spghost { position: absolute; top: -4px; bottom: -4px; width: 8px; margin-left: -4px; border: 2px solid var(--blue-ink); border-radius: 3px; background: var(--panel); }
+  .spgl { position: absolute; bottom: calc(100% + 1px); left: 50%; transform: translateX(-50%); font-size: 0.65rem; line-height: 1; color: var(--blue-ink); }
+  .spn { font: 800 1.25rem/1 var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+  .spd { font-size: 0.85rem; }
+  .spd.ahead { color: var(--ok-ink); }
+  .spd.behind { color: var(--red-ink); }
+  .spd.none, .spt { color: var(--muted); font-size: 0.85rem; }
+  @media (max-width: 600px) {
+    .sp { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "m m" "b b" "n d" "t t"; gap: 0.2rem 0.75rem; }
+    .sp.head { display: none; }
+    .spm { grid-area: m; } .spbar { grid-area: b; } .spn { grid-area: n; text-align: left; } .spd { grid-area: d; } .spt { grid-area: t; }
+  }
+
+  .eng { position: relative; }
+  .egrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 2.6rem; padding: 0 2.4rem 0 1.8rem; }
+  .ecol { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
+  .estage { margin: 0 0 2.6rem; font: 700 0.9rem var(--body); color: var(--muted); }
+  .estep { display: none; }
+  .node { position: relative; background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; min-width: 0; }
+  .node.good { border-left-color: var(--ok-ink); }
+  .node.problem { border-left-color: var(--red-ink); }
+  .node.open { border: 1px dashed var(--muted); }
+  .node.open .nn, .node.open .nbig { color: var(--muted); }
+  .node.sel { box-shadow: 0 0 0 2px var(--gold); }
+  .nb { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 0.55rem 0.7rem 0.6rem;
+        cursor: pointer; border-radius: 7px; overflow-wrap: anywhere; }
+  .nn { display: block; font-weight: 700; line-height: 1.25; }
+  .nv { display: block; margin-top: 0.2rem; line-height: 1.2; }
+  .nbig { font: 800 1.45rem/1 var(--display); font-variant-numeric: tabular-nums; }
+  .nrest { color: var(--muted); font-size: 0.8rem; }
+  .chip { display: inline-block; margin-top: 0.4rem; padding: 0 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; line-height: 1.5;
+          border: 1px solid var(--line); color: var(--muted); }
+  .chip.good { border-color: var(--ok-ink); color: var(--ok-ink); }
+  .chip.problem { border-color: var(--red-ink); color: var(--red-ink); }
+  .chip.open { border-style: dashed; }
+  .nfeeds { display: none; color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
+  .npins { position: absolute; right: 0.5rem; bottom: 0.5rem; display: flex; gap: 0.25rem; }
+  .esvg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+  .edge.back { stroke-dasharray: 5 4; }
+  .eah { fill: var(--muted); }
+  .ebelow { margin-top: 1.3rem; padding: 0 2.4rem 0 1.8rem; }
+  .ebelow h4 { margin: 0 0 0.45rem; font: 700 0.9rem var(--body); color: var(--muted); }
+  .erow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem 2.6rem; }
+  .edetail { margin-top: 1rem; font-size: 0.9rem; overflow-wrap: anywhere; }
+  .edetail h4 { margin: 0 0 0.3rem; font: 800 1.1rem/1.2 var(--display); letter-spacing: 0.02em; }
+  .edetail p { margin: 0.25rem 0; max-width: 60rem; }
+  .edetail .hint { color: var(--muted); margin: 0; }
+  .dblock { border-top: 1px solid var(--line); margin-top: 0.55rem; padding-top: 0.5rem; }
+  .lbl { color: var(--muted); }
+  @media (max-width: 900px) {
+    .egrid { display: block; padding: 0; }
+    .ecol { gap: 0.6rem; }
+    .estage { margin: 0 0 0.45rem; }
+    .estep { display: block; height: 1.7rem; position: relative; }
+    .estep::before { content: ""; position: absolute; left: 50%; top: 0.25rem; width: 0.7rem; height: 0.7rem; margin-left: -0.35rem;
+                     border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); }
+    .esvg { display: none; }
+    .nfeeds { display: block; }
+    .ebelow { padding: 0; }
+    .erow { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+  }
+
+  .pchart { position: relative; }
+  .pchart svg { display: block; width: 100%; overflow: visible; }
+  .pchart svg:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+  .pchart text { fill: var(--muted); font: 11px var(--body); }
+  .bpc .grid { stroke: var(--grid); }
+  .bpc .ret { fill: var(--s1); } .bpc .new { fill: var(--s2); }
+  .bpc .ret.partial { fill: none; stroke: var(--s1); stroke-width: 1.5; } .bpc .new.partial { fill: none; stroke: var(--s2); stroke-width: 1.5; }
+  .bpc .hatchline { stroke: var(--muted); stroke-width: 2; }
+  .bpc .hatch { stroke: var(--muted); stroke-width: 1; }
+  .bpc .short { fill: var(--wash); stroke: var(--gold-ink); stroke-width: 1.5; }
+  .bpc .short.unknown { fill: none; }
+  .bpc .other { fill: none; stroke: var(--blue-ink); stroke-width: 1.5; stroke-dasharray: 3 2; }
+  .bpc .rtk { stroke: var(--ink); stroke-width: 1.5; }
+  .bpc .rstemc { stroke: var(--muted); stroke-width: 1; opacity: 0.6; }
+  .bpc text.rlabel { fill: var(--ink); }
+  .bpc .rbg { fill: var(--panel); }
+  .bpc .patch { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .bpc .hot { fill: var(--ink); opacity: 0; }
+  .bpc .hot.on { opacity: 0.07; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-size: 0.8rem; color: var(--muted); margin: 0 0 0.5rem; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .legend svg { width: 16px; height: 14px; flex: none; overflow: visible; }
+  .cread { min-height: 3em; font-size: 0.85rem; margin: 0.4rem 0 0; overflow-wrap: anywhere; }
+  .cread div { margin: 0.1rem 0; }
+  .cread .lbl { margin-right: 0.3rem; }
+
+  ol.decs { list-style: none; margin: 0; padding: 0; }
+  .dec { display: block; padding: 0.6rem 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; font-size: 0.9rem; }
+  .dec:first-child { border-top: 0; padding-top: 0; }
+  .dchip { font: 700 0.8rem/1.5 var(--body); border: 1px solid var(--line); border-radius: 4px; padding: 0 0.35rem; margin-right: 0.45rem;
+           white-space: nowrap; color: var(--muted); }
+  .dchip.due { color: var(--gold-ink); border-color: var(--gold-ink); }
+  .dec .pin { margin-right: 0.4rem; }
+  .dtext { font-weight: 700; }
+  .dline { display: block; font-size: 0.85rem; margin-top: 0.15rem; }
+  .decs h4 { margin: 0.9rem 0 0.2rem; font: 700 0.9rem var(--body); color: var(--muted); }
+
+  .alts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+  .alt h4 { margin: 0 0 0.3rem; font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; }
+  .alt p { margin: 0.3rem 0 0; font-size: 0.875rem; overflow-wrap: anywhere; }
+  .alt .what { color: var(--ink); }
+  @media (max-width: 760px) { .alts { grid-template-columns: minmax(0, 1fr); } }
+  .bpsrc { margin: 1rem 0 0; }
 </style>
 </head>
 <body>
@@ -207,6 +345,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Roadmap</h1>
+  <nav class="jump" aria-label="On this page"><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#today">Today</a><a href="#areas">Areas</a><a href="#releases">Releases</a><a href="#board">All items</a></nav>
   <p class="muted" id="sub">From <code>docs/BOXRUN-ROADMAP.md</code>.</p>
 
   <section id="ask" hidden>
@@ -224,6 +363,7 @@
   <p class="small"><button class="plain" id="forget" type="button">Use a different key</button></p>
 </div>
 <script src="/stats/pages.js"></script>
+<script src="/stats/picture.js"></script>
 <script>
   "use strict";
   const { el, $ } = Stats;
@@ -241,7 +381,6 @@
     run: [["circle", { cx: 12, cy: 12, r: 9 }], ["path", { d: "M12 3a9 9 0 0 1 0 18z", fill: "currentColor" }]],
     wait: [["circle", { cx: 12, cy: 8, r: 4 }], ["path", { d: "M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" }]],
     next: [["path", { d: "M4 12h15M13 6l6 6-6 6" }]],
-    goal: [["circle", { cx: 12, cy: 12, r: 9 }], ["circle", { cx: 12, cy: 12, r: 5 }], ["circle", { cx: 12, cy: 12, r: 1.5, fill: "currentColor" }]],
     check: [["path", { d: "M4 12.5l5 5L20 6.5" }]],
   };
   function icon(name) {
@@ -258,7 +397,6 @@
   const whoTags = (it) => it.who_set.map((w) => el("span", { className: "w " + w, title: w === "M" ? "Marcus's hands" : "Coordinator and workers", text: w }));
   const idLink = (id) => (href(id) ? el("a", { className: "chipid", href: href(id), text: id }) : el("span", { className: "chipid", text: id }));
   const pct = (x) => (Math.round(x * 1000) / 10).toFixed(1) + "%";
-  const shortDay = (s) => String(s || "").replace(/^\d{4}-/, "");
 
   // A state's text without its own first word, which the pill already says: "built, waits for a pass" -> "waits for a pass".
   function afterWord(s, cls) {
@@ -277,7 +415,7 @@
     const out = [];
     const today = d.today || {};
     const parts = today.parts || [];
-    out.push(el("h2", null, "Today", today.title ? el("span", { className: "aside", text: today.title.replace(/^Today\s*\(?/, "").replace(/\)$/, "") }) : null));
+    out.push(el("h2", { id: "today" }, "Today", today.title ? el("span", { className: "aside", text: today.title.replace(/^Today\s*\(?/, "").replace(/\)$/, "") }) : null));
 
     // The two boxes show Today's "Building now (C)" and "Needs Marcus" lists as written, nothing inferred.
     const run = el("div", { className: "box run" }, el("h3", null, icon("run"), "Building now", el("span", { className: "w C", text: "C" })));
@@ -338,7 +476,7 @@
   // The day a release went out, from its Target ("released Mon 11-09 ~15:45 PST" -> "Mon 11-09").
   const relDay = (r) => { const m = text(r.target).match(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{1,2}-\d{1,2}\b/); return m ? m[0] : ""; };
   function releasesSection(d) {
-    const out = [el("h2", { text: "Releases" })];
+    const out = [el("h2", { id: "releases", text: "Releases" })];
     const box = el("div", { className: "rels" });
     const rels = d.releases || [];
     const done = rels.filter((r) => r.state_class === "done");
@@ -489,7 +627,7 @@
       } else box.append(el("div", { className: "area" }, el("div", null, head, due), right));
     }
     const when = d.updated ? Stats.when(d.updated) : "";
-    return [el("h2", null, "Areas", el("span", { className: "aside", text: "by area" + (when ? ", updated " + when : "") })), box];
+    return [el("h2", { id: "areas" }, "Areas", el("span", { className: "aside", text: "by area" + (when ? ", updated " + when : "") })), box];
   }
   // “a board” -> “A board”: the Plan follows its bold label, so it starts lower-case
   function capFirst(inl) {
@@ -498,6 +636,7 @@
     return out;
   }
 
+  // Next up across the row (the GOAL-1 card beside it went 11-11: the Big picture's splits carry players a day against it)
   function nextAndGoal(d) {
     const nextIds = (d.next || []).filter((i) => byId.has(i));
     const nb = d.priorities ? prioBox(d.priorities) : el("div", { className: "box" }, el("h3", null, icon("next"), "Next up"));
@@ -514,37 +653,7 @@
           on: { click: () => { Object.assign(view.p, { state: "queued", who: "all", track: "all", q: "" }); view.save(); drawAll(); $("board").scrollIntoView({ block: "start" }); } } })));
     } else nb.append(el("p", { className: "lead", text: "Nothing queued." }));
 
-    const g = d.goal;
-    const gb = el("div", { className: "box" });
-    if (g) {
-      const it = byId.get(g.id);
-      const by = g.avg_by || g.by;
-      gb.append(el("h3", null, icon("goal"), g.id, by ? el("span", { className: "aside muted", style: "font: 400 0.9rem var(--body)", text: "by " + by }) : null));
-      if (it) gb.append(el("p", { className: "lead", style: "margin: 0" }, it.title + ". ", el("a", { href: "#" + g.id, text: "Full text and guardrails" })));
-      // The sign since review 6 (11-09): a 7-day average of daily menu players against its target (complete days from
-      // social's daily counts). Return: week-1 return of new installs, from its first day; nothing shown before then.
-      if (g.avg7 || g.avg_target) {
-        const a = g.avg7, m = el("div", { className: "meter" });
-        m.append(el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: a ? Stats.fmt(Math.round(a.value)) : "–" }), " players a day, 7-day average"),
-          g.avg_target ? el("span", { className: "of", text: "target " + Stats.fmt(g.avg_target) + (g.avg_by ? " by " + g.avg_by : "") }) : null));
-        if (g.avg_target) {
-          const tb = el("div", { className: "track-bar", role: "img", "aria-label": (a ? Stats.fmt(Math.round(a.value)) : "none") + " of " + Stats.fmt(g.avg_target) });
-          if (a) tb.append(el("span", { className: "fill", style: "width: " + Math.min(100, a.value / g.avg_target * 100).toFixed(1) + "%" }));
-          m.append(tb);
-        }
-        if (a) m.append(el("div", { className: "note", text: "Daily menu players over the last " + (a.days === 1 ? "complete day" : a.days + " complete days") + " (" + shortDay(a.from) + " to " + shortDay(a.to) + ")." }));
-        gb.append(m);
-      }
-      if (g.week1_first) {
-        const yr = String(d.updated || "").slice(0, 4) || "2026";
-        const wd = new Date(yr + "-" + g.week1_first + "T12:00:00Z");
-        const dow = isNaN(wd) ? "" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][wd.getUTCDay()] + " ";
-        gb.append(el("div", { className: "meter" }, el("div", { className: "top" }, el("span", null, el("span", { className: "big", text: "–" }), " week-1 return"),
-          el("span", { className: "of", text: "first number " + dow + g.week1_first }))));
-      }
-      gb.append(el("p", { className: "small muted", style: "margin: 0.6rem 0 0" }, "From ", el("code", { text: g.source }), "."));
-    } else gb.append(el("h3", null, icon("goal"), "Goal"), el("p", { className: "lead", text: "No adopted goal in the roadmap." }));
-    return [el("div", { className: "cols", style: "margin-top: 1.25rem" }, nb, gb)];
+    return [el("div", { className: "cols", style: "margin-top: 1.25rem; grid-template-columns: minmax(0, 1fr)" }, nb)];
   }
 
   // ---- the board ----
@@ -654,6 +763,517 @@
       el("div", { id: "groups" })];
   }
 
+  // ---- the Big picture (growth review 7, 11-11): the document's `picture` as five parts; maths in /stats/picture.js ----
+  const BP = BoxRunPicture;
+  const pic = { node: null, decision: null, day: null, doc: null };   // what's selected, kept across redraws
+  const narrow = matchMedia("(max-width: 600px)"), stacked = matchMedia("(max-width: 900px)");
+  const STAGE = { find: "Find", install: "Install", play: "Play", stay: "Stay" };
+  const PIN_HINT = "Numbered pins mark when each decision gets checked again; point at one to read it.";
+  // the viewer's Pacific day, as the stats page counts days
+  const ptToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: Stats.TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  function sv(tag, attrs, ...kids) {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) n.setAttribute(k, v);
+    for (const c of kids) if (c) n.append(c);
+    return n;
+  }
+  const svText = (attrs, t) => { const n = sv("text", attrs); n.textContent = t; return n; };
+  const pinSpan = (n) => el("span", { className: "pin", "aria-hidden": "true", text: n });
+  const lookText = (dc) => (dc.look_again ? BP.dowDay(dc.look_again) : dc.look_again_text);
+  const partName = (p, id) => ((p.parts || []).find((x) => x.id === id) || {}).name || id;
+
+  function bigPicture(d) {
+    const p = d.picture;
+    pic.doc = p || null;
+    if (!p) return [];
+    const sec = el("section", { className: "bp", id: "big-picture" }, el("h2", { text: "Big picture" }));
+    sec.append(routePart(p), enginePart(p), chartPart(p), decisionsPart(p));
+    if ((p.alternatives || []).length) sec.append(altPart(p));
+    sec.append(el("p", { className: "small muted bpsrc", text: "From the roadmap's Big picture section and the growth snapshot of " + (p.as_of || "–") + "." }));
+    return [sec];
+  }
+  function layoutPicture() {
+    const p = pic.doc;
+    if (!p || !$("big-picture")) return;
+    layoutRoute(p); drawEdges(p); drawChart(p);
+  }
+  let resizeT = null;
+  window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(layoutPicture, 120); });
+  if (document.fonts) document.fonts.ready.then(() => layoutPicture());
+
+  // ---- a. where BoxRun is going: the plan as a route, then its splits ----
+  function routePart(p) {
+    const box = el("div", { className: "bpart" }, el("h3", { className: "bph", text: "Where BoxRun is going" }));
+    const panel = el("div", { className: "panel" });
+    if ((p.vision || []).length) panel.append(Stats.spans(el("p", { className: "bpline" }), [["b", "Vision: "]].concat(p.vision), href));
+    panel.append(el("div", { className: "rt", id: "bp-route" }));
+    if ((p.position || []).length) panel.append(Stats.spans(el("p", { className: "bpline" }), [["b", "Position: "]].concat(p.position), href));
+    panel.append(el("p", { className: "rread", id: "bp-rread", "aria-live": "polite", text: PIN_HINT }));
+    panel.append(splits(p));
+    box.append(panel);
+    return box;
+  }
+  function pinButton(p, dc) {
+    const b = el("button", { type: "button", className: "pin", text: dc.n, "aria-label": "Decision " + dc.n + ", look again " + lookText(dc) });
+    const show = () => {
+      b.classList.add("on");
+      $("bp-rread").replaceChildren(el("b", { text: "Decision " + dc.n + ", look again " + lookText(dc) + ": " }), dc.text);
+    };
+    const hide = () => { b.classList.remove("on"); $("bp-rread").textContent = PIN_HINT; };
+    b.addEventListener("mouseenter", show); b.addEventListener("focus", show);
+    b.addEventListener("mouseleave", hide); b.addEventListener("blur", hide);
+    b.addEventListener("click", show);
+    return b;
+  }
+  const put = (n, x, y, w, h) => {
+    n.style.left = x + "px"; n.style.top = y + "px";
+    if (w !== undefined) n.style.width = w + "px";
+    if (h !== undefined) n.style.height = h + "px";
+    return n;
+  };
+  function cpLabel(c, year) {
+    return el("div", { className: "rlab" }, el("span", { className: "rd", text: BP.monthDay(c.date, year) }),
+      el("span", { className: "rn", text: c.name }), c.text ? el("span", { className: "rx", text: c.text }) : null);
+  }
+  function layoutRoute(p) {
+    const rt = $("bp-route");
+    if (!rt) return;
+    const cps = (p.checkpoints || []).filter((c) => c.date);
+    rt.replaceChildren();
+    if (cps.length < 2) { rt.style.height = "0"; return; }
+    const n = cps.length - 1, year = (p.as_of || cps[0].date).slice(0, 4);
+    const nowF = p.as_of ? BP.stretchPos(cps, p.as_of) : null;
+    const plan = p.plan_start && p.plan_start.date ? p.plan_start : null;
+    const pins = (p.decisions || []).filter((x) => x.look_again).sort((a, b) => (a.look_again < b.look_again ? -1 : 1));
+    const nowLab = nowF === null ? null : el("span", { className: "rnowlab", text: "Now, " + BP.dowDay(p.as_of) });
+    const planLab = plan ? el("span", { className: "rplan", title: BP.dowDay(plan.date), text: plan.label }) : null;
+    if (narrow.matches) return layoutRouteDown(p, rt, cps, n, year, nowF, plan, pins, nowLab, planLab);
+    const W = rt.clientWidth, pad = 16, X = (f) => pad + f * (W - 2 * pad);
+    // above the line: Now's label in the lowest lane, the pins around it, none of their stems through a label
+    if (nowLab) rt.append(nowLab);
+    const nowW = nowLab ? nowLab.offsetWidth : 0;
+    const items = (nowLab ? [{ pos: X(nowF), size: nowW }] : []).concat(pins.map((x) => ({ pos: X(BP.stretchPos(cps, x.look_again)), size: 22 })));
+    const lanes = BP.packLanes(items, 5, { ordered: true, stems: true });
+    const L = Math.max(1, ...lanes.map((k) => k + 1)), laneH = 27, lineY = L * laneH + 8;
+    const cy = (k) => lineY - 20 - k * laneH;           // a lane's centre
+    rt.append(put(el("div", { className: "rline" }), pad, lineY - 2, W - 2 * pad, 4));
+    if (nowF !== null && nowF > 0) rt.append(put(el("div", { className: "rdone" }), pad, lineY - 2, X(nowF) - pad, 4));
+    let li = 0;
+    if (nowLab) { put(nowLab, Math.max(0, Math.min(W - nowW, X(nowF) - nowW / 2)), cy(lanes[0]) - 9); li = 1; }
+    pins.forEach((x, i) => {
+      const k = lanes[li + i], px = items[li + i].pos;
+      rt.append(put(el("div", { className: "rstem" }), px, cy(k) + 11, undefined, lineY - 2 - (cy(k) + 11)));
+      rt.append(put(pinButton(p, x), px - 11, cy(k) - 11));
+    });
+    cps.forEach((c, i) => rt.append(put(el("div", { className: "ring" + (p.as_of && c.date <= p.as_of ? " passed" : ""), title: c.name }), X(i / n) - 13, lineY - 13)));
+    if (nowF !== null) rt.append(put(el("div", { className: "rnow", title: "Now" }), X(nowF) - 7, lineY - 7));
+    // under the line: the plan's start as a small tick with its label, then each checkpoint's date, name and text
+    let labTop = lineY + 18;
+    if (plan) {
+      const px = X(BP.stretchPos(cps, plan.date));
+      rt.append(put(el("div", { className: "rtick" }), px - 1, lineY + 4, 2, 10));
+      rt.append(planLab);
+      const w = planLab.offsetWidth;
+      put(planLab, px + w + 4 > W ? px - w - 4 : px + 4, lineY + 6);
+      labTop = lineY + 26;
+    }
+    const S = (W - 2 * pad) / n;
+    let bottom = labTop;
+    cps.forEach((c, i) => {
+      const lab = cpLabel(c, year), x = X(i / n);
+      if (i === 0) put(lab, 0, labTop, S / 2 + pad - 8);
+      else if (i === n) { lab.classList.add("end"); put(lab, x - S / 2 + 8, labTop, S / 2 + pad - 8); }
+      else { lab.classList.add("mid"); put(lab, x - S / 2 + 8, labTop, S - 16); }
+      rt.append(lab);
+      bottom = Math.max(bottom, labTop + lab.offsetHeight);
+    });
+    rt.style.height = bottom + 4 + "px";
+  }
+  // A phone: the route runs down the left, each checkpoint's text beside its ring; Now's and the plan's labels sit in
+  // their stretch under its checkpoint's text (the stretch grows to fit them); the pins in lanes left of the line.
+  function layoutRouteDown(p, rt, cps, n, year, nowF, plan, pins, nowLab, planLab) {
+    const W = rt.clientWidth;
+    let gut = 30;
+    for (let pass = 0; pass < 2; pass++) {
+      rt.replaceChildren();
+      const lineX = gut + 13, textX = lineX + 22, tw = W - textX;
+      const labs = cps.map((c) => { const l = cpLabel(c, year); rt.append(put(l, textX, 0, tw)); return l; });
+      const hs = labs.map((l) => l.offsetHeight);
+      const side = [];
+      if (nowLab) { rt.append(nowLab); side.push({ f: nowF, el: nowLab }); }
+      if (plan) { rt.append(planLab); side.push({ f: BP.stretchPos(cps, plan.date), el: planLab }); }
+      side.sort((a, b) => a.f - b.f);
+      // each stretch's height: its checkpoint's text, then any side labels at their place in time, then a gap
+      const H = [];
+      for (let i = 0; i < n; i++) {
+        let h = Math.max(120, hs[i] + 28);
+        const mine = side.filter((s) => s.f >= i / n && s.f < (i + 1) / n);
+        for (let tries = 0; tries < 4; tries++) {
+          let bot = hs[i] - 4, ok = true;
+          for (const s of mine) {
+            const want = (s.f * n - i) * h;
+            if (want - 9 < bot + 4) { const need = (bot + 13) / Math.max(0.02, s.f * n - i); if (need > h) { h = Math.min(600, need); ok = false; break; } }
+            bot = Math.max(want, bot + 13) + 9;
+          }
+          if (ok) { h = Math.max(h, bot + 12); break; }
+        }
+        H.push(h);
+      }
+      const top0 = 13, starts = [top0];
+      for (const h of H) starts.push(starts[starts.length - 1] + h);
+      const Y = (f) => { const i = Math.min(n - 1, Math.floor(f * n)); return starts[i] + (f * n - i) * H[i]; };
+      const lanes = BP.packLanes(pins.map((x) => ({ pos: Y(BP.stretchPos(cps, x.look_again)), size: 22 })), 4);
+      const L = Math.max(1, ...lanes.map((k) => k + 1));
+      if (pass === 0 && L * 25 + 4 > gut) { gut = L * 25 + 4; continue; }
+      const end = starts[n];
+      rt.append(put(el("div", { className: "rline" }), lineX - 2, top0, 4, end - top0));
+      if (nowF) rt.append(put(el("div", { className: "rdone" }), lineX - 2, top0, 4, Y(nowF) - top0));
+      cps.forEach((c, i) => {
+        rt.append(put(el("div", { className: "ring" + (p.as_of && c.date <= p.as_of ? " passed" : ""), title: c.name }), lineX - 13, starts[i] - 13));
+        put(labs[i], textX, starts[i] - 12);
+      });
+      let bot = -1, last = -1;
+      for (const s of side) {
+        const i = Math.min(n - 1, Math.floor(s.f * n));
+        if (i !== last) { bot = starts[i] - 12 + hs[i] - 4; last = i; }
+        const y = Math.max(Y(s.f), bot + 13);
+        put(s.el, textX, y - 9);
+        bot = y + 9;
+      }
+      if (plan) rt.append(put(el("div", { className: "rtick" }), lineX + 4, Y(BP.stretchPos(cps, plan.date)) - 1, 10, 2));
+      if (nowF !== null) rt.append(put(el("div", { className: "rnow", title: "Now" }), lineX - 7, Y(nowF) - 7));
+      pins.forEach((x, i) => {
+        const y = Y(BP.stretchPos(cps, x.look_again)), px = gut - 11 - lanes[i] * 25;
+        rt.append(put(el("div", { className: "rstem" }), px + 11, y, lineX - 2 - (px + 11), 1));
+        rt.append(put(pinButton(p, x), px - 11, y - 11));
+      });
+      rt.style.height = Math.max(end, starts[n] - 12 + hs[n]) + 6 + "px";
+      break;
+    }
+  }
+  // The splits: a row per scorecard measure, Now on a bar to its next target with the pace as a ghost marker
+  function splits(p) {
+    const box = el("div", { className: "splits", id: "bp-splits" });
+    box.append(el("div", { className: "sp head", "aria-hidden": "true" }, el("span", { text: "Measure" }), el("span", { text: "Now, on the way to the next target" }),
+      el("span", { style: "text-align: right", text: "Now" }), el("span", { text: "Against the plan" }), el("span", { text: "Next target" })));
+    const year = (p.as_of || "").slice(0, 4);
+    for (const r of p.scorecard || []) {
+      const bar = BP.splitBar(r), dl = BP.deltaLabel(r.delta);
+      const track = el("div", { className: "spbar" });
+      if (bar) {
+        if (bar.fill !== null) track.append(el("span", { className: "spfill", style: "width: " + (bar.fill * 100).toFixed(2) + "%" }));
+        if (bar.pace !== null) track.append(el("span", { className: "spghost", style: "left: " + (bar.pace * 100).toFixed(2) + "%", title: "pace " + BP.fmt(r.pace) }, el("span", { className: "spgl", text: "pace" })));
+      }
+      const nowTxt = r.now === null || r.now === undefined ? "–" : r.auto ? BP.fmt(r.now) : r.now_text;
+      // no pace yet: the plan's line starts at its Start reading
+      const dTxt = dl ? dl.text : r.start_date && p.as_of && p.as_of < r.start_date ? "pace from " + BP.dowDay(r.start_date) : "no pace";
+      box.append(el("div", { className: "sp" }, el("span", { className: "spm", text: r.measure }), track,
+        el("span", { className: "spn", text: nowTxt }), el("span", { className: "spd " + (dl ? dl.tone : "none"), text: dTxt }),
+        el("span", { className: "spt", text: r.next ? BP.fmt(r.next.value) + " by " + BP.monthDay(r.next.date, year) : "no target set" })));
+    }
+    return box;
+  }
+
+  // ---- b. how players reach BoxRun and stay: the engine ----
+  function enginePart(p) {
+    const E = BP.engine(p.parts || []);
+    const stageOf = new Map((p.parts || []).map((x) => [x.id, BP.FLOW.indexOf(x.stage)]));
+    const box = el("div", { className: "bpart" }, el("h3", { className: "bph", text: "How players reach BoxRun and stay" }));
+    const eng = el("div", { className: "eng", id: "bp-eng" });
+    const grid = el("div", { className: "egrid" });
+    E.cols.forEach((c, i) => {
+      if (i) grid.append(el("div", { className: "estep", "aria-hidden": "true" }));
+      grid.append(el("div", { className: "ecol" }, el("h4", { className: "estage", text: STAGE[c.stage] }), c.parts.map((x) => nodeCard(p, x, stageOf))));
+    });
+    eng.append(grid);
+    eng.append(sv("svg", { class: "esvg", id: "bp-edges", "aria-hidden": "true" }));
+    box.append(eng);
+    if (E.below.length) box.append(el("div", { className: "ebelow" }, el("h4", { text: "Outside the flow" }), el("div", { className: "erow" }, E.below.map((x) => nodeCard(p, x, stageOf)))));
+    box.append(el("div", { className: "edetail panel", id: "bp-detail", "aria-live": "polite" }));
+    setTimeout(() => showDetail(p), 0);
+    return box;
+  }
+  function nodeCard(p, x, stageOf) {
+    const [big, rest] = BP.splitNumber(x.now_text);
+    // on a phone the arrows aren't drawn: a Feeds to the same or an earlier stage is a line of text in the card
+    const back = x.feeds.filter((f) => stageOf.get(f) >= 0 && stageOf.get(f) <= stageOf.get(x.id));
+    const b = el("button", { type: "button", className: "nb", "data-id": x.id, "aria-pressed": String(pic.node === x.id) },
+      el("span", { className: "nn", text: x.name }),
+      el("span", { className: "nv" }, big ? el("span", { className: "nbig", text: big }) : null, rest ? el("span", { className: "nrest", text: (big ? " " : "") + rest }) : null),
+      back.length ? el("span", { className: "nfeeds", text: "Feeds " + back.map((f) => partName(p, f)).join(", ") }) : null,
+      el("span", { className: "chip " + (x.tone || ""), text: x.state }));
+    const pick = () => { if (pic.node === x.id && !pic.decision) return; pic.node = x.id; pic.decision = null; showDetail(p); };
+    b.addEventListener("click", pick); b.addEventListener("focus", pick);
+    const card = el("div", { className: "node " + (x.tone || "") + (pic.node === x.id ? " sel" : ""), id: "node-" + x.id }, b);
+    if (x.decisions.length) card.append(el("span", { className: "npins" }, x.decisions.map((n) => el("button", {
+      type: "button", className: "pin", text: n, "aria-label": "Decision " + n,
+      on: { click: () => { pic.node = x.id; pic.decision = n; showDetail(p); } } }))));
+    return card;
+  }
+  function decisionBlock(p, dc) {
+    return el("div", { className: "dblock" },
+      el("p", null, pinSpan(dc.n), " ", el("b", { text: dc.text })),
+      dc.wrong_if ? el("p", null, el("span", { className: "lbl", text: "Wrong if: " }), dc.wrong_if) : null,
+      el("p", null, el("span", { className: "lbl", text: "Look again: " }), lookText(dc) || "–"),
+      dc.reading ? el("p", null, el("span", { className: "lbl", text: "Now: " }), dc.reading) : null);
+  }
+  function showDetail(p) {
+    const box = $("bp-detail");
+    if (!box) return;
+    for (const c of document.querySelectorAll("#big-picture .node")) {
+      const on = c.id === "node-" + pic.node;
+      c.classList.toggle("sel", on);
+      c.querySelector(".nb").setAttribute("aria-pressed", String(on));
+    }
+    const x = (p.parts || []).find((q) => q.id === pic.node);
+    if (!x) { box.replaceChildren(el("p", { className: "hint", text: "Click a part, or a numbered pin, for its note and the decisions acting on it." })); return; }
+    const decs = (p.decisions || []).filter((dc) => (pic.decision ? dc.n === pic.decision : dc.acts_on === x.id));
+    box.replaceChildren(el("h4", { text: x.name }),
+      el("p", null, el("span", { className: "chip " + (x.tone || ""), text: x.state }), " ", el("span", { className: "lbl", text: "Now: " }), x.now_text || "–"),
+      x.note ? el("p", { text: x.note }) : null,
+      ...(decs.length ? decs.map((dc) => decisionBlock(p, dc)) : [el("p", { className: "lbl", text: "No decision acts on this part." })]));
+  }
+  function selectNode(id) {
+    pic.node = id; pic.decision = null; showDetail(pic.doc);
+    const c = $("node-" + id);
+    if (c) c.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+  // The Feeds arrows, from the cards' places: forward to a later stage, down to the next card, a bracket on the outer
+  // side within a column, and a dashed arc over the top back to an earlier stage.
+  function drawEdges(p) {
+    const svg = $("bp-edges"), eng = $("bp-eng");
+    if (!svg || !eng) return;
+    svg.replaceChildren();
+    if (stacked.matches) return;
+    const E = BP.engine(p.parts || []), base = eng.getBoundingClientRect();
+    const box = (id) => { const r = $("node-" + id).getBoundingClientRect(); return { l: r.left - base.left, r: r.right - base.left, t: r.top - base.top, b: r.bottom - base.top, cx: (r.left + r.right) / 2 - base.left, cy: (r.top + r.bottom) / 2 - base.top }; };
+    const col = new Map();
+    E.cols.forEach((c, i) => c.parts.forEach((x) => col.set(x.id, i)));
+    svg.setAttribute("viewBox", "0 0 " + base.width + " " + base.height);
+    svg.append(sv("defs", null, sv("marker", { id: "bp-ah", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" },
+      sv("path", { d: "M0 0L10 5L0 10z", class: "eah" }))));
+    // spread several arrows over a card's side so they don't meet at one point
+    const outs = new Map(), ins = new Map();
+    for (const e of E.edges.filter((x) => x.kind === "forward")) {
+      (outs.get(e.from) || outs.set(e.from, []).get(e.from)).push(e);
+      (ins.get(e.to) || ins.set(e.to, []).get(e.to)).push(e);
+    }
+    // in the order of the other ends' heights, so a card's arrows don't cross each other
+    for (const l of outs.values()) l.sort((a, b) => box(a.to).cy - box(b.to).cy);
+    for (const l of ins.values()) l.sort((a, b) => box(a.from).cy - box(b.from).cy);
+    const spread = (list, e, b) => { const i = list.indexOf(e); return b.t + (b.b - b.t) * (i + 1) / (list.length + 1); };
+    const top = Math.min(...[...col.keys()].map((id) => box(id).t));
+    let side = 0;
+    for (const e of E.edges) {
+      const A = box(e.from), B = box(e.to);
+      let d;
+      if (e.kind === "forward") {
+        const y1 = spread(outs.get(e.from), e, A), y2 = spread(ins.get(e.to), e, B), dx = (B.l - A.r) / 2;
+        d = `M${A.r} ${y1}C${A.r + dx} ${y1} ${B.l - 3 - dx} ${y2} ${B.l - 3} ${y2}`;
+      } else if (e.kind === "down") d = `M${A.cx} ${A.b}L${B.cx} ${B.t - 3}`;
+      else if (e.kind === "back") {
+        const up = top - 46;
+        d = `M${A.cx} ${A.t}C${A.cx} ${up} ${B.cx} ${up} ${B.cx} ${B.t - 3}`;
+      } else {
+        const off = 16 + 9 * side++;
+        d = col.get(e.from) === 0
+          ? `M${A.l} ${A.cy}C${A.l - off} ${A.cy} ${B.l - off} ${B.cy} ${B.l - 3} ${B.cy}`
+          : `M${A.r} ${A.cy}C${A.r + off} ${A.cy} ${B.r + off} ${B.cy} ${B.r + 3} ${B.cy}`;
+      }
+      svg.append(sv("path", { d, class: "edge " + e.kind, "marker-end": "url(#bp-ah)", "data-from": e.from, "data-to": e.to }));
+    }
+  }
+
+  // ---- c. players and posts since launch: the evidence ----
+  function chartPart(p) {
+    const sw = (kids) => { const s = sv("svg", { viewBox: "0 0 16 14", "aria-hidden": "true" }); kids.forEach((k) => s.append(k)); return s; };
+    const legend = el("div", { className: "legend" },
+      el("span", null, sw([sv("rect", { x: 2, y: 2, width: 12, height: 10, class: "ret" })]), "Returning"),
+      el("span", null, sw([sv("rect", { x: 2, y: 2, width: 12, height: 10, class: "new" })]), "New (first loads)"),
+      el("span", null, sw(hatchSw()), "Not split (before 11-03)"),
+      el("span", null, sw([sv("rect", { x: 2, y: 2, width: 12, height: 10, class: "new partial" })]), "Today so far"),
+      el("span", null, sw([sv("circle", { cx: 8, cy: 7, r: 5.5, class: "short" })]), "Our Shorts, area by views"),
+      el("span", null, sw([sv("circle", { cx: 8, cy: 7, r: 5.5, class: "other" })]), "Videos by others"),
+      el("span", null, sw([sv("line", { x1: 8, y1: 1, x2: 8, y2: 13, class: "rtk" })]), "Releases"),
+      el("span", null, sw([sv("line", { x1: 8, y1: 0, x2: 8, y2: 14, class: "patch" })]), "Valve map patch"));
+    const box = el("div", { className: "bpart" }, el("h3", { className: "bph", text: "Players and posts since launch" }),
+      el("div", { className: "panel bpc" }, legend, el("div", { className: "pchart", id: "bp-chart" }),
+        el("div", { className: "cread", id: "bp-cread", "aria-live": "polite" }),
+        el("p", { className: "small muted", style: "margin: 0.5rem 0 0" },
+          "Each bar is a day's players who opened the BoxRun menu: returning players (that day's players less its first loads) at the bottom, new players (first loads) on top. " +
+          "First loads are counted from 11-03, 2.1's first full day, so earlier days are one hatched bar. " +
+          "Circles above the bars are our Shorts on the day they posted, YouTube and TikTok of one Short together, with a small hollow circle where views aren't read yet; dashed rings are videos by others. " +
+          "Ticks under the days are releases, and a dashed line is a Valve patch that changed the map.")));
+    return box;
+  }
+  function hatchSw() {
+    const out = [sv("rect", { x: 2, y: 2, width: 12, height: 10, fill: "none", class: "hatch" })];
+    for (const x of [4, 8, 12]) out.push(sv("line", { x1: x - 2, y1: 12, x2: x + 2, y2: 2, class: "hatch" }));
+    return out;
+  }
+  function chartDays(p) {
+    const days = p.days || [];
+    if (!days.length) return [];
+    const launch = (p.checkpoints || [])[0] && p.checkpoints[0].date;
+    let first = days[0].day;
+    if (launch && launch < first) first = launch;
+    const by = new Map(days.map((x) => [x.day, x])), out = [];
+    for (let d = first; d <= days[days.length - 1].day; d = BP.addDays(d, 1)) out.push({ day: d, row: by.get(d) || null });
+    return out;
+  }
+  function relGroups(p, inRange) {
+    const m = new Map();
+    for (const r of p.releases || []) if (inRange(r.day)) (m.get(r.day) || m.set(r.day, []).get(r.day)).push(r);
+    return [...m.entries()].map(([day, rs]) => ({ day, rs, label: rs.length === 1 ? rs[0].name : rs[0].name + " to " + rs[rs.length - 1].name + ", " + rs.length + " releases" }));
+  }
+  function drawChart(p) {
+    const fig = $("bp-chart");
+    if (!fig) return;
+    const D = chartDays(p);
+    fig.replaceChildren();
+    if (!D.length) { fig.append(el("p", { className: "muted", text: "No daily counts in the snapshot." })); return; }
+    const W = Math.max(280, fig.clientWidth), small = W < 600;
+    const idx = new Map(D.map((x, i) => [x.day, i])), inRange = (d) => idx.has(d);
+    const left = 40, right = 6, band = (W - left - right) / D.length;
+    const X = (day) => left + (idx.get(day) + 0.5) * band;
+    const shorts = BP.groupShorts((p.posts || []).filter((x) => inRange(x.day)));
+    // videos by others: one mark per creator per day, views added up
+    const om = new Map();
+    for (const m of (p.mentions || []).filter((x) => inRange(x.day))) {
+      const k = m.day + "|" + m.creator;
+      if (!om.has(k)) om.set(k, { day: m.day, creator: m.creator, views: null, posts: [] });
+      const g = om.get(k); g.posts.push(m);
+      if (typeof m.views === "number") g.views = (g.views || 0) + m.views;
+    }
+    const others = [...om.values()];
+    const vmax = Math.max(1, ...shorts.concat(others).map((g) => g.views || 0));
+    const rMax = small ? 12 : 19, stripH = 2 * rMax + 8;
+    const plotTop = stripH + 6, plotH = small ? 170 : 220, plotB = plotTop + plotH;
+    const max = Math.max(1, ...D.filter((x) => x.row).map((x) => x.row.players));
+    const step = [100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000].find((s) => max / s <= 4) || Math.ceil(max / 4);
+    const top = Math.ceil(max / step) * step, Y = (v) => plotB - (v / top) * plotH;
+    // release labels in lanes under the axis, each with a stem from its tick
+    const rels = relGroups(p, inRange);
+    const cw = small ? 5.6 : 6.1;
+    // each label centred on its tick, kept inside the chart
+    const ritems = rels.map((g) => { const w = g.label.length * cw + 4, x = X(g.day); const a = Math.max(2, Math.min(W - w - 2, x - w / 2)); return { pos: a + w / 2, size: w, x }; });
+    const rl = BP.packLanes(ritems, 4, { stems: true });
+    const RL = rels.length ? Math.max(...rl) + 1 : 0, relTop = plotB + 34, H = relTop + (RL - 1) * 14 + 8;
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, tabindex: 0, role: "img",
+      "aria-label": "Players a day since launch with our Shorts, videos by others, releases and map patches; use the arrow keys to read a day" });
+    fig.append(svg);                     // in the page now, so the labels can be measured
+    for (let v = 0; v <= top; v += step) {
+      svg.append(sv("line", { x1: left, x2: W - right, y1: Y(v), y2: Y(v), class: "grid" }));
+      svg.append(svText({ x: left - 6, y: Y(v) + 4, "text-anchor": "end" }, Stats.compact(v)));
+    }
+    const hatchId = "bp-hatch";
+    svg.append(sv("defs", null, sv("pattern", { id: hatchId, patternUnits: "userSpaceOnUse", width: 6, height: 6, patternTransform: "rotate(45)" },
+      sv("line", { x1: 0, y1: 0, x2: 0, y2: 6, class: "hatchline" }))));
+    const bw = Math.max(2, band * (small ? 0.72 : 0.62));
+    const labelEvery = Math.max(1, Math.ceil(34 / band));
+    D.forEach((x, i) => {
+      const cx = left + (i + 0.5) * band, r = x.row;
+      if ((D.length - 1 - i) % labelEvery === 0) svg.append(svText({ x: cx, y: plotB + 14, "text-anchor": "middle" }, x.day.slice(5)));
+      if (!r) return;
+      const g = sv("g", { class: "bday", "data-day": x.day });
+      const part = r.partial ? " partial" : "";
+      if (r.first_loads === null || r.first_loads === undefined) {
+        g.append(sv("rect", { x: cx - bw / 2, y: Y(r.players), width: bw, height: plotB - Y(r.players), fill: `url(#${hatchId})`, class: "hatch" }));
+      } else {
+        const ret = Math.max(0, r.returning || 0);
+        g.append(sv("rect", { x: cx - bw / 2, y: Y(ret), width: bw, height: plotB - Y(ret), class: "ret" + part }));
+        g.append(sv("rect", { x: cx - bw / 2, y: Y(ret + r.first_loads), width: bw, height: Y(ret) - Y(ret + r.first_loads), class: "new" + part }));
+      }
+      svg.append(g);
+    });
+    for (const pt of (p.patches || []).filter((x) => inRange(x.date))) {
+      const x = X(pt.date);
+      svg.append(sv("line", { x1: x, x2: x, y1: plotTop - 2, y2: plotB, class: "patch" }));
+      svg.append(svText({ x: x + 4, y: plotTop + 10 }, "Valve patch"));
+    }
+    // the posts strip: our Shorts filled, videos by others as dashed rings; the biggest drawn first
+    const marks = shorts.map((g) => ({ g, cls: "short" })).concat(others.map((g) => ({ g, cls: "other" })))
+      .map((m) => Object.assign(m, { r: BP.radius(m.g.views, vmax, rMax) })).sort((a, b) => (b.r || 0) - (a.r || 0));
+    for (const m of marks) {
+      const r = m.r === null ? 4 : m.r;
+      svg.append(sv("circle", { cx: X(m.g.day), cy: stripH / 2 + 2, r, class: m.cls + (m.r === null ? " unknown" : ""), "data-day": m.g.day }));
+    }
+    // the stems first, so every label (with its halo) sits over them
+    rels.forEach((g, i) => {
+      svg.append(sv("line", { x1: ritems[i].x, x2: ritems[i].x, y1: plotB + 1, y2: plotB + 6, class: "rtk" }));
+      if (rl[i]) svg.append(sv("line", { x1: ritems[i].x, x2: ritems[i].x, y1: plotB + 18, y2: relTop + rl[i] * 14 - 10, class: "rstemc" }));
+    });
+    rels.forEach((g, i) => {
+      const t = svText({ x: ritems[i].pos, y: relTop + rl[i] * 14, "text-anchor": "middle", class: "rlabel" }, g.label);
+      svg.append(t);
+      const bb = t.getBBox();
+      svg.insertBefore(sv("rect", { x: bb.x - 2, y: bb.y, width: bb.width + 4, height: bb.height, class: "rbg" }), t);
+    });
+    // hover and tap: a band per day
+    const hots = D.map((x, i) => sv("rect", { x: left + i * band, y: 0, width: band, height: plotB, class: "hot", "data-day": x.day }));
+    hots.forEach((h) => { svg.append(h); h.addEventListener("mouseenter", () => readDay(p, D, h.dataset.day, hots, shorts, others, rels)); h.addEventListener("click", () => readDay(p, D, h.dataset.day, hots, shorts, others, rels)); });
+    svg.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const i = pic.day && idx.has(pic.day) ? idx.get(pic.day) : D.length;
+      const j = Math.max(0, Math.min(D.length - 1, i + (e.key === "ArrowLeft" ? -1 : 1)));
+      readDay(p, D, D[j].day, hots, shorts, others, rels);
+    });
+    readDay(p, D, pic.day && idx.has(pic.day) ? pic.day : null, hots, shorts, others, rels);
+  }
+  function readDay(p, D, day, hots, shorts, others, rels) {
+    pic.day = day;
+    const out = $("bp-cread");
+    hots.forEach((h) => h.classList.toggle("on", h.dataset.day === day));
+    if (!day) { out.replaceChildren(el("div", { className: "muted", text: "Point at or tap a day for its players and posts." })); return; }
+    const x = D.find((q) => q.day === day), r = x && x.row, lines = [];
+    const head = BP.dowDay(day) + (r && r.partial ? " (so far)" : "") + ": ";
+    if (!r) lines.push(el("div", null, el("b", { text: head }), "no menu count that day."));
+    else if (r.first_loads === null || r.first_loads === undefined) lines.push(el("div", null, el("b", { text: head }), BP.fmt(r.players) + " players, not split into new and returning."));
+    else lines.push(el("div", null, el("b", { text: head }), BP.fmt(r.players) + " players: " + BP.fmt(r.first_loads) + " new, " + BP.fmt(r.returning) + " returning."));
+    const views = (v) => (typeof v === "number" ? Stats.compact(v) + " views" : "views not read yet");
+    for (const g of shorts.filter((q) => q.day === day))
+      lines.push(el("div", null, el("span", { className: "lbl", text: "Short:" }), g.posts[0].title + " (" + g.posts.map((q) => q.platform + " " + views(q.views)).join(", ") + ")"));
+    for (const g of others.filter((q) => q.day === day))
+      lines.push(el("div", null, el("span", { className: "lbl", text: "Video by " + g.creator + ":" }), (g.posts[0].title || "") + " (" + g.posts.map((q) => q.platform + " " + views(q.views)).join(", ") + ")"));
+    for (const g of rels.filter((q) => q.day === day))
+      lines.push(el("div", null, el("span", { className: "lbl", text: "Released:" }), g.rs.map((q) => q.name).join(", ")));
+    for (const pt of (p.patches || []).filter((q) => q.date === day))
+      lines.push(el("div", null, el("span", { className: "lbl", text: "Valve patch:" }), pt.patch + ". " + pt.text));
+    out.replaceChildren(...lines);
+  }
+
+  // ---- d. the decisions and when each gets checked ----
+  function decisionsPart(p) {
+    const list = p.decisions || [];
+    const S = BP.sortDecisions(list), today = ptToday();
+    const row = (dc) => {
+      const chip = BP.dateChip(dc.look_again, today);
+      return el("li", { className: "dec", "data-n": dc.n },
+        dc.look_again ? el("span", { className: "dchip" + (chip.due ? " due" : ""), text: chip.text }) : el("span", { className: "dchip", text: dc.look_again_text }),
+        pinSpan(dc.n), el("span", { className: "dtext", text: dc.text }),
+        dc.wrong_if ? el("span", { className: "dline" }, el("span", { className: "lbl", text: "Wrong if: " }), dc.wrong_if) : null,
+        dc.reading ? el("span", { className: "dline" }, el("span", { className: "lbl", text: "Now: " }), dc.reading) : null,
+        dc.acts_on ? el("span", { className: "dline" }, el("span", { className: "lbl", text: "Acts on: " }),
+          el("button", { type: "button", className: "linkbtn", text: partName(p, dc.acts_on), on: { click: () => selectNode(dc.acts_on) } })) : null);
+    };
+    const ol = el("ol", { className: "decs", id: "bp-decs" }, S.dated.map(row));
+    const box = el("div", { className: "bpart" }, el("h3", { className: "bph", text: "The " + (list.length === 10 ? "ten" : list.length) + " decisions and when each gets checked" }),
+      el("div", { className: "panel" }, ol, S.undated.length ? el("h4", { className: "muted", style: "margin: 0.9rem 0 0.2rem; font: 700 0.9rem var(--body)", text: "When something happens" }) : null,
+        S.undated.length ? el("ol", { className: "decs" }, S.undated.map(row)) : null));
+    return box;
+  }
+
+  // ---- e. next to the alternatives ----
+  function altPart(p) {
+    return el("div", { className: "bpart" }, el("h3", { className: "bph", text: "Next to the alternatives" }),
+      el("div", { className: "alts", id: "bp-alts" }, p.alternatives.map((a) => el("div", { className: "panel alt" },
+        el("h4", { text: a.tool }), el("p", { className: "what", text: a.what }),
+        el("p", null, el("span", { className: "lbl", text: "How you start it: " }), a.start),
+        el("p", null, el("span", { className: "lbl", text: "It leads on: " }), a.leads),
+        el("p", null, el("span", { className: "lbl", text: "BoxRun leads on: " }), a.boxrun_leads)))));
+  }
+
   function drawAll() {
     const d = body.doc;
     ids = new Set(d.ids || []);
@@ -666,7 +1286,8 @@
     indexAreas(d);
     $("sub").replaceChildren("From ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
       ", last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
-    const kids = [].concat(nowSection(d), nextAndGoal(d), areasSection(d), releasesSection(d), boardSection(d));
+    $("jump-bp").hidden = !d.picture;
+    const kids = [].concat(bigPicture(d), nowSection(d), nextAndGoal(d), areasSection(d), releasesSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
     if (d.strategy) {
       const det = el("details", null, el("summary", null, el("h2", { text: d.strategy.title })));
@@ -681,6 +1302,7 @@
     kids.push(closing);
     $("main").replaceChildren(...kids);
     drawBoard();
+    layoutPicture();
   }
 
   // A link to an item (#FIND-3) opens its card, clearing filters that hide it.
