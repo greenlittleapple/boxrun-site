@@ -188,7 +188,8 @@
   .card .body dd { margin: 0; max-width: 52rem; }
   @media (max-width: 480px) { .card .body dl { grid-template-columns: minmax(0, 1fr); gap: 0 0; } .card .body dd { margin-bottom: 0.4rem; } }
   section.closing > details { margin-top: 1.5rem; }
-  /* ---- the Big picture (growth review 7, 11-11): four parts between the map and Today; the maths in /stats/picture.js ---- */
+  /* ---- the Big picture (growth review 7, 11-11): three parts under the map, and the players chart in a fold near the
+     page's end; the maths in /stats/picture.js ---- */
   nav.jump { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin: 0.35rem 0 0.1rem; font-size: 0.9rem; }
   .bp h3.bph { font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; margin: 1.6rem 0 0.6rem; }
   .bp > .bpart:first-of-type h3.bph { margin-top: 0.4rem; }
@@ -321,8 +322,8 @@
   .tm .tmnum { display: block; }
   .tm .tmnum b { display: block; font: 800 1.35rem/1.1 var(--display); letter-spacing: 0.02em; }
   .tm .tmnum span { display: block; color: var(--muted); font-size: 0.82rem; line-height: 1.3; }
+  .tm .tmnum .vs { color: var(--ink); }
   .tm .tmgoal, .tm .tmend { margin: 0 0 0.35rem; font-size: 0.85rem; line-height: 1.35; }
-  .tm .tmsub .tmgoal, .tm .tmsub .tmend { color: var(--muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
   .tm .tmgoal .when, .tm .tmcol { color: var(--muted); font-weight: 700; }
   .tm .tmcol { display: none; }
   .tm .tmfeeds { margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--muted); line-height: 1.9; }
@@ -335,10 +336,28 @@
   .tm .tmsub::before { content: ""; position: absolute; left: 0.35rem; top: 0; bottom: 0; border-left: 3px solid var(--tk); }
   .tm .tmsub:last-child::before { bottom: auto; height: 1.2rem; }
   .tm .tmsub::after { content: ""; position: absolute; left: 0.35rem; top: 1.2rem; width: 0.9rem; border-top: 3px solid var(--tk); }
-  .tm .tmsub > .tmgrid > div:first-child, .tm .tmsub > .tmpanel { margin-left: 1.7rem; }
+  .tm .tmsub > .tmgrid > .tmsubtop, .tm .tmsub > .tmgrid > .tmsubdots, .tm .tmsub > .tmpanel { margin-left: 1.7rem; }
+  /* a sub-track: its name and next goal, its done items as dots under them, and its open items in rows beside them */
+  .tm .tmsub > .tmgrid { grid-template-rows: auto 1fr; }
+  .tm .tmsubtop { grid-column: 1; grid-row: 1; }
+  .tm .tmsubdots { grid-column: 1; grid-row: 2; }
+  .tm .tmrows { grid-column: 2 / -1; grid-row: 1 / span 2; font-size: 0.85rem; line-height: 1.4; }
   .tm .tmsubname { font-weight: 700; margin-right: 0.5rem; }
-  .tm .tmsubnum { display: block; font-size: 0.85rem; color: var(--muted); }
-  .tm .tmsubnum b { color: var(--ink); }
+  .tm .tmsubgoal { margin: 0.1rem 0 0; font-size: 0.85rem; line-height: 1.35; overflow-wrap: anywhere;
+                   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .tm .tmsubgoal .when { color: var(--muted); font-weight: 700; }
+  /* the group's word hangs left of its rows; a row flows as one paragraph (id, title, state word) and opens its item */
+  .tm .tmgrp { display: grid; grid-template-columns: 2.9rem minmax(0, 1fr); }
+  .tm .tmgl { color: var(--muted); font-size: 0.8rem; font-weight: 700; padding-top: 0.2rem; }
+  .tm .tmrow > summary { display: block; padding: 0.15rem 0; overflow-wrap: anywhere; }
+  .tm .tmrow > summary:hover .rid, .tm .tmrow[open] > summary .rid { text-decoration: underline; }
+  .tm .tmrow .rid { font-weight: 700; color: var(--link); white-space: nowrap; }
+  .tm .tmrow .st { font-weight: 700; font-size: 0.8rem; white-space: nowrap; }
+  .tm .tmrow .full { margin: 0.1rem 0 0.45rem; padding: 0.45rem 0.7rem; background: var(--panel); border: 1px solid var(--line);
+                     border-left: 3px solid var(--tk); border-radius: 6px; overflow-wrap: anywhere; }
+  .tm .tmrow .full p { margin: 0 0 0.3rem; }
+  .tm .tmrow .full p:last-child { margin-bottom: 0; }
+  .tm .tmrow .src { color: var(--muted); font-size: 0.82rem; }
   .tm .needs { font-size: 0.75rem; font-weight: 700; color: var(--gold-ink); margin-left: 0.4rem; white-space: nowrap; }
   .tm .tmdots { display: block; margin-top: 0.3rem; line-height: 0; }
   .tm .tmdots i { display: inline-block; box-sizing: border-box; width: 9px; height: 9px; border-radius: 50%; margin: 0 3px 3px 0; background: var(--st-done); opacity: 0.55; }
@@ -377,10 +396,11 @@
     .tm .tmcols, .tm .tmgrid > .none, .tm .tmline > .stop::before { display: none; }
     .tm .tmcol { display: inline; }
     .tm .tmgrid > div + div { margin-top: 0.3rem; }
+    /* a sub-track's blocks stack here: its name and goal, its rows, its dots */
     .tm .tmsub > .tmgrid > div { margin-left: 1.7rem; }
-    /* a sub-track is its name, state, number and dots here; its goals and eventual goal are in the panel a tap opens */
-    .tm .tmsub > .tmgrid > div + div { display: none; }
-    .tm .tmsub { padding: 0.35rem 0; }
+    .tm .tmsub { padding: 0.35rem 0 0.55rem; }
+    .tm .tmrow > summary { padding: 0.25rem 0; }
+    .tm .tmgl { padding-top: 0.3rem; }
     .tm .tmdot { width: 20px; height: 20px; margin: 0 1px 2px -4px; }
     .tm .tmdot i { width: 12px; height: 12px; }
     .tm .tmsub .tmdots { margin-left: 0; }
@@ -396,7 +416,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Roadmap</h1>
-  <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#releases">Releases</a><a href="#board">All items</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
+  <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#releases">Releases</a><a href="#board">All items</a><a href="#history" id="jump-history" hidden>Players and posts</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
   <p class="muted" id="sub">From <code>docs/BOXRUN-ROADMAP.md</code>.</p>
 
   <section id="ask" hidden>
@@ -533,7 +553,8 @@
     const box = el("div", { className: "rels" });
     const rels = d.releases || [];
     const done = rels.filter((r) => r.state_class === "done");
-    // Every finished release in one fold, closed by default: "10 done", then the newest by date.
+    // What's ahead first; under it every finished release in one fold, closed by default: "10 done", then the newest by date.
+    for (const r of rels.filter((x) => x.state_class !== "done")) box.append(relRow(r));
     if (done.length) {
       // the newest by the date in its Target (the table is in date order since 11-10, but don't rely on it)
       const md = (r) => { const m = relDay(r).match(/(\d{1,2})-(\d{1,2})$/); return m ? +m[1] * 100 + +m[2] : -1; };
@@ -546,7 +567,6 @@
       fold.append(...done.map((r) => relRow(r)));
       box.append(fold);
     }
-    for (const r of rels.filter((x) => x.state_class !== "done")) box.append(relRow(r));
     out.push(box);
     return out;
   }
@@ -820,7 +840,8 @@
       el("div", { id: "groups" })];
   }
 
-  // ---- the Big picture (growth review 7, 11-11): the document's `picture` as four parts; maths in /stats/picture.js ----
+  // ---- the Big picture (growth review 7, 11-11): the document's `picture` as three parts, and the players chart (what
+  // has happened so far) in a closed fold near the page's end; maths in /stats/picture.js ----
   const BP = BoxRunPicture;
   const pic = { day: null, doc: null };   // what's selected, kept across redraws
   const narrow = matchMedia("(max-width: 600px)");
@@ -842,7 +863,7 @@
     pic.doc = p || null;
     if (!p) return [];
     const sec = el("section", { className: "bp", id: "big-picture" }, el("h2", { text: "Big picture" }));
-    sec.append(routePart(p), chartPart(p), decisionsPart(p));
+    sec.append(routePart(p), decisionsPart(p));
     if ((p.alternatives || []).length) sec.append(altPart(p));
     sec.append(el("p", { className: "small muted bpsrc", text: "From the roadmap's Big picture section and the growth snapshot of " + (p.as_of || "–") + "." }));
     return [sec];
@@ -871,7 +892,7 @@
     $("jump-map").hidden = !m;
     if (!m) { tm = null; return []; }
     const today = ptToday(), cols = TM.columns(p.checkpoints, today);
-    tm = { map: m, today, cols, nodes: TM.index(m), fed: TM.fedBy(m), asOf: p.as_of,
+    tm = { map: m, today, cols, nodes: TM.index(m), fed: TM.fedBy(m), asOf: p.as_of, scorecard: p.scorecard,
            subOf: new Map(m.tracks.flatMap((t) => t.subs.flatMap((s) => (s.items || []).map((i) => [i, s.id])))),
            colour: new Map(m.tracks.map((t, i) => [t.id, "var(--tk" + (i % 7 + 1) + ")"])),
            decisions: new Map((p.decisions || []).map((dc) => [dc.n, dc])),
@@ -881,9 +902,9 @@
     if (lead.length) sec.append(el("div", { className: "tmlead" }, lead.map((x) => el("div", null, el("b", { text: x.text }),
       x.share === null ? null : el("div", { className: "tmbar" }, el("i", { style: "width:" + Math.round(x.share * 100) + "%" })),
       el("span", { className: "small muted", text: x.measure + (x.next ? ", " + Stats.fmt(x.next.value) + " by " + BP.monthDay(x.next.date) : "") })))));
-    sec.append(el("p", { className: "muted", text: "A line per track, from its numbers now to where it ends, with its sub-tracks branching under it. Select a name to open it." }));
-    const key = el("p", { className: "small muted tmkey" }, "A sub-track's items:");
-    for (const [cls, word] of [["", "done"], ["now", "now"], ["next", "next"], ["later", "later"], ["parked", "parked"]]) {
+    sec.append(el("p", { className: "muted", text: "A line per track with its goals by date and where it ends, and its sub-tracks branching under it, each with its next goal and its open items. Select a name to open it, or an item for its full text." }));
+    const key = el("p", { className: "small muted tmkey" }, "The dots under a sub-track:");
+    for (const [cls, word] of [["", "its done items"], ["parked", "parked"]]) {
       key.append(el("span", { className: "tmdots", "aria-hidden": "true" }, el("i", { className: cls })), word);
     }
     sec.append(key);
@@ -991,13 +1012,13 @@
     if (t) cell.append(linked(el("p", { className: "tmend" }, el("span", { className: "tmcol", text: "Eventual: " })), t));
     return cell;
   }
-  const dotsText = (g) => ["done", "now", "next", "later", "parked"].filter((k) => g[k].length).map((k) => g[k].length + " " + k).join(", ");
-  // A sub-track's items as dots: the done ones, a bar, then now, next, later and parked. A dot is a button: picked, it
-  // names its item under the dots, with a link to the item's card.
+  const dotsText = (g) => ["done", "parked"].filter((k) => g[k].length).map((k) => g[k].length + " " + k).join(", ");
+  // A sub-track's done items as dots, then a bar and its parked ones (its open items are rows, above). A dot is a
+  // button: picked, it names its item under the dots, with a link to the item's card.
   const picked = new Map();   // sub-track id -> the item picked on it, kept across redraws
-  function dots(sub) {
-    const g = TM.itemGroups(sub, byId), label = dotsText(g);
-    const box = el("span", { className: "tmdots", role: "group", "aria-label": "Items: " + label });
+  function dots(sub, g) {
+    if (!g.done.length && !g.parked.length) return null;
+    const box = el("span", { className: "tmdots", role: "group", "aria-label": "Items: " + dotsText(g) });
     const read = el("span", { className: "tmitem", "aria-live": "polite" });
     const show = () => {
       const it = byId.get(picked.get(sub.id));
@@ -1008,10 +1029,41 @@
     };
     const dot = (id, cls) => el("button", { type: "button", className: "tmdot", "data-id": id, title: id + (byId.has(id) ? ": " + byId.get(id).title : ""),
       on: { click: () => { if (picked.get(sub.id) === id) picked.delete(sub.id); else picked.set(sub.id, id); show(); } } }, el("i", { className: cls }));
-    box.append(...g.done.map((id) => dot(id, "")), el("i", { className: "bar" }));
-    for (const k of ["now", "next", "later", "parked"]) box.append(...g[k].map((id) => dot(id, k)));
+    box.append(...g.done.map((id) => dot(id, "")));
+    if (g.done.length && g.parked.length) box.append(el("i", { className: "bar" }));
+    box.append(...g.parked.map((id) => dot(id, "parked")));
     show();
     return [box, read];
+  }
+  // A sub-track's open items as rows under Now, Next and Later: id, short title, state word. A row opens the item's
+  // full text, its state's detail and a link to its card.
+  const openRows = new Set();   // the rows opened, kept across redraws
+  function itemRow(id) {
+    const it = byId.get(id);
+    const det = el("details", { className: "tmrow", "data-id": id });
+    det.open = openRows.has(id);
+    det.addEventListener("toggle", () => { det.open ? openRows.add(id) : openRows.delete(id); });
+    det.append(el("summary", null, el("span", { className: "rid", text: id }), it ? " " + it.title + " " : null,
+      it ? el("span", { className: "st", style: "color:var(--st-" + it.state_class + ")", text: it.state_class }) : null));
+    if (!it) return det;
+    const full = el("div", { className: "full" }, Stats.spans(el("p"), it.item, href));
+    if (it.state_line) full.append(linked(el("p", { className: "src" }), "State: " + it.state_line));
+    full.append(el("p", { className: "src" }, el("a", { className: "idlink", href: "#" + id, text: "Its card in All items" })));
+    det.append(full);
+    return det;
+  }
+  function itemRows(g) {
+    const groups = [["now", "Now"], ["next", "Next"], ["later", "Later"]].filter(([k]) => g[k].length);
+    if (!groups.length) return null;
+    return el("div", { className: "tmrows" }, groups.map(([k, word]) => el("div", { className: "tmgrp", "data-g": k },
+      el("span", { className: "tmgl", text: word }), el("div", null, g[k].map(itemRow)))));
+  }
+  // The goal under a sub-track's name: "By Dec 1: 8 Shorts in two weeks", or its condition in place of the day
+  function subGoal(s) {
+    const g = TM.nextGoal(s, tm.today);
+    if (!g) return null;
+    const when = g.date ? "By " + BP.monthDay(g.date, tm.today.slice(0, 4)) : g.when.replace(/^[a-z]/, (c) => c.toUpperCase());
+    return linked(el("p", { className: "tmsubgoal" }, el("span", { className: "when", text: when + ": " })), g.text);
   }
   function feedsLine(t) {
     const line = el("p", { className: "tmfeeds" });
@@ -1023,9 +1075,11 @@
   function trackBlock(t) {
     const open = openNodes.has(t.id);
     const head = el("button", { className: "tmhead", type: "button", "aria-expanded": open ? "true" : "false", on: { click: () => toggleNode(t.id) } },
-      el("span", { className: "tmname", text: t.name }), t.state ? el("span", { className: "chip " + (t.tone || ""), text: t.state }) : null,
+      el("span", { className: "tmname", text: t.name }), stateChip(t),
       el("span", { className: "tmwhat", text: t.line }), (t.decisions || []).map((n) => pinSpan(n)));
-    const nums = el("div", null, (t.now || []).map((n) => el("span", { className: "tmnum" }, el("b", { text: n.value }), el("span", { text: n.label }))));
+    // only the numbers measured against a goal, each as now against it; the track's other numbers are in its panel
+    const nums = el("div", null, TM.goalNumbers(t, tm.scorecard).map((n) => el("span", { className: "tmnum" }, el("b", { text: n.value }),
+      el("span", { className: "vs", text: "against " + Stats.fmt(n.next.value) + " by " + BP.monthDay(n.next.date, tm.today.slice(0, 4)) }), el("span", { text: n.label }))));
     const box = el("div", { className: "tmtrack", id: nodeDom(t.id), style: "--tk:" + tm.colour.get(t.id) }, head,
       el("div", { className: "tmline tmgrid" }, nums, goalCells(t, false), endCell(t, true)), feedsLine(t));
     if (open) box.append(panel(t, false));
@@ -1033,16 +1087,18 @@
     return box;
   }
   function subRow(s) {
-    const open = openNodes.has(s.id), first = (s.now || [])[0];
+    const open = openNodes.has(s.id), g = TM.itemGroups(s, byId), d = dots(s, g);
     const head = el("button", { className: "tmsubhead", type: "button", "aria-expanded": open ? "true" : "false", on: { click: () => toggleNode(s.id) } },
-      el("span", { className: "tmsubname", text: s.name }), s.state ? el("span", { className: "chip " + (s.tone || ""), text: s.state }) : null,
+      el("span", { className: "tmsubname", text: s.name }), stateChip(s),
       (s.decisions || []).map((n) => pinSpan(n)), tm.needs.has(s.id) ? el("span", { className: "needs", text: "needs Marcus" }) : null);
-    const cell = el("div", null, head,
-      el("span", { className: "tmsubnum" }, first ? [el("b", { text: first.value }), " " + first.label] : "no number yet"), dots(s));
-    const row = el("li", { className: "tmsub", id: nodeDom(s.id) }, el("div", { className: "tmgrid" }, cell, goalCells(s, true), endCell(s, false)));
+    // its name and next goal, its open items in rows, its done items as dots; the rest is in the panel its name opens
+    const row = el("li", { className: "tmsub", id: nodeDom(s.id) }, el("div", { className: "tmgrid" },
+      el("div", { className: "tmsubtop" }, head, subGoal(s)), itemRows(g), d ? el("div", { className: "tmsubdots" }, d) : null));
     if (open) row.append(panel(s, true));
     return row;
   }
+  // A State word is drawn only where it names a problem (the converter's tone): what a goal is fixing now
+  const stateChip = (n) => (n.state && n.tone ? el("span", { className: "chip " + n.tone, text: n.state }) : null);
   function daysText(day) {
     const n = BP.daysBetween(tm.today, day);
     return n === 0 ? "today" : n > 0 ? "in " + n + (n === 1 ? " day" : " days") : -n + (n === -1 ? " day ago" : " days ago");
@@ -1055,24 +1111,30 @@
     li.append(el("span", { className: "st", style: "color:var(--st-" + it.state_class + ")", text: it.state_class }), " ");
     return Stats.spans(li, it.item, href);
   }
-  // An opened track or sub-track: every line the doc holds for it, then (sub-tracks) what waits on it today and its items.
+  // An opened track or sub-track: every line the doc holds for it, where it's going first (goals, plan, eventual,
+  // feeds, decisions, and on a sub-track what waits on it today and its open items), then what's behind it (built, done
+  // items) and last its numbers, each with where it was read and when.
   function panel(node, sub) {
     const box = el("div", { className: "tmpanel" });
     const h = (t) => box.append(el("h4", { text: t }));
     const para = (t) => { const x = el("p"); Stats.linkIds(x, t, href); box.append(x); };
     const list = (rows) => box.append(el("ul", null, rows));
-    if ((node.now || []).length) {
-      h("Now");
-      list(node.now.map((n) => el("li", null, el("b", { text: n.value }), " " + n.label + " ",
-        el("span", { className: "src", text: "(" + (n.auto ? "filled at each push" + (tm.asOf ? ", snapshot of " + tm.asOf : "") : n.source || "by hand") + ")" }))));
-    }
-    if (node.nonum) { h("No number yet"); para(node.nonum); }
-    if (node.built) { h("Built"); para(node.built); }
-    if (node.plan) { h("Plan"); para(node.plan); }
+    const behind = () => {
+      if (node.built) { h("Built"); para(node.built); }
+      if (sub && g.done.length) { h("Done (" + g.done.length + ")"); list(g.done.map((id) => itemLine(id, true))); }
+      if ((node.now || []).length) {
+        h("Numbers");
+        list(node.now.map((n) => el("li", null, el("b", { text: n.value }), " " + n.label + " ",
+          el("span", { className: "src", text: "(" + (n.auto ? "filled at each push" + (tm.asOf ? ", growth snapshot of " + tm.asOf : "") : n.source || "by hand") + ")" }))));
+      }
+      if (node.nonum) { h("No number yet"); para(node.nonum); }
+    };
+    const g = sub ? TM.itemGroups(node, byId) : null;
     if ((node.goals || []).length) {
       h("Goals");
       list(node.goals.map((g) => linked(el("li", null, el("b", { text: g.date ? BP.dowDay(g.date) : g.when }), g.date ? " (" + daysText(g.date) + "): " : ": "), g.text)));
     }
+    if (node.plan) { h("Plan"); para(node.plan); }
     if (node.eventual) { h("Eventual"); para(node.eventual); }
     if ((node.feeds || []).length) { h("Feeds"); list(node.feeds.map((f) => el("li", null, feedChip(f.to), f.why))); }
     const by = tm.fed.get(node.id) || [];
@@ -1086,14 +1148,14 @@
         box.append(x, el("p", { className: "src", text: "Wrong if " + noDot(dc.wrong_if) + ". Look again " + noDot(lookText(dc)) + (dc.reading ? ". Reading: " + noDot(dc.reading) : "") + "." }));
       }
     }
-    if (!sub) return box;
+    if (!sub) { behind(); return box; }
     for (const [lines, title] of [[tm.needs.get(node.id), "Needs Marcus"], [tm.next.get(node.id), "In Today's Next"]]) {
       if (lines && lines.length) { h(title); list(lines.map((l) => Stats.spans(el("li"), l, href))); }
     }
-    const g = TM.itemGroups(node, byId);
-    for (const [k, title] of [["now", "Items now"], ["next", "Items next"], ["later", "Items later"], ["parked", "Parked"], ["done", "Done"]]) {
-      if (g[k].length) { h(title + " (" + g[k].length + ")"); list(g[k].map((id) => itemLine(id, k === "done"))); }
+    for (const [k, title] of [["now", "Items now"], ["next", "Items next"], ["later", "Items later"], ["parked", "Parked"]]) {
+      if (g[k].length) { h(title + " (" + g[k].length + ")"); list(g[k].map((id) => itemLine(id, false))); }
     }
+    behind();
     return box;
   }
 
@@ -1270,7 +1332,17 @@
     return box;
   }
 
-  // ---- b. players and posts since launch: the evidence ----
+  // ---- players and posts since launch: the evidence, in its fold under All items ----
+  let histOpen = false;
+  function historyFold(p) {
+    if (!p) return null;
+    const det = el("details", { id: "history" }, el("summary", null, el("h2", { text: "Players and posts since launch" })));
+    det.open = histOpen;
+    // closed, the chart has no width to fit: drawn again when it opens
+    det.addEventListener("toggle", () => { histOpen = det.open; if (det.open) drawChart(p); });
+    det.append(chartPart(p));
+    return det;
+  }
   function chartPart(p) {
     const sw = (kids) => { const s = sv("svg", { viewBox: "0 0 16 14", "aria-hidden": "true" }); kids.forEach((k) => s.append(k)); return s; };
     const legend = el("div", { className: "legend" },
@@ -1282,7 +1354,7 @@
       el("span", null, sw([sv("circle", { cx: 8, cy: 7, r: 5.5, class: "other" })]), "Videos by others"),
       el("span", null, sw([sv("line", { x1: 8, y1: 1, x2: 8, y2: 13, class: "rtk" })]), "Releases"),
       el("span", null, sw([sv("line", { x1: 8, y1: 0, x2: 8, y2: 14, class: "patch" })]), "Valve map patch"));
-    const box = el("div", { className: "bpart" }, el("h3", { className: "bph", text: "Players and posts since launch" }),
+    const box = el("div", { className: "bpart" },
       el("div", { className: "panel bpc" }, legend, el("div", { className: "pchart", id: "bp-chart" }),
         el("div", { className: "cread", id: "bp-cread", "aria-live": "polite" }),
         el("p", { className: "small muted", style: "margin: 0.5rem 0 0" },
@@ -1429,7 +1501,7 @@
     out.replaceChildren(...lines);
   }
 
-  // ---- c. the decisions and when each gets checked ----
+  // ---- b. the decisions and when each gets checked ----
   function decisionsPart(p) {
     const list = p.decisions || [];
     const S = BP.sortDecisions(list), today = ptToday();
@@ -1451,7 +1523,7 @@
     return box;
   }
 
-  // ---- d. next to the alternatives ----
+  // ---- c. next to the alternatives ----
   function altPart(p) {
     return el("div", { className: "bpart" }, el("h3", { className: "bph", text: "Next to the alternatives" }),
       el("div", { className: "alts", id: "bp-alts" }, p.alternatives.map((a) => el("div", { className: "panel alt" },
@@ -1477,10 +1549,14 @@
     $("sub").replaceChildren("From ", el("code", { text: d.source || "docs/BOXRUN-ROADMAP.md" }),
       ", last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
     $("jump-bp").hidden = !d.picture;
+    $("jump-history").hidden = !d.picture;
     $("jump-strategy").hidden = !d.strategy;
-    // Today and Next up first (Marcus 11-11), then the Map and the Big picture
+    // Today and Next up first (Marcus 11-11), then the Map and the Big picture; what records the past (the finished
+    // releases, the players chart, Strategy) sits under them in closed folds
     const kids = [].concat(nowSection(d), nextAndGoal(d), mapSection(d), bigPicture(d), areasSection(d), releasesSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
+    const hist = historyFold(d.picture);
+    if (hist) closing.append(hist);
     if (d.strategy) {
       const det = el("details", { id: "strategy" }, el("summary", null, el("h2", { text: d.strategy.title })));
       det.append(Stats.blocks(el("div", { className: "prose" }), d.strategy.blocks, href));
@@ -1511,8 +1587,9 @@
     c.scrollIntoView({ block: "center" });
   }
   window.addEventListener("hashchange", reveal);
-  // the Strategy link opens its fold
+  // the Strategy and Players and posts links open their folds
   $("jump-strategy").addEventListener("click", () => { const s = $("strategy"); if (s) s.open = true; });
+  $("jump-history").addEventListener("click", () => { const s = $("history"); if (s) s.open = true; });
   Stats.start("roadmap", (b) => { const first = !body; body = b; drawAll(); if (first) reveal(); });
 </script>
 </body>

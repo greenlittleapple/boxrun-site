@@ -28,6 +28,28 @@ const BoxRunTrackMap = (() => {
     return out;
   }
 
+  // The one goal a sub-track shows under its name: the next still ahead on `today` in the doc's order (a goal with a
+  // condition in place of a day counts as ahead), and a goal of its own before the look at a decision
+  // ("decision 2's look: ..."), which the decision's pin already marks. null when none is ahead.
+  function nextGoal(node, today) {
+    const ahead = (node.goals || []).filter((g) => !g.date || g.date >= today);
+    return ahead.find((g) => !/^decision \d+'s look\b/i.test(g.text || "")) || ahead[0] || null;
+  }
+
+  // A track's numbers that are measured against a goal: its Now lines filled from a key the scorecard holds a target
+  // for, each with that target and the share of it reached (0 to 1, null without a number). The rest of its Now
+  // lines have no goal to read them against.
+  function goalNumbers(node, scorecard) {
+    const out = [];
+    for (const n of node.now || []) {
+      const s = n.auto ? (scorecard || []).find((x) => x.auto === n.auto) : null;
+      if (!s || !s.next || !(s.next.value > 0)) continue;
+      out.push({ value: n.value, label: n.label, auto: n.auto, next: s.next,
+                 share: typeof s.now === "number" ? Math.max(0, Math.min(1, s.now / s.next.value)) : null });
+    }
+    return out;
+  }
+
   // What feeds each node: Map(id -> [{from, why}]) in the doc's order. A feed to every track ("*") reaches each other track.
   function fedBy(map) {
     const out = new Map();
@@ -138,7 +160,7 @@ const BoxRunTrackMap = (() => {
     return out;
   }
 
-  return { index, trackOf, nodesOf, columns, goalsByColumn, fedBy, trackEdges, edgeLayout, feedCount, itemGroups, trackCounts, leadNumbers,
+  return { index, trackOf, nodesOf, columns, goalsByColumn, nextGoal, goalNumbers, fedBy, trackEdges, edgeLayout, feedCount, itemGroups, trackCounts, leadNumbers,
            idsIn, linesBySub };
 })();
 if (typeof module === "object" && module.exports) module.exports = BoxRunTrackMap;
