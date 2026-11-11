@@ -396,7 +396,7 @@
   </header>
   <nav class="pages" aria-label="Stats pages"><a href="/stats/">Stats</a><a href="/stats/roadmap/" aria-current="page">Roadmap</a><a href="/stats/social/">Social</a><a href="/stats/opinions/">Opinions</a></nav>
   <h1>Roadmap</h1>
-  <nav class="jump" aria-label="On this page"><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#today">Today</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#releases">Releases</a><a href="#board">All items</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
+  <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#map" id="jump-map" hidden>Map</a><a href="#big-picture" id="jump-bp" hidden>Big picture</a><a href="#areas" id="jump-areas" hidden>Areas</a><a href="#releases">Releases</a><a href="#board">All items</a><a href="#strategy" id="jump-strategy" hidden>Strategy</a></nav>
   <p class="muted" id="sub">From <code>docs/BOXRUN-ROADMAP.md</code>.</p>
 
   <section id="ask" hidden>
@@ -1478,7 +1478,8 @@
       ", last changed " + Stats.when(d.updated) + (d.commit ? " (commit " + d.commit + ")" : "") + ".");
     $("jump-bp").hidden = !d.picture;
     $("jump-strategy").hidden = !d.strategy;
-    const kids = [].concat(mapSection(d), bigPicture(d), nowSection(d), nextAndGoal(d), areasSection(d), releasesSection(d), boardSection(d));
+    // Today and Next up first (Marcus 11-11), then the Map and the Big picture
+    const kids = [].concat(nowSection(d), nextAndGoal(d), mapSection(d), bigPicture(d), areasSection(d), releasesSection(d), boardSection(d));
     const closing = el("section", { className: "closing" });
     if (d.strategy) {
       const det = el("details", { id: "strategy" }, el("summary", null, el("h2", { text: d.strategy.title })));
